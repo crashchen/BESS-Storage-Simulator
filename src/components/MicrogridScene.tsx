@@ -41,6 +41,18 @@ function BESSContainer({ mode, soc }: { mode: string; soc: number }) {
     const targetColor = mode === 'charging' ? COLOR_CHARGE : mode === 'discharging' ? COLOR_DISCHARGE : COLOR_IDLE;
     const levelColor = targetColor;
     const currentColor = useRef(targetColor.clone());
+    const socSegments = useMemo(() => {
+        const segmentCount = 8;
+        const activeSegments = Math.max(0, Math.min(segmentCount, Math.round((soc / 100) * segmentCount)));
+
+        return Array.from({ length: segmentCount }, (_, index) => ({
+            key: index,
+            active: index < activeSegments,
+            y: -0.95 + index * 0.28,
+        }));
+    }, [soc]);
+    const fillHeight = Math.max(0.08, (soc / 100) * 2.0);
+    const fillCenterY = -1.0 + fillHeight / 2;
 
     useFrame(() => {
         currentColor.current.lerp(targetColor, 0.05);
@@ -71,17 +83,53 @@ function BESSContainer({ mode, soc }: { mode: string; soc: number }) {
                 />
             </mesh>
 
-            {/* SoC level indicator bar */}
-            <mesh position={[0, -1.5 + (soc / 100) * 1.5, 1.01]}>
-                <planeGeometry args={[3.6, (soc / 100) * 2.8]} />
-                <meshStandardMaterial
-                    color={levelColor}
-                    emissive={levelColor}
-                    emissiveIntensity={0.5}
-                    transparent
-                    opacity={0.6}
-                />
-            </mesh>
+            {/* Battery-style SoC viewport */}
+            <group position={[0, 0, 1.04]}>
+                <mesh>
+                    <boxGeometry args={[1.55, 2.35, 0.12]} />
+                    <meshStandardMaterial color="#0f172a" metalness={0.35} roughness={0.55} />
+                </mesh>
+                <mesh position={[0, 1.28, 0.02]}>
+                    <boxGeometry args={[0.38, 0.18, 0.12]} />
+                    <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.45} />
+                </mesh>
+                <mesh position={[0, 0, 0.03]}>
+                    <boxGeometry args={[1.28, 2.05, 0.04]} />
+                    <meshStandardMaterial color="#020617" transparent opacity={0.92} />
+                </mesh>
+                <mesh position={[0, fillCenterY, 0.05]}>
+                    <boxGeometry args={[1.08, fillHeight, 0.03]} />
+                    <meshStandardMaterial
+                        color={levelColor}
+                        emissive={levelColor}
+                        emissiveIntensity={0.35 + (soc / 100) * 0.55}
+                        transparent
+                        opacity={0.32}
+                    />
+                </mesh>
+                {socSegments.map((segment) => (
+                    <mesh key={segment.key} position={[0, segment.y, 0.06]}>
+                        <boxGeometry args={[1.0, 0.18, 0.05]} />
+                        <meshStandardMaterial
+                            color={segment.active ? levelColor : '#0f172a'}
+                            emissive={segment.active ? levelColor : new Color('#020617')}
+                            emissiveIntensity={segment.active ? 0.9 : 0.05}
+                            metalness={0.15}
+                            roughness={0.25}
+                        />
+                    </mesh>
+                ))}
+                <Text
+                    position={[0, -1.22, 0.08]}
+                    fontSize={0.18}
+                    maxWidth={1.15}
+                    color="#dbeafe"
+                    anchorX="center"
+                    anchorY="middle"
+                >
+                    SOC {soc.toFixed(0)}%
+                </Text>
+            </group>
 
             {/* Glow shell */}
             <mesh ref={glowRef} scale={[1.08, 1.08, 1.08]}>
@@ -117,8 +165,16 @@ function BESSContainer({ mode, soc }: { mode: string; soc: number }) {
 }
 
 // ── Solar Panel ──────────────────────────────────────────────
-function SolarPanel({ position, solarKw }: { position: [number, number, number]; solarKw: number }) {
-    const brightness = solarKw / 85; // normalized
+function SolarPanel({
+    position,
+    solarOutputMw,
+    solarAcCapacityMw,
+}: {
+    position: [number, number, number];
+    solarOutputMw: number;
+    solarAcCapacityMw: number;
+}) {
+    const brightness = solarOutputMw / Math.max(solarAcCapacityMw, 1e-9);
 
     return (
         <group position={position} rotation={[-0.35, 0, 0]}>
@@ -148,7 +204,7 @@ function SolarPanel({ position, solarKw }: { position: [number, number, number];
 }
 
 // ── Solar Array ──────────────────────────────────────────────
-function SolarArray({ solarKw }: { solarKw: number }) {
+function SolarArray({ solarOutputMw, solarAcCapacityMw }: { solarOutputMw: number; solarAcCapacityMw: number }) {
     const panels = useMemo(() => {
         const result: [number, number, number][] = [];
         for (let row = 0; row < 3; row++) {
@@ -162,7 +218,7 @@ function SolarArray({ solarKw }: { solarKw: number }) {
     return (
         <group>
             {panels.map((pos, i) => (
-                <SolarPanel key={i} position={pos} solarKw={solarKw} />
+                <SolarPanel key={i} position={pos} solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} />
             ))}
             <Text
                 position={[-6.5, 3, -4]}
@@ -236,7 +292,7 @@ function LoadBuilding() {
                 anchorX="center"
                 anchorY="bottom"
             >
-                LOAD CENTER
+                GRID NODE
             </Text>
         </group>
     );
@@ -244,7 +300,7 @@ function LoadBuilding() {
 
 // ── Main Scene ───────────────────────────────────────────────
 export function MicrogridScene({ gridState }: MicrogridSceneProps) {
-    const { batteryMode, batterySocPercent, solarOutputKw, timeOfDay } = gridState;
+    const { batteryMode, batterySocPercent, solarOutputMw, solarAcCapacityMw, timeOfDay } = gridState;
 
     const sunPos = sunPosition(timeOfDay);
     const sky = skyColor(timeOfDay);
@@ -304,7 +360,7 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
 
             {/* Scene objects */}
             <BESSContainer mode={batteryMode} soc={batterySocPercent} />
-            <SolarArray solarKw={solarOutputKw} />
+            <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} />
             <PowerLines />
             <LoadBuilding />
 

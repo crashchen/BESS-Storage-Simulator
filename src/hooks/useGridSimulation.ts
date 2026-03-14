@@ -1,363 +1,370 @@
 // ============================================================
-// @Agent-Engine — Core Simulation Hook (Physics + Economics)
-//
-// Physics:
-//   1. Strict active power balance (P_solar = P_load + P_bess)
-//   2. Primary frequency control via droop characteristic
-//   3. Hard SoC constraints with forced IDLE at bounds
-//
-// Economics (ToU Arbitrage):
-//   4. Time-of-Use electricity pricing (European market)
-//   5. Cumulative revenue tracking (sell high, buy low)
-//   6. Smart AUTO_ARB with priority-based state machine
-//
-// NEW — Phase 7:
-//   7. Dynamic "double hump" load curve (realistic human behavior)
-//   8. Priority-based AUTO_ARB: solar self-consumption → peak sell
-//      → off-peak buy → idle
+// Core simulation hook for the Romania solar + BESS project
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { BESSCommand, GridSnapshot, GridState, BatteryMode, TariffPeriod } from '../types';
+import type { BESSCommand, GridSnapshot, GridState, TariffPeriod } from '../types';
+import {
+    clamp,
+    computeGridDemandMw,
+    computeSolarOutputMw,
+    getAutoArbPlan,
+    getBatteryDurationHours,
+    getBatteryTransferLimitMw,
+    getElectricityPriceEurMwh,
+    getTariffPeriod,
+    settleHybridProjectTick,
+} from '../utils/simulationModel';
 
-// ── Physical constants ────────────────────────────────────────
 const F_NOMINAL_HZ = 50.0;
-const DROOP_K = 0.012;
-const FREQ_NOISE_SIGMA = 0.015;
+const DROOP_K = 0.0035;
+const FREQ_NOISE_SIGMA = 0.012;
 const F_MIN_HZ = 47.5;
 const F_MAX_HZ = 52.0;
 
-const SOLAR_PEAK_KW = 85;
-const BATTERY_CAPACITY_KWH = 200;
-const BATTERY_MAX_POWER_KW = 50;
-const SOC_MIN = 0.0;
-const SOC_MAX = 100.0;
-
-// ── Grid Protection & Headroom Management ─────────────────────
-const FREQ_CHARGE_LOCKOUT_HZ = 49.90; // suspend grid charging below this
-const NIGHT_TARGET_SOC = 40.0;        // off-peak only charges to 40% (keep 60% for solar)
-
-const HISTORY_MAX = 200;
-const SNAPSHOT_INTERVAL_MS = 400;
-
-// ── Dynamic Load Curve Constants ──────────────────────────────
-// "Double Hump" residential/commercial load profile
-const LOAD_BASE_KW = 30;         // overnight base load
-const LOAD_MORNING_PEAK_KW = 60; // morning peak at ~08:00
-const LOAD_EVENING_PEAK_KW = 90; // evening peak at ~19:00
-
-// ── ToU Pricing (European market simulation) ──────────────────
-const TOU_RATES: Record<TariffPeriod, number> = {
-    'off-peak': 0.08,
-    'mid-peak': 0.15,
-    'peak': 0.35,
+const PROJECT_NAME = 'Romania Hybrid Solar + BESS';
+const PROJECT_LOCATION = 'Romania';
+const SOLAR_DC_CAPACITY_MWP = 117;
+const SOLAR_AC_CAPACITY_MW = 102;
+const BESS_POWER_RATING_MW = 188;
+const BESS_ENERGY_CAPACITY_MWH = 744;
+const GRID_CONNECTION_TOTAL_MW = 288;
+const GRID_PV_EVACUATION_MW = 102;
+const GRID_BESS_CONNECTION_MW = 186;
+const SITE_YIELD_KWH_PER_KW_YEAR = 1380;
+const DEFAULT_TARIFF_RATES_EUR_MWH: Record<TariffPeriod, number> = {
+    'off-peak': 80,
+    'mid-peak': 150,
+    'peak': 350,
 };
 
-function getTariffPeriod(tod: number): TariffPeriod {
-    if (tod < 6) return 'off-peak';
-    if (tod < 18) return 'mid-peak';
-    if (tod < 23) return 'peak';
-    return 'off-peak';
-}
+const DISPATCH_SCALE_MIN = 50;
+const DISPATCH_SCALE_MAX = 150;
+const BESS_POWER_MIN_MW = 50;
+const BESS_POWER_MAX_MW = 250;
+const BESS_ENERGY_MIN_MWH = 100;
+const BESS_ENERGY_MAX_MWH = 1200;
 
-function getElectricityPrice(tod: number): number {
-    return TOU_RATES[getTariffPeriod(tod)];
-}
+const FREQ_CHARGE_LOCKOUT_HZ = 49.9;
+const HISTORY_MAX = 200;
+const SNAPSHOT_INTERVAL_MS = 400;
+const INITIAL_TIME_OF_DAY = 8.0;
+const TARIFF_RATE_MIN = -500;
+const TARIFF_RATE_MAX = 1000;
+const BESS_CHARGE_EFFICIENCY = 0.96;
+const BESS_DISCHARGE_EFFICIENCY = 0.96;
 
-// ── Helpers ───────────────────────────────────────────────────
-
-/** Sine-based solar output: 0 at night, peaks at noon. */
-function computeSolarOutput(timeOfDay: number): number {
-    if (timeOfDay < 5.5 || timeOfDay > 19.5) return 0;
-    const noon = 12.5;
-    const halfSpan = 7;
-    const t = (timeOfDay - noon) / halfSpan;
-    return Math.max(0, SOLAR_PEAK_KW * Math.cos(t * Math.PI * 0.5));
-}
-
-/**
- * Dynamic "Double Hump" load curve.
- *
- * Models realistic daily consumption:
- *   - Night base:    ~30 kW  (23:00 – 05:00)
- *   - Morning peak:  ~60 kW  (centered at 08:00, σ ≈ 1.5h)
- *   - Daytime trough: ~35 kW (12:00 – 15:00)
- *   - Evening peak:  ~90 kW  (centered at 19:00, σ ≈ 2h)
- *
- * Uses superposition of two Gaussian humps on a base load.
- * `scaleFactor` is a user-adjustable multiplier (default 1.0).
- */
-function computeLoadDemand(timeOfDay: number, scaleFactor: number): number {
-    // Gaussian hump: A * exp(-(t - μ)² / (2σ²))
-    const morningHump = (LOAD_MORNING_PEAK_KW - LOAD_BASE_KW) *
-        Math.exp(-Math.pow(timeOfDay - 8.0, 2) / (2 * 1.5 * 1.5));
-
-    const eveningHump = (LOAD_EVENING_PEAK_KW - LOAD_BASE_KW) *
-        Math.exp(-Math.pow(timeOfDay - 19.0, 2) / (2 * 2.0 * 2.0));
-
-    const rawLoad = LOAD_BASE_KW + morningHump + eveningHump;
-    return Math.max(0, rawLoad * scaleFactor);
-}
-
-/** Small Gaussian measurement noise (Box-Muller). */
 function gaussianNoise(sigma: number): number {
     const u1 = Math.random() || 1e-10;
     const u2 = Math.random();
     return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2) * sigma;
 }
 
-// ── Smart AUTO_ARB State Machine ──────────────────────────────
-//
-// Priority-based decision tree (strict ordering):
-//
-//   P1. ABSORB FREE SOLAR  — If solar > load AND SoC < 100% → CHARGE
-//       (Never waste free energy, regardless of tariff period)
-//
-//   P2. PEAK SHAVING       — If Peak tariff AND SoC > 0% → DISCHARGE
-//       (Sell stored energy at €0.35/kWh to cover expensive load)
-//
-//   P3. BUY LOW / GRID CHG — If Off-Peak AND SoC < NIGHT_TARGET_SOC → CHARGE
-//       (Buy cheap grid energy, but ONLY to 40% — reserve 60% for free solar)
-//
-//   P4. IDLE               — Otherwise do nothing.
-//
-function autoArbDecision(
-    pSolar: number,
-    pLoad: number,
-    soc: number,
-    tariff: TariffPeriod,
-): BatteryMode {
-    const hasSurplus = pSolar > pLoad;
-    const hasDeficit = pLoad > pSolar;
+function createInitialGridState(timestamp = 0): GridState {
+    const batteryDurationHours = getBatteryDurationHours(BESS_POWER_RATING_MW, BESS_ENERGY_CAPACITY_MWH);
 
-    // Priority 1: Absorb free solar surplus
-    if (hasSurplus && soc < SOC_MAX) {
-        return 'charging';
-    }
-
-    // Priority 2: Peak shaving / sell high
-    if (tariff === 'peak' && hasDeficit && soc > SOC_MIN) {
-        return 'discharging';
-    }
-
-    // Priority 3: Grid charge at off-peak — ONLY to NIGHT_TARGET_SOC (40%)
-    // Reserves 60% capacity for noon solar absorption
-    if (tariff === 'off-peak' && soc < NIGHT_TARGET_SOC) {
-        return 'charging';
-    }
-
-    // Priority 4: Idle
-    return 'idle';
+    return {
+        projectName: PROJECT_NAME,
+        projectLocation: PROJECT_LOCATION,
+        solarDcCapacityMwp: SOLAR_DC_CAPACITY_MWP,
+        solarAcCapacityMw: SOLAR_AC_CAPACITY_MW,
+        batteryPowerRatingMw: BESS_POWER_RATING_MW,
+        batteryDurationHours,
+        batteryEnergyCapacityMwh: BESS_ENERGY_CAPACITY_MWH,
+        gridConnectionTotalMw: GRID_CONNECTION_TOTAL_MW,
+        gridPvEvacuationMw: GRID_PV_EVACUATION_MW,
+        gridBessConnectionMw: GRID_BESS_CONNECTION_MW,
+        siteYieldKwhPerKwYear: SITE_YIELD_KWH_PER_KW_YEAR,
+        simulationStatus: 'stopped',
+        gridFrequencyHz: F_NOMINAL_HZ,
+        solarOutputMw: computeSolarOutputMw(INITIAL_TIME_OF_DAY, SOLAR_AC_CAPACITY_MW),
+        gridDemandMw: computeGridDemandMw(INITIAL_TIME_OF_DAY, 1.0, GRID_CONNECTION_TOTAL_MW),
+        dispatchScalePercent: 100,
+        batterySocPercent: 65,
+        batteryPowerMw: 0,
+        batteryChargeFromSolarMw: 0,
+        batteryChargeFromGridMw: 0,
+        batteryDischargeToGridMw: 0,
+        solarExportMw: computeSolarOutputMw(INITIAL_TIME_OF_DAY, SOLAR_AC_CAPACITY_MW),
+        solarCurtailedMw: 0,
+        projectNetExportMw: computeSolarOutputMw(INITIAL_TIME_OF_DAY, SOLAR_AC_CAPACITY_MW),
+        batteryMode: 'idle',
+        timeOfDay: INITIAL_TIME_OF_DAY,
+        timeSpeed: 240,
+        timestamp,
+        tariffPeriod: getTariffPeriod(INITIAL_TIME_OF_DAY),
+        tariffRatesEurMwh: DEFAULT_TARIFF_RATES_EUR_MWH,
+        currentPriceEurMwh: getElectricityPriceEurMwh(INITIAL_TIME_OF_DAY, DEFAULT_TARIFF_RATES_EUR_MWH),
+        cumulativeRevenueEur: 0,
+        cumulativeBessMarginEur: 0,
+        autoArbEnabled: false,
+    };
 }
-
-// ── Pure physics + economics tick ─────────────────────────────
-
-const INITIAL_TIME_OF_DAY = 8.0;
-const INITIAL_GRID_STATE: GridState = {
-    gridFrequencyHz: F_NOMINAL_HZ,
-    solarOutputKw: computeSolarOutput(INITIAL_TIME_OF_DAY),
-    loadDemandKw: computeLoadDemand(INITIAL_TIME_OF_DAY, 1.0),
-    loadScalePercent: 100,
-    batterySocPercent: 65,
-    batteryPowerKw: 0,
-    batteryMode: 'idle',
-    timeOfDay: INITIAL_TIME_OF_DAY,
-    timeSpeed: 500,
-    timestamp: 0,
-    tariffPeriod: getTariffPeriod(INITIAL_TIME_OF_DAY),
-    currentPriceEurKwh: getElectricityPrice(INITIAL_TIME_OF_DAY),
-    cumulativeRevenueEur: 0,
-    autoArbEnabled: false,
-};
 
 function simulateTick(prev: GridState, dtReal: number, now: number): GridState {
     const dtSim = dtReal * prev.timeSpeed;
     const dtHours = dtSim / 3600;
 
-    // 1. ADVANCE TIME-OF-DAY
-    let tod = (prev.timeOfDay + dtHours) % 24;
-    if (tod < 0) tod += 24;
+    let timeOfDay = (prev.timeOfDay + dtHours) % 24;
+    if (timeOfDay < 0) timeOfDay += 24;
 
-    // 2. COMPUTE SOLAR OUTPUT
-    const pSolar = computeSolarOutput(tod);
+    const solarOutputMw = computeSolarOutputMw(timeOfDay, prev.solarAcCapacityMw);
+    const gridDemandMw = computeGridDemandMw(timeOfDay, prev.dispatchScalePercent / 100, prev.gridConnectionTotalMw);
+    const tariffPeriod = getTariffPeriod(timeOfDay);
+    const currentPriceEurMwh = getElectricityPriceEurMwh(timeOfDay, prev.tariffRatesEurMwh);
 
-    // 3. COMPUTE DYNAMIC LOAD (double hump × user scale)
-    const pLoad = computeLoadDemand(tod, prev.loadScalePercent / 100);
-
-    // 4. ToU PRICING
-    const tariff = getTariffPeriod(tod);
-    const price = getElectricityPrice(tod);
-
-    // 5. DETERMINE BESS MODE
-    let requestedMode: BatteryMode = prev.batteryMode;
+    let requestedMode = prev.batteryMode;
+    let autoArbPowerMw = 0;
 
     if (prev.autoArbEnabled) {
-        // Smart priority-based AUTO_ARB
-        requestedMode = autoArbDecision(pSolar, pLoad, prev.batterySocPercent, tariff);
+        const autoArbPlan = getAutoArbPlan(prev, timeOfDay, solarOutputMw, gridDemandMw, tariffPeriod);
+        requestedMode = autoArbPlan.mode;
+        autoArbPowerMw = autoArbPlan.targetPowerMw;
     }
 
-    // Hard SoC constraints
-    if (prev.batterySocPercent >= SOC_MAX && requestedMode === 'charging') {
+    if (prev.batterySocPercent >= 100 && requestedMode === 'charging') {
         requestedMode = 'idle';
     }
-    if (prev.batterySocPercent <= SOC_MIN && requestedMode === 'discharging') {
+    if (prev.batterySocPercent <= 0 && requestedMode === 'discharging') {
         requestedMode = 'idle';
     }
 
-    // ── FREQUENCY-CONSTRAINED CHARGING (Grid Protection) ──────
-    // If we're about to grid-charge (i.e. charge with no solar surplus),
-    // check if the grid frequency is below the safety threshold.
-    // Solar charging (P_solar > P_load) is always allowed — it relieves
-    // the grid by absorbing excess power.
-    const hasSolarSurplus = pSolar > pLoad;
-    if (requestedMode === 'charging' && !hasSolarSurplus) {
-        if (prev.gridFrequencyHz < FREQ_CHARGE_LOCKOUT_HZ) {
-            requestedMode = 'idle'; // suspend grid charge to protect frequency
-        }
+    const hasSolarSurplus = solarOutputMw > gridDemandMw;
+    if (prev.autoArbEnabled && requestedMode === 'charging' && !hasSolarSurplus && prev.gridFrequencyHz < FREQ_CHARGE_LOCKOUT_HZ) {
+        requestedMode = 'idle';
     }
 
-    // 6. STRICT ACTIVE POWER BALANCE
-    const pMismatch = pSolar - pLoad;
-    let battPower = 0;
+    const transferLimitMw = getBatteryTransferLimitMw(prev);
+    const powerMismatchMw = solarOutputMw - gridDemandMw;
+    let batteryPowerMw = 0;
 
     if (requestedMode === 'charging') {
-        if (pMismatch > 0) {
-            // Surplus available — charge from free solar
-            battPower = Math.min(pMismatch, BATTERY_MAX_POWER_KW);
-        } else if (!prev.autoArbEnabled || getTariffPeriod(tod) === 'off-peak') {
-            // Off-peak grid charge: we're in deficit but deliberately buying
-            // In pure islanded mode this would violate balance, but off-peak
-            // grid charging implies grid-connected behavior at cheap rates.
-            // Cap at max power.
-            battPower = Math.min(BATTERY_MAX_POWER_KW, BATTERY_MAX_POWER_KW);
+        if (prev.autoArbEnabled) {
+            batteryPowerMw = clamp(autoArbPowerMw, 0, transferLimitMw);
+        } else {
+            batteryPowerMw = transferLimitMw;
         }
-        // If AUTO_ARB + not off-peak + deficit → battPower stays 0
     } else if (requestedMode === 'discharging') {
-        if (pMismatch < 0) {
-            // Deficit — discharge to cover it
-            battPower = Math.max(pMismatch, -BATTERY_MAX_POWER_KW);
+        if (prev.autoArbEnabled) {
+            batteryPowerMw = clamp(autoArbPowerMw, -transferLimitMw, 0);
+        } else {
+            batteryPowerMw = -transferLimitMw;
         }
     }
 
-    // Clamp by remaining SoC capacity
-    if (battPower > 0) {
-        const remainingKwh = ((SOC_MAX - prev.batterySocPercent) / 100) * BATTERY_CAPACITY_KWH;
-        const maxPower = remainingKwh / Math.max(dtHours, 1e-9);
-        battPower = Math.min(battPower, maxPower);
-    } else if (battPower < 0) {
-        const availableKwh = ((prev.batterySocPercent - SOC_MIN) / 100) * BATTERY_CAPACITY_KWH;
-        const maxPower = availableKwh / Math.max(dtHours, 1e-9);
-        battPower = Math.max(battPower, -maxPower);
+    if (batteryPowerMw > 0) {
+        const remainingEnergyMwh = ((100 - prev.batterySocPercent) / 100) * prev.batteryEnergyCapacityMwh;
+        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS_CHARGE_EFFICIENCY, 1e-9);
+        batteryPowerMw = Math.min(batteryPowerMw, maxChargeMw);
+    } else if (batteryPowerMw < 0) {
+        const availableEnergyMwh = (prev.batterySocPercent / 100) * prev.batteryEnergyCapacityMwh;
+        const maxDischargeMw = (availableEnergyMwh * BESS_DISCHARGE_EFFICIENCY) / Math.max(dtHours, 1e-9);
+        batteryPowerMw = Math.max(batteryPowerMw, -maxDischargeMw);
     }
 
-    // 7. UPDATE SoC
-    const energyDeltaKwh = battPower * dtHours;
-    let newSoc = prev.batterySocPercent + (energyDeltaKwh / BATTERY_CAPACITY_KWH) * 100;
-    newSoc = Math.max(SOC_MIN, Math.min(SOC_MAX, newSoc));
+    const storedEnergyDeltaMwh = batteryPowerMw >= 0
+        ? batteryPowerMw * dtHours * BESS_CHARGE_EFFICIENCY
+        : (batteryPowerMw * dtHours) / BESS_DISCHARGE_EFFICIENCY;
+    let batterySocPercent = prev.batterySocPercent + (storedEnergyDeltaMwh / prev.batteryEnergyCapacityMwh) * 100;
+    batterySocPercent = clamp(batterySocPercent, 0, 100);
 
-    let finalMode = requestedMode;
-    if (newSoc >= SOC_MAX && finalMode === 'charging') {
-        finalMode = 'idle';
-        battPower = 0;
+    let batteryMode = requestedMode;
+    if (batterySocPercent >= 100 && batteryMode === 'charging') {
+        batteryMode = 'idle';
+        batteryPowerMw = 0;
     }
-    if (newSoc <= SOC_MIN && finalMode === 'discharging') {
-        finalMode = 'idle';
-        battPower = 0;
+    if (batterySocPercent <= 0 && batteryMode === 'discharging') {
+        batteryMode = 'idle';
+        batteryPowerMw = 0;
     }
 
-    // 8. PRIMARY FREQUENCY CONTROL (droop)
-    const pUncompensated = pMismatch - battPower;
-    const fDroop = F_NOMINAL_HZ + DROOP_K * pUncompensated;
-    const fWithNoise = fDroop + gaussianNoise(FREQ_NOISE_SIGMA);
-    const freq = Math.max(F_MIN_HZ, Math.min(F_MAX_HZ, fWithNoise));
+    const settlement = settleHybridProjectTick({
+        solarOutputMw,
+        gridDemandMw,
+        batteryPowerMw,
+        gridPvEvacuationMw: prev.gridPvEvacuationMw,
+        currentPriceEurMwh,
+        dtHours,
+    });
 
-    // 9. ECONOMICS
-    const revenueDelta = -battPower * price * dtHours;
-    const newRevenue = prev.cumulativeRevenueEur + revenueDelta;
+    const uncompensatedMw = powerMismatchMw - batteryPowerMw;
+    const gridFrequencyHz = clamp(
+        F_NOMINAL_HZ + DROOP_K * uncompensatedMw + gaussianNoise(FREQ_NOISE_SIGMA),
+        F_MIN_HZ,
+        F_MAX_HZ,
+    );
+
+    const cumulativeRevenueEur = prev.cumulativeRevenueEur + settlement.projectPnlDeltaEur;
+    const cumulativeBessMarginEur = prev.cumulativeBessMarginEur + settlement.bessMarginDeltaEur;
 
     return {
         ...prev,
-        timeOfDay: tod,
-        solarOutputKw: pSolar,
-        loadDemandKw: pLoad,
-        batteryPowerKw: battPower,
-        batterySocPercent: newSoc,
-        batteryMode: finalMode,
-        gridFrequencyHz: freq,
+        gridFrequencyHz,
+        solarOutputMw,
+        gridDemandMw,
+        batterySocPercent,
+        batteryPowerMw,
+        batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
+        batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
+        batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
+        solarExportMw: settlement.solarExportMw,
+        solarCurtailedMw: settlement.solarCurtailedMw,
+        projectNetExportMw: settlement.projectNetExportMw,
+        batteryMode,
+        timeOfDay,
         timestamp: now,
-        tariffPeriod: tariff,
-        currentPriceEurKwh: price,
-        cumulativeRevenueEur: newRevenue,
+        tariffPeriod,
+        currentPriceEurMwh,
+        cumulativeRevenueEur,
+        cumulativeBessMarginEur,
     };
 }
 
-// ── Hook ──────────────────────────────────────────────────────
-
 export function useGridSimulation() {
-    const simRef = useRef<GridState>(INITIAL_GRID_STATE);
-
+    const simRef = useRef<GridState>(createInitialGridState());
     const historyRef = useRef<GridSnapshot[]>([]);
-    const [state, setState] = useState<GridState>(INITIAL_GRID_STATE);
-    const [history, setHistory] = useState<GridSnapshot[]>([]);
-
+    const elapsedChartSecondsRef = useRef(0);
     const lastFrameRef = useRef(0);
     const lastSnapshotRef = useRef(0);
     const lastRenderSyncRef = useRef(0);
-    const startTimeRef = useRef(0);
 
-    const dispatch = useCallback((cmd: BESSCommand) => {
-        const prev = simRef.current;
-        switch (cmd.type) {
-            case 'CHARGE':
-                simRef.current = { ...prev, batteryMode: 'charging' as const, autoArbEnabled: false };
-                break;
-            case 'DISCHARGE':
-                simRef.current = { ...prev, batteryMode: 'discharging' as const, autoArbEnabled: false };
-                break;
-            case 'IDLE':
-                simRef.current = { ...prev, batteryMode: 'idle' as const, autoArbEnabled: false };
-                break;
-            case 'SET_LOAD':
-                // payload = loadScalePercent (50 – 150)
-                simRef.current = { ...prev, loadScalePercent: Math.max(50, Math.min(150, cmd.payload)) };
-                break;
-            case 'SET_TIME_SPEED':
-                simRef.current = { ...prev, timeSpeed: Math.max(1, cmd.payload) };
-                break;
-            case 'TOGGLE_AUTO_ARB':
-                simRef.current = { ...prev, autoArbEnabled: !prev.autoArbEnabled };
-                break;
-        }
+    const [state, setState] = useState<GridState>(createInitialGridState());
+    const [history, setHistory] = useState<GridSnapshot[]>([]);
+
+    const syncState = useCallback(() => {
+        setState(simRef.current);
     }, []);
 
-    useEffect(() => {
-        let rafId: number;
-        const bootTime = Date.now();
+    const dispatch = useCallback((cmd: BESSCommand) => {
+        const now = Date.now();
+        const prev = simRef.current;
 
+        switch (cmd.type) {
+            case 'START_SIMULATION': {
+                const nextStatus = 'running';
+                lastFrameRef.current = now;
+                simRef.current = {
+                    ...prev,
+                    simulationStatus: nextStatus,
+                    timestamp: now,
+                };
+                break;
+            }
+            case 'PAUSE_SIMULATION':
+                simRef.current = {
+                    ...prev,
+                    simulationStatus: 'paused',
+                    timestamp: now,
+                };
+                break;
+            case 'STOP_SIMULATION': {
+                const resetState = createInitialGridState(now);
+                simRef.current = resetState;
+                historyRef.current = [];
+                elapsedChartSecondsRef.current = 0;
+                lastFrameRef.current = now;
+                lastSnapshotRef.current = 0;
+                lastRenderSyncRef.current = 0;
+                setHistory([]);
+                break;
+            }
+            case 'CHARGE':
+                simRef.current = { ...prev, batteryMode: 'charging', autoArbEnabled: false, timestamp: now };
+                break;
+            case 'DISCHARGE':
+                simRef.current = { ...prev, batteryMode: 'discharging', autoArbEnabled: false, timestamp: now };
+                break;
+            case 'IDLE':
+                simRef.current = { ...prev, batteryMode: 'idle', autoArbEnabled: false, timestamp: now };
+                break;
+            case 'SET_DISPATCH_SCALE':
+                simRef.current = {
+                    ...prev,
+                    dispatchScalePercent: clamp(cmd.payload, DISPATCH_SCALE_MIN, DISPATCH_SCALE_MAX),
+                    timestamp: now,
+                };
+                break;
+            case 'SET_TIME_SPEED':
+                simRef.current = { ...prev, timeSpeed: Math.max(1, cmd.payload), timestamp: now };
+                break;
+            case 'SET_BESS_POWER_RATING': {
+                const batteryPowerRatingMw = clamp(cmd.payload, BESS_POWER_MIN_MW, BESS_POWER_MAX_MW);
+                simRef.current = {
+                    ...prev,
+                    batteryPowerRatingMw,
+                    batteryDurationHours: getBatteryDurationHours(batteryPowerRatingMw, prev.batteryEnergyCapacityMwh),
+                    timestamp: now,
+                };
+                break;
+            }
+            case 'SET_BESS_ENERGY_CAPACITY': {
+                const batteryEnergyCapacityMwh = clamp(cmd.payload, BESS_ENERGY_MIN_MWH, BESS_ENERGY_MAX_MWH);
+                simRef.current = {
+                    ...prev,
+                    batteryEnergyCapacityMwh,
+                    batteryDurationHours: getBatteryDurationHours(prev.batteryPowerRatingMw, batteryEnergyCapacityMwh),
+                    timestamp: now,
+                };
+                break;
+            }
+            case 'SET_TARIFF_RATE': {
+                const { period, value } = cmd.payload;
+                const tariffRatesEurMwh = {
+                    ...prev.tariffRatesEurMwh,
+                    [period]: clamp(value, TARIFF_RATE_MIN, TARIFF_RATE_MAX),
+                };
+                simRef.current = {
+                    ...prev,
+                    tariffRatesEurMwh,
+                    currentPriceEurMwh: getElectricityPriceEurMwh(prev.timeOfDay, tariffRatesEurMwh),
+                    timestamp: now,
+                };
+                break;
+            }
+            case 'TOGGLE_AUTO_ARB':
+                simRef.current = { ...prev, autoArbEnabled: !prev.autoArbEnabled, timestamp: now };
+                break;
+        }
+
+        syncState();
+    }, [syncState]);
+
+    useEffect(() => {
+        let rafId = 0;
+        const bootTime = Date.now();
         lastFrameRef.current = bootTime;
-        startTimeRef.current = bootTime;
         simRef.current = { ...simRef.current, timestamp: bootTime };
         setState(simRef.current);
 
         const tick = () => {
             const now = Date.now();
+
+            if (simRef.current.simulationStatus !== 'running') {
+                lastFrameRef.current = now;
+                rafId = requestAnimationFrame(tick);
+                return;
+            }
+
             const dtReal = Math.min((now - lastFrameRef.current) / 1000, 0.1);
             lastFrameRef.current = now;
+            elapsedChartSecondsRef.current += dtReal;
 
             simRef.current = simulateTick(simRef.current, dtReal, now);
 
             if (now - lastSnapshotRef.current >= SNAPSHOT_INTERVAL_MS) {
                 lastSnapshotRef.current = now;
+
                 const s = simRef.current;
                 const snap: GridSnapshot = {
-                    t: parseFloat(((now - startTimeRef.current) / 1000).toFixed(1)),
-                    solarKw: parseFloat(s.solarOutputKw.toFixed(1)),
-                    loadKw: parseFloat(s.loadDemandKw.toFixed(1)),
-                    batteryKw: parseFloat(s.batteryPowerKw.toFixed(1)),
+                    t: parseFloat(elapsedChartSecondsRef.current.toFixed(1)),
+                    solarMw: parseFloat(s.solarOutputMw.toFixed(1)),
+                    demandMw: parseFloat(s.gridDemandMw.toFixed(1)),
+                    batteryMw: parseFloat(s.batteryPowerMw.toFixed(1)),
                     socPercent: parseFloat(s.batterySocPercent.toFixed(1)),
                     frequencyHz: parseFloat(s.gridFrequencyHz.toFixed(2)),
-                    priceEur: s.currentPriceEurKwh,
+                    priceEurMwh: s.currentPriceEurMwh,
                 };
+
                 historyRef.current = historyRef.current.length >= HISTORY_MAX
                     ? [...historyRef.current.slice(-HISTORY_MAX + 1), snap]
                     : [...historyRef.current, snap];

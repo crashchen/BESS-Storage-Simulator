@@ -30,7 +30,7 @@ export default function App() {
 
       {/* ── Attribution ───────────────────────────────────── */}
       <div className="absolute bottom-2 right-4 text-[10px] text-slate-600 font-mono pointer-events-none select-none">
-        MICROGRID BESS SIMULATOR v1.0
+        ROMANIA HYBRID BESS SIMULATOR v0.1
       </div>
     </div>
   );

@@ -42,9 +42,9 @@ export function TelemetryChart({ history }: TelemetryChartProps) {
                     />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', color: '#94a3b8' }} />
                     <ReferenceLine y={0} stroke="#475569" strokeDasharray="2 2" />
-                    <Line type="monotone" dataKey="solarKw" name="Solar" stroke="#facc15" strokeWidth={2} dot={false} isAnimationActive={false} />
-                    <Line type="monotone" dataKey="loadKw" name="Load" stroke="#f97316" strokeWidth={2} dot={false} isAnimationActive={false} />
-                    <Line type="monotone" dataKey="batteryKw" name="Battery" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} />
+                    <Line type="monotone" dataKey="solarMw" name="Solar" stroke="#facc15" strokeWidth={2} dot={false} isAnimationActive={false} />
+                    <Line type="monotone" dataKey="demandMw" name="Demand" stroke="#f97316" strokeWidth={2} dot={false} isAnimationActive={false} />
+                    <Line type="monotone" dataKey="batteryMw" name="Battery" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
             </ResponsiveContainer>
         </div>
