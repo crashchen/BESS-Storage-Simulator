@@ -6,7 +6,7 @@ interface SimulationViewportProps {
   gridState: GridState;
 }
 
-export default function SimulationViewport({ gridState }: SimulationViewportProps) {
+export function SimulationViewport({ gridState }: SimulationViewportProps) {
   return (
     <Canvas
       shadows
