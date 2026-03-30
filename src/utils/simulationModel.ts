@@ -1,20 +1,5 @@
 import type { BatteryMode, GridState, TariffPeriod } from '../types';
-
-const GRID_DEMAND_BASE_MW = 92;
-const GRID_DEMAND_MORNING_PEAK_MW = 155;
-const GRID_DEMAND_EVENING_PEAK_MW = 234;
-const GRID_DEMAND_MIDDAY_TROUGH_MW = 32;
-
-const AUTO_ARB_PEAK_START_HOUR = 18;
-const AUTO_ARB_PEAK_END_HOUR = 23;
-const AUTO_ARB_FORECAST_STEP_HOURS = 0.25;
-const AUTO_ARB_MIN_PEAK_ENTRY_SOC = 92;
-const AUTO_ARB_PEAK_RESERVE_SOC = 12;
-const AUTO_ARB_TARGET_BUFFER_MWH = 12;
-const AUTO_ARB_SOLAR_CONFIDENCE_BUFFER_MWH = 10;
-const AUTO_ARB_OFF_PEAK_TOP_UP_FRACTION = 0.35;
-const AUTO_ARB_MID_PEAK_TOP_UP_FRACTION = 0.2;
-const NIGHT_TARGET_SOC = 40.0;
+import { AUTO_ARB, DEMAND_MODEL, SOLAR, TARIFF } from '../config';
 
 type DispatchModelState = Pick<
     GridState,
@@ -56,9 +41,9 @@ export function clamp(value: number, min: number, max: number): number {
 }
 
 export function getTariffPeriod(tod: number): TariffPeriod {
-    if (tod < 6) return 'off-peak';
-    if (tod < 18) return 'mid-peak';
-    if (tod < 23) return 'peak';
+    if (tod < TARIFF.periods.offPeakEnd) return 'off-peak';
+    if (tod < TARIFF.periods.midPeakEnd) return 'mid-peak';
+    if (tod < TARIFF.periods.peakEnd) return 'peak';
     return 'off-peak';
 }
 
@@ -77,25 +62,24 @@ export function getBatteryTransferLimitMw(
 }
 
 export function computeSolarOutputMw(timeOfDay: number, solarAcCapacityMw: number): number {
-    if (timeOfDay < 5.5 || timeOfDay > 19.5) return 0;
+    if (timeOfDay < SOLAR.sunriseHour || timeOfDay > SOLAR.sunsetHour) return 0;
 
-    const noon = 12.5;
-    const halfSpan = 7;
-    const normalizedTime = (timeOfDay - noon) / halfSpan;
+    const halfSpan = (SOLAR.sunsetHour - SOLAR.sunriseHour) / 2;
+    const normalizedTime = (timeOfDay - SOLAR.solarNoon) / halfSpan;
     return Math.max(0, solarAcCapacityMw * Math.cos(normalizedTime * Math.PI * 0.5));
 }
 
 export function computeGridDemandMw(timeOfDay: number, scaleFactor: number, gridConnectionTotalMw: number): number {
-    const morningHump = (GRID_DEMAND_MORNING_PEAK_MW - GRID_DEMAND_BASE_MW) *
-        Math.exp(-Math.pow(timeOfDay - 8.0, 2) / (2 * 1.6 * 1.6));
+    const morningHump = (DEMAND_MODEL.morningPeakMw - DEMAND_MODEL.baseMw) *
+        Math.exp(-Math.pow(timeOfDay - DEMAND_MODEL.morningPeakHour, 2) / (2 * 1.6 * 1.6));
 
-    const eveningHump = (GRID_DEMAND_EVENING_PEAK_MW - GRID_DEMAND_BASE_MW) *
-        Math.exp(-Math.pow(timeOfDay - 19.0, 2) / (2 * 2.1 * 2.1));
+    const eveningHump = (DEMAND_MODEL.eveningPeakMw - DEMAND_MODEL.baseMw) *
+        Math.exp(-Math.pow(timeOfDay - DEMAND_MODEL.eveningPeakHour, 2) / (2 * 2.1 * 2.1));
 
-    const middayTrough = GRID_DEMAND_MIDDAY_TROUGH_MW *
-        Math.exp(-Math.pow(timeOfDay - 13.0, 2) / (2 * 2.3 * 2.3));
+    const middayTrough = DEMAND_MODEL.middayTroughMw *
+        Math.exp(-Math.pow(timeOfDay - DEMAND_MODEL.middayTroughHour, 2) / (2 * 2.3 * 2.3));
 
-    const rawDemand = (GRID_DEMAND_BASE_MW + morningHump + eveningHump - middayTrough) * scaleFactor;
+    const rawDemand = (DEMAND_MODEL.baseMw + morningHump + eveningHump - middayTrough) * scaleFactor;
     return clamp(rawDemand, 0, gridConnectionTotalMw);
 }
 
@@ -104,8 +88,8 @@ function integrateWindowEnergy(fromHour: number, toHour: number, samplePowerMw: 
 
     let energyMwh = 0;
 
-    for (let cursor = fromHour; cursor < toHour; cursor += AUTO_ARB_FORECAST_STEP_HOURS) {
-        const windowHours = Math.min(AUTO_ARB_FORECAST_STEP_HOURS, toHour - cursor);
+    for (let cursor = fromHour; cursor < toHour; cursor += AUTO_ARB.forecastStepHours) {
+        const windowHours = Math.min(AUTO_ARB.forecastStepHours, toHour - cursor);
         const sampleHour = cursor + windowHours / 2;
         energyMwh += samplePowerMw(sampleHour) * windowHours;
     }
@@ -116,11 +100,11 @@ function integrateWindowEnergy(fromHour: number, toHour: number, samplePowerMw: 
 export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number): AutoArbOutlook {
     const transferLimitMw = getBatteryTransferLimitMw(state);
     const currentEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
-    const reserveEnergyMwh = (AUTO_ARB_PEAK_RESERVE_SOC / 100) * state.batteryEnergyCapacityMwh;
+    const reserveEnergyMwh = (AUTO_ARB.peakReserveSocPercent / 100) * state.batteryEnergyCapacityMwh;
 
     const forecastPeakDemandMwh = integrateWindowEnergy(
-        Math.max(timeOfDay, AUTO_ARB_PEAK_START_HOUR),
-        AUTO_ARB_PEAK_END_HOUR,
+        Math.max(timeOfDay, AUTO_ARB.peakStartHour),
+        AUTO_ARB.peakEndHour,
         (forecastTod) => {
             const solarMw = computeSolarOutputMw(forecastTod, state.solarAcCapacityMw);
             const demandMw = computeGridDemandMw(
@@ -134,15 +118,15 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
 
     const targetEnergyMwh = clamp(
         Math.max(
-            (AUTO_ARB_MIN_PEAK_ENTRY_SOC / 100) * state.batteryEnergyCapacityMwh,
-            forecastPeakDemandMwh + reserveEnergyMwh + AUTO_ARB_TARGET_BUFFER_MWH,
+            (AUTO_ARB.minPeakEntrySocPercent / 100) * state.batteryEnergyCapacityMwh,
+            forecastPeakDemandMwh + reserveEnergyMwh + AUTO_ARB.targetBufferMwh,
         ),
         reserveEnergyMwh,
         state.batteryEnergyCapacityMwh,
     );
 
-    const forecastSolarChargeMwh = timeOfDay < AUTO_ARB_PEAK_START_HOUR
-        ? integrateWindowEnergy(timeOfDay, AUTO_ARB_PEAK_START_HOUR, (forecastTod) => {
+    const forecastSolarChargeMwh = timeOfDay < AUTO_ARB.peakStartHour
+        ? integrateWindowEnergy(timeOfDay, AUTO_ARB.peakStartHour, (forecastTod) => {
             const solarMw = computeSolarOutputMw(forecastTod, state.solarAcCapacityMw);
             const demandMw = computeGridDemandMw(
                 forecastTod,
@@ -159,8 +143,8 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
         forecastSolarChargeMwh,
         forecastPeakDemandMwh,
         shouldGridTopUp:
-            timeOfDay < AUTO_ARB_PEAK_START_HOUR &&
-            currentEnergyMwh + forecastSolarChargeMwh + AUTO_ARB_SOLAR_CONFIDENCE_BUFFER_MWH < targetEnergyMwh,
+            timeOfDay < AUTO_ARB.peakStartHour &&
+            currentEnergyMwh + forecastSolarChargeMwh + AUTO_ARB.solarConfidenceBufferMwh < targetEnergyMwh,
     };
 }
 
@@ -174,13 +158,13 @@ export function getAutoArbPlan(
     const transferLimitMw = getBatteryTransferLimitMw(state);
     const capacityMwh = state.batteryEnergyCapacityMwh;
     const currentEnergyMwh = (state.batterySocPercent / 100) * capacityMwh;
-    const reserveEnergyMwh = (AUTO_ARB_PEAK_RESERVE_SOC / 100) * capacityMwh;
+    const reserveEnergyMwh = (AUTO_ARB.peakReserveSocPercent / 100) * capacityMwh;
     const outlook = getAutoArbOutlook(state, timeOfDay);
     const solarSurplusMw = Math.max(0, solarOutputMw - gridDemandMw);
     const demandDeficitMw = Math.max(0, gridDemandMw - solarOutputMw);
 
     if (tariffPeriod === 'peak') {
-        const remainingPeakHours = Math.max(0.25, AUTO_ARB_PEAK_END_HOUR - timeOfDay);
+        const remainingPeakHours = Math.max(0.25, AUTO_ARB.peakEndHour - timeOfDay);
         const availableDischargeMwh = Math.max(0, currentEnergyMwh - reserveEnergyMwh);
         const sustainableDischargeMw = Math.min(transferLimitMw, availableDischargeMwh / remainingPeakHours);
         const targetDischargeMw = Math.min(demandDeficitMw, sustainableDischargeMw);
@@ -192,14 +176,14 @@ export function getAutoArbPlan(
                 targetPowerMw: -targetDischargeMw,
             };
         }
-    } else if (timeOfDay < AUTO_ARB_PEAK_START_HOUR && state.batterySocPercent < 100) {
-        const timeUntilPeakHours = Math.max(0.5, AUTO_ARB_PEAK_START_HOUR - timeOfDay);
+    } else if (timeOfDay < AUTO_ARB.peakStartHour && state.batterySocPercent < 100) {
+        const timeUntilPeakHours = Math.max(0.5, AUTO_ARB.peakStartHour - timeOfDay);
         const energyGapMwh = Math.max(0, outlook.targetEnergyMwh - currentEnergyMwh);
         const requiredAverageChargeMw = energyGapMwh / timeUntilPeakHours;
         const topUpFloorMw = tariffPeriod === 'off-peak'
-            ? transferLimitMw * AUTO_ARB_OFF_PEAK_TOP_UP_FRACTION
-            : transferLimitMw * AUTO_ARB_MID_PEAK_TOP_UP_FRACTION;
-        const wantsNightReserve = tariffPeriod === 'off-peak' && state.batterySocPercent < NIGHT_TARGET_SOC;
+            ? transferLimitMw * AUTO_ARB.offPeakTopUpFraction
+            : transferLimitMw * AUTO_ARB.midPeakTopUpFraction;
+        const wantsNightReserve = tariffPeriod === 'off-peak' && state.batterySocPercent < AUTO_ARB.nightTargetSocPercent;
         const wantsGridTopUp = outlook.shouldGridTopUp || wantsNightReserve;
         const targetChargeMw = wantsGridTopUp
             ? clamp(Math.max(solarSurplusMw, requiredAverageChargeMw, topUpFloorMw), 0, transferLimitMw)
@@ -212,11 +196,11 @@ export function getAutoArbPlan(
                 targetPowerMw: targetChargeMw,
             };
         }
-    } else if (tariffPeriod === 'off-peak' && state.batterySocPercent < NIGHT_TARGET_SOC) {
+    } else if (tariffPeriod === 'off-peak' && state.batterySocPercent < AUTO_ARB.nightTargetSocPercent) {
         return {
             ...outlook,
             mode: 'charging',
-            targetPowerMw: transferLimitMw * AUTO_ARB_OFF_PEAK_TOP_UP_FRACTION,
+            targetPowerMw: transferLimitMw * AUTO_ARB.offPeakTopUpFraction,
         };
     }
 

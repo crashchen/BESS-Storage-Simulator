@@ -3,7 +3,16 @@
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { BESSCommand, GridSnapshot, GridState, TariffPeriod } from '../types';
+import type { BESSCommand, GridSnapshot, GridState } from '../types';
+import {
+    BESS,
+    FREQUENCY_MODEL,
+    GRID,
+    PROJECT,
+    SIMULATION,
+    SOLAR,
+    TARIFF,
+} from '../config';
 import {
     clamp,
     computeGridDemandMw,
@@ -16,44 +25,6 @@ import {
     settleHybridProjectTick,
 } from '../utils/simulationModel';
 
-const F_NOMINAL_HZ = 50.0;
-const DROOP_K = 0.0035;
-const FREQ_NOISE_SIGMA = 0.012;
-const F_MIN_HZ = 47.5;
-const F_MAX_HZ = 52.0;
-
-const PROJECT_NAME = 'Romania Hybrid Solar + BESS';
-const PROJECT_LOCATION = 'Romania';
-const SOLAR_DC_CAPACITY_MWP = 117;
-const SOLAR_AC_CAPACITY_MW = 102;
-const BESS_POWER_RATING_MW = 188;
-const BESS_ENERGY_CAPACITY_MWH = 744;
-const GRID_CONNECTION_TOTAL_MW = 288;
-const GRID_PV_EVACUATION_MW = 102;
-const GRID_BESS_CONNECTION_MW = 186;
-const SITE_YIELD_KWH_PER_KW_YEAR = 1380;
-const DEFAULT_TARIFF_RATES_EUR_MWH: Record<TariffPeriod, number> = {
-    'off-peak': 80,
-    'mid-peak': 150,
-    'peak': 350,
-};
-
-const DISPATCH_SCALE_MIN = 50;
-const DISPATCH_SCALE_MAX = 150;
-const BESS_POWER_MIN_MW = 50;
-const BESS_POWER_MAX_MW = 250;
-const BESS_ENERGY_MIN_MWH = 100;
-const BESS_ENERGY_MAX_MWH = 1200;
-
-const FREQ_CHARGE_LOCKOUT_HZ = 49.9;
-const HISTORY_MAX = 200;
-const SNAPSHOT_INTERVAL_MS = 400;
-const INITIAL_TIME_OF_DAY = 8.0;
-const TARIFF_RATE_MIN = -500;
-const TARIFF_RATE_MAX = 1000;
-const BESS_CHARGE_EFFICIENCY = 0.96;
-const BESS_DISCHARGE_EFFICIENCY = 0.96;
-
 function gaussianNoise(sigma: number): number {
     const u1 = Math.random() || 1e-10;
     const u2 = Math.random();
@@ -61,40 +32,40 @@ function gaussianNoise(sigma: number): number {
 }
 
 function createInitialGridState(timestamp = 0): GridState {
-    const batteryDurationHours = getBatteryDurationHours(BESS_POWER_RATING_MW, BESS_ENERGY_CAPACITY_MWH);
+    const batteryDurationHours = getBatteryDurationHours(BESS.defaultPowerRatingMw, BESS.defaultEnergyCapacityMwh);
 
     return {
-        projectName: PROJECT_NAME,
-        projectLocation: PROJECT_LOCATION,
-        solarDcCapacityMwp: SOLAR_DC_CAPACITY_MWP,
-        solarAcCapacityMw: SOLAR_AC_CAPACITY_MW,
-        batteryPowerRatingMw: BESS_POWER_RATING_MW,
+        projectName: PROJECT.name,
+        projectLocation: PROJECT.location,
+        solarDcCapacityMwp: SOLAR.dcCapacityMwp,
+        solarAcCapacityMw: SOLAR.acCapacityMw,
+        batteryPowerRatingMw: BESS.defaultPowerRatingMw,
         batteryDurationHours,
-        batteryEnergyCapacityMwh: BESS_ENERGY_CAPACITY_MWH,
-        gridConnectionTotalMw: GRID_CONNECTION_TOTAL_MW,
-        gridPvEvacuationMw: GRID_PV_EVACUATION_MW,
-        gridBessConnectionMw: GRID_BESS_CONNECTION_MW,
-        siteYieldKwhPerKwYear: SITE_YIELD_KWH_PER_KW_YEAR,
+        batteryEnergyCapacityMwh: BESS.defaultEnergyCapacityMwh,
+        gridConnectionTotalMw: GRID.connectionTotalMw,
+        gridPvEvacuationMw: GRID.pvEvacuationMw,
+        gridBessConnectionMw: GRID.bessConnectionMw,
+        siteYieldKwhPerKwYear: SOLAR.yieldKwhPerKwYear,
         simulationStatus: 'stopped',
-        gridFrequencyHz: F_NOMINAL_HZ,
-        solarOutputMw: computeSolarOutputMw(INITIAL_TIME_OF_DAY, SOLAR_AC_CAPACITY_MW),
-        gridDemandMw: computeGridDemandMw(INITIAL_TIME_OF_DAY, 1.0, GRID_CONNECTION_TOTAL_MW),
+        gridFrequencyHz: GRID.nominalFrequencyHz,
+        solarOutputMw: computeSolarOutputMw(SIMULATION.initialTimeOfDay, SOLAR.acCapacityMw),
+        gridDemandMw: computeGridDemandMw(SIMULATION.initialTimeOfDay, 1.0, GRID.connectionTotalMw),
         dispatchScalePercent: 100,
-        batterySocPercent: 65,
+        batterySocPercent: BESS.initialSocPercent,
         batteryPowerMw: 0,
         batteryChargeFromSolarMw: 0,
         batteryChargeFromGridMw: 0,
         batteryDischargeToGridMw: 0,
-        solarExportMw: computeSolarOutputMw(INITIAL_TIME_OF_DAY, SOLAR_AC_CAPACITY_MW),
+        solarExportMw: computeSolarOutputMw(SIMULATION.initialTimeOfDay, SOLAR.acCapacityMw),
         solarCurtailedMw: 0,
-        projectNetExportMw: computeSolarOutputMw(INITIAL_TIME_OF_DAY, SOLAR_AC_CAPACITY_MW),
+        projectNetExportMw: computeSolarOutputMw(SIMULATION.initialTimeOfDay, SOLAR.acCapacityMw),
         batteryMode: 'idle',
-        timeOfDay: INITIAL_TIME_OF_DAY,
-        timeSpeed: 240,
+        timeOfDay: SIMULATION.initialTimeOfDay,
+        timeSpeed: SIMULATION.defaultTimeSpeed,
         timestamp,
-        tariffPeriod: getTariffPeriod(INITIAL_TIME_OF_DAY),
-        tariffRatesEurMwh: DEFAULT_TARIFF_RATES_EUR_MWH,
-        currentPriceEurMwh: getElectricityPriceEurMwh(INITIAL_TIME_OF_DAY, DEFAULT_TARIFF_RATES_EUR_MWH),
+        tariffPeriod: getTariffPeriod(SIMULATION.initialTimeOfDay),
+        tariffRatesEurMwh: TARIFF.defaultRatesEurMwh,
+        currentPriceEurMwh: getElectricityPriceEurMwh(SIMULATION.initialTimeOfDay, TARIFF.defaultRatesEurMwh),
         cumulativeRevenueEur: 0,
         cumulativeBessMarginEur: 0,
         autoArbEnabled: false,
@@ -130,7 +101,7 @@ function simulateTick(prev: GridState, dtReal: number, now: number): GridState {
     }
 
     const hasSolarSurplus = solarOutputMw > gridDemandMw;
-    if (prev.autoArbEnabled && requestedMode === 'charging' && !hasSolarSurplus && prev.gridFrequencyHz < FREQ_CHARGE_LOCKOUT_HZ) {
+    if (prev.autoArbEnabled && requestedMode === 'charging' && !hasSolarSurplus && prev.gridFrequencyHz < FREQUENCY_MODEL.chargeLockoutHz) {
         requestedMode = 'idle';
     }
 
@@ -154,17 +125,17 @@ function simulateTick(prev: GridState, dtReal: number, now: number): GridState {
 
     if (batteryPowerMw > 0) {
         const remainingEnergyMwh = ((100 - prev.batterySocPercent) / 100) * prev.batteryEnergyCapacityMwh;
-        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS_CHARGE_EFFICIENCY, 1e-9);
+        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
         batteryPowerMw = Math.min(batteryPowerMw, maxChargeMw);
     } else if (batteryPowerMw < 0) {
         const availableEnergyMwh = (prev.batterySocPercent / 100) * prev.batteryEnergyCapacityMwh;
-        const maxDischargeMw = (availableEnergyMwh * BESS_DISCHARGE_EFFICIENCY) / Math.max(dtHours, 1e-9);
+        const maxDischargeMw = (availableEnergyMwh * BESS.dischargeEfficiency) / Math.max(dtHours, 1e-9);
         batteryPowerMw = Math.max(batteryPowerMw, -maxDischargeMw);
     }
 
     const storedEnergyDeltaMwh = batteryPowerMw >= 0
-        ? batteryPowerMw * dtHours * BESS_CHARGE_EFFICIENCY
-        : (batteryPowerMw * dtHours) / BESS_DISCHARGE_EFFICIENCY;
+        ? batteryPowerMw * dtHours * BESS.chargeEfficiency
+        : (batteryPowerMw * dtHours) / BESS.dischargeEfficiency;
     let batterySocPercent = prev.batterySocPercent + (storedEnergyDeltaMwh / prev.batteryEnergyCapacityMwh) * 100;
     batterySocPercent = clamp(batterySocPercent, 0, 100);
 
@@ -189,9 +160,9 @@ function simulateTick(prev: GridState, dtReal: number, now: number): GridState {
 
     const uncompensatedMw = powerMismatchMw - batteryPowerMw;
     const gridFrequencyHz = clamp(
-        F_NOMINAL_HZ + DROOP_K * uncompensatedMw + gaussianNoise(FREQ_NOISE_SIGMA),
-        F_MIN_HZ,
-        F_MAX_HZ,
+        GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * uncompensatedMw + gaussianNoise(FREQUENCY_MODEL.noiseSigma),
+        GRID.minFrequencyHz,
+        GRID.maxFrequencyHz,
     );
 
     const cumulativeRevenueEur = prev.cumulativeRevenueEur + settlement.projectPnlDeltaEur;
@@ -280,15 +251,15 @@ export function useGridSimulation() {
             case 'SET_DISPATCH_SCALE':
                 simRef.current = {
                     ...prev,
-                    dispatchScalePercent: clamp(cmd.payload, DISPATCH_SCALE_MIN, DISPATCH_SCALE_MAX),
+                    dispatchScalePercent: clamp(cmd.payload, SIMULATION.dispatchScaleMin, SIMULATION.dispatchScaleMax),
                     timestamp: now,
                 };
                 break;
             case 'SET_TIME_SPEED':
-                simRef.current = { ...prev, timeSpeed: Math.max(1, cmd.payload), timestamp: now };
+                simRef.current = { ...prev, timeSpeed: Math.max(SIMULATION.minTimeSpeed, cmd.payload), timestamp: now };
                 break;
             case 'SET_BESS_POWER_RATING': {
-                const batteryPowerRatingMw = clamp(cmd.payload, BESS_POWER_MIN_MW, BESS_POWER_MAX_MW);
+                const batteryPowerRatingMw = clamp(cmd.payload, BESS.minPowerMw, BESS.maxPowerMw);
                 simRef.current = {
                     ...prev,
                     batteryPowerRatingMw,
@@ -298,7 +269,7 @@ export function useGridSimulation() {
                 break;
             }
             case 'SET_BESS_ENERGY_CAPACITY': {
-                const batteryEnergyCapacityMwh = clamp(cmd.payload, BESS_ENERGY_MIN_MWH, BESS_ENERGY_MAX_MWH);
+                const batteryEnergyCapacityMwh = clamp(cmd.payload, BESS.minEnergyMwh, BESS.maxEnergyMwh);
                 simRef.current = {
                     ...prev,
                     batteryEnergyCapacityMwh,
@@ -311,7 +282,7 @@ export function useGridSimulation() {
                 const { period, value } = cmd.payload;
                 const tariffRatesEurMwh = {
                     ...prev.tariffRatesEurMwh,
-                    [period]: clamp(value, TARIFF_RATE_MIN, TARIFF_RATE_MAX),
+                    [period]: clamp(value, TARIFF.minRateEurMwh, TARIFF.maxRateEurMwh),
                 };
                 simRef.current = {
                     ...prev,
@@ -345,13 +316,13 @@ export function useGridSimulation() {
                 return;
             }
 
-            const dtReal = Math.min((now - lastFrameRef.current) / 1000, 0.1);
+            const dtReal = Math.min((now - lastFrameRef.current) / 1000, SIMULATION.maxDeltaTimeSeconds);
             lastFrameRef.current = now;
             elapsedChartSecondsRef.current += dtReal;
 
             simRef.current = simulateTick(simRef.current, dtReal, now);
 
-            if (now - lastSnapshotRef.current >= SNAPSHOT_INTERVAL_MS) {
+            if (now - lastSnapshotRef.current >= SIMULATION.snapshotIntervalMs) {
                 lastSnapshotRef.current = now;
 
                 const s = simRef.current;
@@ -365,12 +336,12 @@ export function useGridSimulation() {
                     priceEurMwh: s.currentPriceEurMwh,
                 };
 
-                historyRef.current = historyRef.current.length >= HISTORY_MAX
-                    ? [...historyRef.current.slice(-HISTORY_MAX + 1), snap]
+                historyRef.current = historyRef.current.length >= SIMULATION.historyMaxPoints
+                    ? [...historyRef.current.slice(-SIMULATION.historyMaxPoints + 1), snap]
                     : [...historyRef.current, snap];
             }
 
-            if (now - lastRenderSyncRef.current >= 33) {
+            if (now - lastRenderSyncRef.current >= SIMULATION.renderSyncIntervalMs) {
                 lastRenderSyncRef.current = now;
                 setState(simRef.current);
                 setHistory(historyRef.current);

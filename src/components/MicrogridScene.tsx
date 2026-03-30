@@ -7,7 +7,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
-import { BackSide, Color, type Mesh, type MeshStandardMaterial } from 'three';
+import { BackSide, Color, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
 import type { MicrogridSceneProps } from '../types';
 
 // ── Color palette ────────────────────────────────────────────
@@ -16,6 +16,8 @@ const COLOR_DISCHARGE = new Color('#f59e0b');
 const COLOR_IDLE = new Color('#64748b');
 const COLOR_SOLAR_ON = new Color('#facc15');
 const COLOR_SOLAR_OFF = new Color('#1e293b');
+const COLOR_SOLAR_FLOW = new Color('#fbbf24');
+const COLOR_GRID_FLOW = new Color('#3b82f6');
 
 // ── Helper: Sun position from timeOfDay ──────────────────────
 function sunPosition(tod: number): [number, number, number] {
@@ -298,9 +300,202 @@ function LoadBuilding() {
     );
 }
 
+// ── Energy Flow Paths ────────────────────────────────────────
+// Define curved paths for energy particles
+const FLOW_PATHS = {
+    // Solar array center → BESS
+    solarToBess: new CatmullRomCurve3([
+        new Vector3(-6.5, 2.5, -2),
+        new Vector3(-4, 3.5, -1),
+        new Vector3(-2, 3, 0),
+        new Vector3(0, 2, 0),
+    ]),
+    // Solar array center → Grid
+    solarToGrid: new CatmullRomCurve3([
+        new Vector3(-6.5, 2.5, -2),
+        new Vector3(-3, 4, 0),
+        new Vector3(2, 4.5, 0),
+        new Vector3(6, 3.5, 1),
+        new Vector3(8, 3, 0),
+    ]),
+    // BESS → Grid
+    bessToGrid: new CatmullRomCurve3([
+        new Vector3(0, 2, 0),
+        new Vector3(2, 3, 0),
+        new Vector3(5, 3.5, 0.5),
+        new Vector3(8, 3, 0),
+    ]),
+    // Grid → BESS (charging from grid)
+    gridToBess: new CatmullRomCurve3([
+        new Vector3(8, 3, 0),
+        new Vector3(5, 3.5, 0.5),
+        new Vector3(2, 3, 0),
+        new Vector3(0, 2, 0),
+    ]),
+};
+
+// ── Energy Particle ──────────────────────────────────────────
+interface EnergyParticleProps {
+    curve: CatmullRomCurve3;
+    color: Color;
+    speed: number;
+    offset: number;
+    size: number;
+    intensity: number;
+}
+
+function EnergyParticle({ curve, color, speed, offset, size, intensity }: EnergyParticleProps) {
+    const meshRef = useRef<Mesh>(null);
+    const progressRef = useRef((offset % 1));
+
+    useFrame((_, delta) => {
+        if (!meshRef.current) return;
+        
+        progressRef.current = (progressRef.current + delta * speed) % 1;
+        const point = curve.getPoint(progressRef.current);
+        meshRef.current.position.copy(point);
+        
+        // Pulse effect
+        const pulse = 0.8 + 0.4 * Math.sin(progressRef.current * Math.PI * 4);
+        meshRef.current.scale.setScalar(size * pulse);
+    });
+
+    return (
+        <mesh ref={meshRef}>
+            <sphereGeometry args={[1, 8, 8]} />
+            <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={intensity}
+                transparent
+                opacity={0.9}
+            />
+        </mesh>
+    );
+}
+
+// ── Energy Flow Stream ───────────────────────────────────────
+interface EnergyFlowProps {
+    curve: CatmullRomCurve3;
+    color: Color;
+    powerMw: number;
+    maxPowerMw: number;
+    active: boolean;
+}
+
+function EnergyFlow({ curve, color, powerMw, maxPowerMw, active }: EnergyFlowProps) {
+    const particleCount = active ? Math.max(3, Math.min(12, Math.ceil((powerMw / maxPowerMw) * 12))) : 0;
+    const intensity = 0.5 + (powerMw / maxPowerMw) * 1.5;
+    const baseSize = 0.08 + (powerMw / maxPowerMw) * 0.12;
+    const speed = 0.3 + (powerMw / maxPowerMw) * 0.4;
+    
+    // Get points for the flow line
+    const linePoints = useMemo(() => {
+        return curve.getPoints(20).map(p => [p.x, p.y, p.z] as [number, number, number]);
+    }, [curve]);
+
+    if (!active || powerMw < 0.5) return null;
+
+    return (
+        <group>
+            {/* Glowing path line */}
+            <Line
+                points={linePoints}
+                color={color}
+                lineWidth={1.5 + (powerMw / maxPowerMw) * 2}
+                transparent
+                opacity={0.3 + (powerMw / maxPowerMw) * 0.3}
+            />
+            {/* Energy particles */}
+            {Array.from({ length: particleCount }).map((_, i) => (
+                <EnergyParticle
+                    key={i}
+                    curve={curve}
+                    color={color}
+                    speed={speed}
+                    offset={i / particleCount}
+                    size={baseSize}
+                    intensity={intensity}
+                />
+            ))}
+        </group>
+    );
+}
+
+// ── Energy Flow Controller ───────────────────────────────────
+interface EnergyFlowSystemProps {
+    solarExportMw: number;
+    batteryChargeFromSolarMw: number;
+    batteryChargeFromGridMw: number;
+    batteryDischargeToGridMw: number;
+    maxSolarMw: number;
+    maxBessMw: number;
+}
+
+function EnergyFlowSystem({
+    solarExportMw,
+    batteryChargeFromSolarMw,
+    batteryChargeFromGridMw,
+    batteryDischargeToGridMw,
+    maxSolarMw,
+    maxBessMw,
+}: EnergyFlowSystemProps) {
+    return (
+        <group>
+            {/* Solar → BESS (charging from solar surplus) */}
+            <EnergyFlow
+                curve={FLOW_PATHS.solarToBess}
+                color={COLOR_SOLAR_FLOW}
+                powerMw={batteryChargeFromSolarMw}
+                maxPowerMw={maxBessMw}
+                active={batteryChargeFromSolarMw > 0.5}
+            />
+            
+            {/* Solar → Grid (direct export) */}
+            <EnergyFlow
+                curve={FLOW_PATHS.solarToGrid}
+                color={COLOR_SOLAR_FLOW}
+                powerMw={solarExportMw}
+                maxPowerMw={maxSolarMw}
+                active={solarExportMw > 0.5}
+            />
+            
+            {/* BESS → Grid (discharging) */}
+            <EnergyFlow
+                curve={FLOW_PATHS.bessToGrid}
+                color={COLOR_DISCHARGE}
+                powerMw={batteryDischargeToGridMw}
+                maxPowerMw={maxBessMw}
+                active={batteryDischargeToGridMw > 0.5}
+            />
+            
+            {/* Grid → BESS (charging from grid) */}
+            <EnergyFlow
+                curve={FLOW_PATHS.gridToBess}
+                color={COLOR_GRID_FLOW}
+                powerMw={batteryChargeFromGridMw}
+                maxPowerMw={maxBessMw}
+                active={batteryChargeFromGridMw > 0.5}
+            />
+        </group>
+    );
+}
+
 // ── Main Scene ───────────────────────────────────────────────
 export function MicrogridScene({ gridState }: MicrogridSceneProps) {
-    const { batteryMode, batterySocPercent, solarOutputMw, solarAcCapacityMw, timeOfDay } = gridState;
+    const {
+        batteryMode,
+        batterySocPercent,
+        solarOutputMw,
+        solarAcCapacityMw,
+        timeOfDay,
+        solarExportMw,
+        batteryChargeFromSolarMw,
+        batteryChargeFromGridMw,
+        batteryDischargeToGridMw,
+        batteryPowerRatingMw,
+        gridBessConnectionMw,
+    } = gridState;
 
     const sunPos = sunPosition(timeOfDay);
     const sky = skyColor(timeOfDay);
@@ -310,6 +505,8 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
     const sunIntensity = timeOfDay > 5.5 && timeOfDay < 19.5
         ? 2.0 * Math.sin(((timeOfDay - 5.5) / 14) * Math.PI)
         : 0.1;
+
+    const maxBessMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
 
     return (
         <>
@@ -363,6 +560,16 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
             <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} />
             <PowerLines />
             <LoadBuilding />
+
+            {/* Energy flow animations */}
+            <EnergyFlowSystem
+                solarExportMw={solarExportMw}
+                batteryChargeFromSolarMw={batteryChargeFromSolarMw}
+                batteryChargeFromGridMw={batteryChargeFromGridMw}
+                batteryDischargeToGridMw={batteryDischargeToGridMw}
+                maxSolarMw={solarAcCapacityMw}
+                maxBessMw={maxBessMw}
+            />
 
             {/* Camera controls */}
             <OrbitControls
