@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { AUTO_ARB, BESS } from '../config';
+import { AUTO_ARB, BESS, SOLAR } from '../config';
 import { makeGridState } from '../test/fixtures';
-import { computeGridDemandMw, getAutoArbOutlook, getAutoArbPlan, settleHybridProjectTick } from './simulationModel';
+import { computeGridDemandMw, computeSolarOutputMw, getAutoArbOutlook, getAutoArbPlan, settleHybridProjectTick } from './simulationModel';
 
 describe('simulationModel demand curve', () => {
     it('produces the same demand curve at the Romania baseline (288 MW total)', () => {
@@ -30,6 +30,40 @@ describe('simulationModel demand curve', () => {
             const at288 = computeGridDemandMw(timeOfDay, 1.0, 288);
             const at144 = computeGridDemandMw(timeOfDay, 1.0, 144);
             expect(at144).toBeCloseTo(at288 / 2, 6);
+        }
+    });
+});
+
+describe('simulationModel solar output', () => {
+    const computeExpectedIrradiance = (timeOfDay: number) => {
+        if (timeOfDay < SOLAR.sunriseHour || timeOfDay > SOLAR.sunsetHour) return 0;
+
+        const halfSpan = (SOLAR.sunsetHour - SOLAR.sunriseHour) / 2;
+        const normalizedTime = (timeOfDay - SOLAR.solarNoon) / halfSpan;
+        return Math.max(0, Math.cos(normalizedTime * Math.PI * 0.5));
+    };
+    const halfSpan = (SOLAR.sunsetHour - SOLAR.sunriseHour) / 2;
+    const halfIrradianceTime = SOLAR.solarNoon - (halfSpan * 2) / 3;
+
+    it('matches irradiance-scaled AC output when DC and AC capacities are equal', () => {
+        for (const timeOfDay of [SOLAR.solarNoon, halfIrradianceTime]) {
+            const expectedIrradiance = computeExpectedIrradiance(timeOfDay);
+            expect(computeSolarOutputMw(timeOfDay, 100, 100)).toBeCloseTo(expectedIrradiance * 100, 6);
+        }
+    });
+
+    it('clips midday DC output at the inverter AC capacity', () => {
+        expect(computeSolarOutputMw(SOLAR.solarNoon, 100, 150)).toBe(100);
+    });
+
+    it('uses DC capacity on the shoulder before clipping', () => {
+        expect(computeSolarOutputMw(halfIrradianceTime, 100, 150)).toBeCloseTo(75, 6);
+        expect(computeSolarOutputMw(halfIrradianceTime, 100, 150)).toBeGreaterThan(50);
+    });
+
+    it('returns zero outside daylight regardless of DC capacity', () => {
+        for (const timeOfDay of [SOLAR.sunriseHour - 0.25, SOLAR.sunsetHour + 0.25]) {
+            expect(computeSolarOutputMw(timeOfDay, 100, 150)).toBe(0);
         }
     });
 });

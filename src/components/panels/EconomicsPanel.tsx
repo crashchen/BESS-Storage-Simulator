@@ -28,6 +28,41 @@ const TARIFF_WINDOW_LABELS: Record<TariffPeriod, string> = {
     'peak': `${formatHour(TARIFF.periods.midPeakEnd)}-${formatHour(TARIFF.periods.peakEnd)}`,
 };
 
+const TIMELINE_SEGMENTS = [
+    {
+        period: 'off-peak' as const,
+        spanHours: TARIFF.periods.offPeakEnd,
+        title: `Off-peak 00-${formatHour(TARIFF.periods.offPeakEnd)}`,
+        className: 'rounded-l-full bg-green-600/60',
+    },
+    {
+        period: 'mid-peak' as const,
+        spanHours: TARIFF.periods.midPeakEnd - TARIFF.periods.offPeakEnd,
+        title: `Mid-peak ${formatHour(TARIFF.periods.offPeakEnd)}-${formatHour(TARIFF.periods.midPeakEnd)}`,
+        className: 'bg-yellow-500/60',
+    },
+    {
+        period: 'peak' as const,
+        spanHours: TARIFF.periods.peakEnd - TARIFF.periods.midPeakEnd,
+        title: `Peak ${formatHour(TARIFF.periods.midPeakEnd)}-${formatHour(TARIFF.periods.peakEnd)}`,
+        className: 'bg-red-500/60',
+    },
+    {
+        period: 'off-peak' as const,
+        spanHours: 24 - TARIFF.periods.peakEnd,
+        title: `Off-peak ${formatHour(TARIFF.periods.peakEnd)}-24`,
+        className: 'rounded-r-full bg-green-600/60',
+    },
+];
+
+const TIMELINE_TICK_LABELS = [
+    '00',
+    formatHour(TARIFF.periods.offPeakEnd),
+    formatHour(TARIFF.periods.midPeakEnd),
+    formatHour(TARIFF.periods.peakEnd),
+    '24',
+];
+
 interface EconomicsPanelProps {
     gridState: GridState;
     onCommand: (cmd: BESSCommand) => void;
@@ -145,8 +180,8 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                                         id={`tariff-rate-${period}`}
                                         data-testid={`tariff-rate-${period}`}
                                         type="number"
-                                        min={-500}
-                                        max={1000}
+                                        min={TARIFF.minRateEurMwh}
+                                        max={TARIFF.maxRateEurMwh}
                                         step={5}
                                         value={tariffRatesEurMwh[period]}
                                         onChange={(event) => {
@@ -167,13 +202,19 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                 </p>
 
                 <div className="flex h-2 gap-0.5 overflow-hidden rounded-full">
-                    <div className="flex-[6] rounded-l-full bg-green-600/60" title="Off-peak 00-06" />
-                    <div className="flex-[12] bg-yellow-500/60" title="Mid-peak 06-18" />
-                    <div className="flex-[5] bg-red-500/60" title="Peak 18-23" />
-                    <div className="flex-[1] rounded-r-full bg-green-600/60" title="Off-peak 23-00" />
+                    {TIMELINE_SEGMENTS.map((segment) => (
+                        <div
+                            key={`${segment.period}-${segment.title}`}
+                            className={segment.className}
+                            title={segment.title}
+                            style={{ flexBasis: 0, flexGrow: segment.spanHours }}
+                        />
+                    ))}
                 </div>
                 <div className="-mt-1 flex justify-between text-[8px] text-slate-600">
-                    <span>00</span><span>06</span><span>12</span><span>18</span><span>23</span>
+                    {TIMELINE_TICK_LABELS.map((label) => (
+                        <span key={label}>{label}</span>
+                    ))}
                 </div>
             </div>
         </PanelCard>

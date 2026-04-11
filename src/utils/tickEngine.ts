@@ -21,7 +21,11 @@ export function gaussianNoise(sigma: number, random: () => number = Math.random)
 export function createInitialGridState(timestamp = 0): GridState {
     const batteryDurationHours = getBatteryDurationHours(BESS.defaultPowerRatingMw, BESS.defaultEnergyCapacityMwh);
     const gridConnectionTotalMw = GRID.pvEvacuationMw + GRID.bessConnectionMw;
-    const solarOutputMw = computeSolarOutputMw(SIMULATION.initialTimeOfDay, SOLAR.acCapacityMw);
+    const solarOutputMw = computeSolarOutputMw(
+        SIMULATION.initialTimeOfDay,
+        SOLAR.acCapacityMw,
+        SOLAR.dcCapacityMwp,
+    );
 
     return {
         projectName: PROJECT.name,
@@ -109,7 +113,11 @@ function simulateTickStep(
     let timeOfDay = normalizeTimeOfDay(nextTimeOfDay);
     if (timeOfDay < 0) timeOfDay += 24;
 
-    const solarOutputMw = computeSolarOutputMw(operationalTimeOfDay, prev.solarAcCapacityMw);
+    const solarOutputMw = computeSolarOutputMw(
+        operationalTimeOfDay,
+        prev.solarAcCapacityMw,
+        prev.solarDcCapacityMwp,
+    );
     const gridDemandMw = computeGridDemandMw(
         operationalTimeOfDay,
         prev.dispatchScalePercent / 100,

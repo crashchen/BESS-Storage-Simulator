@@ -139,7 +139,11 @@ describe('tickEngine', () => {
         };
         const dtHours = initial.timeSpeed / 3600;
         const sampledTimeOfDay = initial.timeOfDay + dtHours;
-        const solarOutputMw = computeSolarOutputMw(sampledTimeOfDay, initial.solarAcCapacityMw);
+        const solarOutputMw = computeSolarOutputMw(
+            sampledTimeOfDay,
+            initial.solarAcCapacityMw,
+            initial.solarDcCapacityMwp,
+        );
         const gridDemandMw = computeGridDemandMw(
             sampledTimeOfDay,
             initial.dispatchScalePercent / 100,

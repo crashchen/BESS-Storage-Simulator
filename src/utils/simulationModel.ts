@@ -8,6 +8,7 @@ type DispatchModelState = Pick<
     | 'batteryPowerRatingMw'
     | 'gridBessConnectionMw'
     | 'solarAcCapacityMw'
+    | 'solarDcCapacityMwp'
     | 'dispatchScalePercent'
     | 'gridConnectionTotalMw'
 >;
@@ -61,12 +62,22 @@ export function getBatteryTransferLimitMw(
     return Math.min(state.batteryPowerRatingMw, state.gridBessConnectionMw);
 }
 
-export function computeSolarOutputMw(timeOfDay: number, solarAcCapacityMw: number): number {
+function computeSolarIrradiance(timeOfDay: number): number {
     if (timeOfDay < SOLAR.sunriseHour || timeOfDay > SOLAR.sunsetHour) return 0;
 
     const halfSpan = (SOLAR.sunsetHour - SOLAR.sunriseHour) / 2;
     const normalizedTime = (timeOfDay - SOLAR.solarNoon) / halfSpan;
-    return Math.max(0, solarAcCapacityMw * Math.cos(normalizedTime * Math.PI * 0.5));
+    return Math.max(0, Math.cos(normalizedTime * Math.PI * 0.5));
+}
+
+export function computeSolarOutputMw(
+    timeOfDay: number,
+    solarAcCapacityMw: number,
+    solarDcCapacityMwp: number,
+): number {
+    const irradiance = computeSolarIrradiance(timeOfDay);
+    const dcOutputMw = irradiance * solarDcCapacityMwp;
+    return Math.min(dcOutputMw, solarAcCapacityMw);
 }
 
 export function computeGridDemandMw(timeOfDay: number, scaleFactor: number, gridConnectionTotalMw: number): number {
@@ -111,7 +122,11 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
         Math.max(timeOfDay, AUTO_ARB.peakStartHour),
         AUTO_ARB.peakEndHour,
         (forecastTod) => {
-            const solarMw = computeSolarOutputMw(forecastTod, state.solarAcCapacityMw);
+            const solarMw = computeSolarOutputMw(
+                forecastTod,
+                state.solarAcCapacityMw,
+                state.solarDcCapacityMwp,
+            );
             const demandMw = computeGridDemandMw(
                 forecastTod,
                 state.dispatchScalePercent / 100,
@@ -133,7 +148,11 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
 
     const forecastSolarChargeMwh = timeOfDay < AUTO_ARB.peakStartHour
         ? integrateWindowEnergy(timeOfDay, AUTO_ARB.peakStartHour, (forecastTod) => {
-            const solarMw = computeSolarOutputMw(forecastTod, state.solarAcCapacityMw);
+            const solarMw = computeSolarOutputMw(
+                forecastTod,
+                state.solarAcCapacityMw,
+                state.solarDcCapacityMwp,
+            );
             const demandMw = computeGridDemandMw(
                 forecastTod,
                 state.dispatchScalePercent / 100,

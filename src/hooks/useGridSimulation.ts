@@ -121,13 +121,22 @@ export function useGridSimulation() {
             }
             case 'SET_SOLAR_AC_CAPACITY': {
                 const solarAcCapacityMw = clamp(cmd.payload, SOLAR.minAcCapacityMw, SOLAR.maxAcCapacityMw);
-                const solarOutputMw = computeSolarOutputMw(prev.timeOfDay, solarAcCapacityMw);
+                const solarOutputMw = computeSolarOutputMw(
+                    prev.timeOfDay,
+                    solarAcCapacityMw,
+                    prev.solarDcCapacityMwp,
+                );
                 simRef.current = { ...prev, solarAcCapacityMw, solarOutputMw, timestamp: now };
                 break;
             }
             case 'SET_SOLAR_DC_CAPACITY': {
                 const solarDcCapacityMwp = clamp(cmd.payload, SOLAR.minDcCapacityMwp, SOLAR.maxDcCapacityMwp);
-                simRef.current = { ...prev, solarDcCapacityMwp, timestamp: now };
+                const solarOutputMw = computeSolarOutputMw(
+                    prev.timeOfDay,
+                    prev.solarAcCapacityMw,
+                    solarDcCapacityMwp,
+                );
+                simRef.current = { ...prev, solarDcCapacityMwp, solarOutputMw, timestamp: now };
                 break;
             }
             case 'SET_GRID_PV_EVACUATION': {

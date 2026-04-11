@@ -36,6 +36,12 @@ describe('useGridSimulation dispatch', () => {
         });
     }
 
+    function advanceFrames(frameCount: number, frameStepMs = 100) {
+        for (let index = 0; index < frameCount; index += 1) {
+            advanceFrame(nowMs + frameStepMs);
+        }
+    }
+
     it('clamps time speed above the configured maximum', () => {
         const { result } = renderHook(() => useGridSimulation());
 
@@ -102,7 +108,11 @@ describe('useGridSimulation dispatch', () => {
 
         expect(result.current.state.solarAcCapacityMw).toBe(SOLAR.maxAcCapacityMw);
         expect(result.current.state.solarOutputMw).toBeCloseTo(
-            computeSolarOutputMw(result.current.state.timeOfDay, SOLAR.maxAcCapacityMw),
+            computeSolarOutputMw(
+                result.current.state.timeOfDay,
+                SOLAR.maxAcCapacityMw,
+                result.current.state.solarDcCapacityMwp,
+            ),
             6,
         );
     });
@@ -154,6 +164,40 @@ describe('useGridSimulation dispatch', () => {
         });
 
         expect(result.current.state.solarDcCapacityMwp).toBe(SOLAR.minDcCapacityMwp);
+    });
+
+    it('updates live solar output when solar DC capacity changes', () => {
+        const { result } = renderHook(() => useGridSimulation());
+
+        act(() => {
+            result.current.dispatch({ type: 'SET_TIME_SPEED', payload: SIMULATION.maxTimeSpeed });
+            result.current.dispatch({ type: 'START_SIMULATION' });
+        });
+        advanceFrames(75);
+
+        const noonishTimeOfDay = result.current.state.timeOfDay;
+
+        act(() => {
+            result.current.dispatch({ type: 'PAUSE_SIMULATION' });
+            result.current.dispatch({ type: 'SET_SOLAR_DC_CAPACITY', payload: result.current.state.solarAcCapacityMw });
+        });
+        const acMatchedOutputMw = result.current.state.solarOutputMw;
+
+        act(() => {
+            result.current.dispatch({ type: 'SET_SOLAR_DC_CAPACITY', payload: result.current.state.solarAcCapacityMw * 1.5 });
+        });
+
+        expect(result.current.state.timeOfDay).toBeCloseTo(11, 6);
+        expect(noonishTimeOfDay).toBeCloseTo(11, 6);
+        expect(result.current.state.solarOutputMw).toBeGreaterThan(acMatchedOutputMw);
+        expect(result.current.state.solarOutputMw).toBeCloseTo(
+            computeSolarOutputMw(
+                noonishTimeOfDay,
+                result.current.state.solarAcCapacityMw,
+                result.current.state.solarDcCapacityMwp,
+            ),
+            6,
+        );
     });
 
     it('preserves stored energy when BESS energy capacity changes', () => {
