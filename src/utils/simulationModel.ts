@@ -144,6 +144,8 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
         })
         : 0;
 
+    const forecastSolarUsableMwh = Math.max(0, forecastSolarChargeMwh - AUTO_ARB.solarConfidenceBufferMwh);
+
     return {
         targetSocPercent: (targetEnergyMwh / Math.max(state.batteryEnergyCapacityMwh, 1e-9)) * 100,
         targetEnergyMwh,
@@ -151,7 +153,7 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
         forecastPeakDemandMwh,
         shouldGridTopUp:
             timeOfDay < AUTO_ARB.peakStartHour &&
-            currentEnergyMwh + forecastSolarChargeMwh + AUTO_ARB.solarConfidenceBufferMwh < targetEnergyMwh,
+            currentEnergyMwh + forecastSolarUsableMwh < targetEnergyMwh,
     };
 }
 
@@ -197,15 +199,18 @@ export function getAutoArbPlan(
     } else if (timeOfDay < AUTO_ARB.peakStartHour && state.batterySocPercent < 100) {
         const timeUntilPeakHours = Math.max(0.5, AUTO_ARB.peakStartHour - timeOfDay);
         const energyGapMwh = Math.max(0, outlook.targetEnergyMwh - currentEnergyMwh);
-        const requiredAverageChargeMw = energyGapMwh / Math.max(timeUntilPeakHours * BESS.chargeEfficiency, 1e-9);
+        const forecastSolarUsableMwh = Math.max(0, outlook.forecastSolarChargeMwh - AUTO_ARB.solarConfidenceBufferMwh);
+        const residualGridGapMwh = Math.max(0, energyGapMwh - forecastSolarUsableMwh);
+        const requiredGridChargeMw = residualGridGapMwh / Math.max(timeUntilPeakHours * BESS.chargeEfficiency, 1e-9);
         const topUpFloorMw = tariffPeriod === 'off-peak'
             ? transferLimitMw * AUTO_ARB.offPeakTopUpFraction
             : transferLimitMw * AUTO_ARB.midPeakTopUpFraction;
         const wantsNightReserve = tariffPeriod === 'off-peak' && state.batterySocPercent < AUTO_ARB.nightTargetSocPercent;
         const peakProfitableVsCurrent = peakRate > currentRate / Math.max(roundTripEff, 1e-9);
         const wantsGridTopUp = wantsNightReserve || (outlook.shouldGridTopUp && peakProfitableVsCurrent);
+        const forecastAwareChargeMw = clamp(solarSurplusMw + requiredGridChargeMw, 0, transferLimitMw);
         const targetChargeMw = wantsGridTopUp
-            ? clamp(Math.max(solarSurplusMw, requiredAverageChargeMw, topUpFloorMw), 0, transferLimitMw)
+            ? clamp(Math.max(forecastAwareChargeMw, topUpFloorMw), 0, transferLimitMw)
             : clamp(solarSurplusMw, 0, transferLimitMw);
 
         if (targetChargeMw > 0.5) {

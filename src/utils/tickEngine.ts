@@ -1,4 +1,4 @@
-import { BESS, FREQUENCY_MODEL, GRID, PROJECT, SIMULATION, SOLAR, TARIFF } from '../config';
+import { AUTO_ARB, BESS, FREQUENCY_MODEL, GRID, PROJECT, SIMULATION, SOLAR, TARIFF } from '../config';
 import type { GridState } from '../types';
 import {
     clamp,
@@ -61,22 +61,62 @@ export function createInitialGridState(timestamp = 0): GridState {
     };
 }
 
-export function simulateTick(
-    prev: GridState,
-    dtReal: number,
-    now: number,
-    random: () => number = Math.random,
-): GridState {
-    const dtSim = dtReal * prev.timeSpeed;
-    const dtHours = dtSim / 3600;
+function normalizeTimeOfDay(timeOfDay: number): number {
+    let normalized = timeOfDay % 24;
+    if (normalized < 0) normalized += 24;
+    return normalized;
+}
 
-    let timeOfDay = (prev.timeOfDay + dtHours) % 24;
+function getTickBoundaryHours(): number[] {
+    return [...new Set([
+        TARIFF.periods.offPeakEnd,
+        TARIFF.periods.midPeakEnd,
+        TARIFF.periods.peakEnd,
+        AUTO_ARB.peakStartHour,
+        AUTO_ARB.peakEndHour,
+    ])].sort((left, right) => left - right);
+}
+
+function getNextBoundaryDeltaHours(timeOfDay: number, remainingHours: number, boundaryHours: number[]): number | null {
+    const epsilon = 1e-9;
+    let nextBoundaryDeltaHours: number | null = null;
+
+    for (const boundaryHour of boundaryHours) {
+        const boundaryDeltaHours = boundaryHour > timeOfDay
+            ? boundaryHour - timeOfDay
+            : boundaryHour + 24 - timeOfDay;
+
+        if (boundaryDeltaHours <= epsilon || boundaryDeltaHours >= remainingHours - epsilon) {
+            continue;
+        }
+
+        if (nextBoundaryDeltaHours === null || boundaryDeltaHours < nextBoundaryDeltaHours) {
+            nextBoundaryDeltaHours = boundaryDeltaHours;
+        }
+    }
+
+    return nextBoundaryDeltaHours;
+}
+
+function simulateTickStep(
+    prev: GridState,
+    dtHours: number,
+    now: number,
+    random: () => number,
+    operationalTimeOfDay: number,
+    nextTimeOfDay: number,
+): GridState {
+    let timeOfDay = normalizeTimeOfDay(nextTimeOfDay);
     if (timeOfDay < 0) timeOfDay += 24;
 
-    const solarOutputMw = computeSolarOutputMw(timeOfDay, prev.solarAcCapacityMw);
-    const gridDemandMw = computeGridDemandMw(timeOfDay, prev.dispatchScalePercent / 100, prev.gridConnectionTotalMw);
-    const tariffPeriod = getTariffPeriod(timeOfDay);
-    const currentPriceEurMwh = getElectricityPriceEurMwh(timeOfDay, prev.tariffRatesEurMwh);
+    const solarOutputMw = computeSolarOutputMw(operationalTimeOfDay, prev.solarAcCapacityMw);
+    const gridDemandMw = computeGridDemandMw(
+        operationalTimeOfDay,
+        prev.dispatchScalePercent / 100,
+        prev.gridConnectionTotalMw,
+    );
+    const tariffPeriod = getTariffPeriod(operationalTimeOfDay);
+    const currentPriceEurMwh = getElectricityPriceEurMwh(operationalTimeOfDay, prev.tariffRatesEurMwh);
 
     let requestedMode = prev.batteryMode;
     let autoArbPowerMw = 0;
@@ -84,7 +124,7 @@ export function simulateTick(
     if (prev.autoArbEnabled) {
         const autoArbPlan = getAutoArbPlan(
             prev,
-            timeOfDay,
+            operationalTimeOfDay,
             solarOutputMw,
             gridDemandMw,
             tariffPeriod,
@@ -103,9 +143,11 @@ export function simulateTick(
 
     const transferLimitMw = getBatteryTransferLimitMw(prev);
     const powerMismatchMw = solarOutputMw - gridDemandMw;
-    const hasSolarSurplus = solarOutputMw > gridDemandMw;
-    if (prev.autoArbEnabled && requestedMode === 'charging' && !hasSolarSurplus) {
-        const projectedUncompensatedMw = powerMismatchMw - autoArbPowerMw;
+    if (prev.autoArbEnabled && requestedMode === 'charging') {
+        const remainingEnergyMwh = ((100 - prev.batterySocPercent) / 100) * prev.batteryEnergyCapacityMwh;
+        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
+        const clampedChargeMw = Math.min(clamp(autoArbPowerMw, 0, transferLimitMw), maxChargeMw);
+        const projectedUncompensatedMw = powerMismatchMw - clampedChargeMw;
         const projectedFrequencyHz = GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * projectedUncompensatedMw;
         if (projectedFrequencyHz < FREQUENCY_MODEL.chargeLockoutHz) {
             requestedMode = 'idle';
@@ -143,27 +185,28 @@ export function simulateTick(
         : (batteryPowerMw * dtHours) / BESS.dischargeEfficiency;
     let batterySocPercent = prev.batterySocPercent + (storedEnergyDeltaMwh / prev.batteryEnergyCapacityMwh) * 100;
     batterySocPercent = clamp(batterySocPercent, 0, 100);
+    if (batterySocPercent <= 1e-9) batterySocPercent = 0;
+    if (batterySocPercent >= 100 - 1e-9) batterySocPercent = 100;
 
+    const settledBatteryPowerMw = batteryPowerMw;
     let batteryMode = requestedMode;
     if (batterySocPercent >= 100 && batteryMode === 'charging') {
         batteryMode = 'idle';
-        batteryPowerMw = 0;
     }
     if (batterySocPercent <= 0 && batteryMode === 'discharging') {
         batteryMode = 'idle';
-        batteryPowerMw = 0;
     }
 
     const settlement = settleHybridProjectTick({
         solarOutputMw,
         gridDemandMw,
-        batteryPowerMw,
+        batteryPowerMw: settledBatteryPowerMw,
         gridPvEvacuationMw: prev.gridPvEvacuationMw,
         currentPriceEurMwh,
         dtHours,
     });
 
-    const uncompensatedMw = powerMismatchMw - batteryPowerMw;
+    const uncompensatedMw = powerMismatchMw - settledBatteryPowerMw;
     const gridFrequencyHz = clamp(
         GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * uncompensatedMw + gaussianNoise(FREQUENCY_MODEL.noiseSigma, random),
         GRID.minFrequencyHz,
@@ -179,7 +222,7 @@ export function simulateTick(
         solarOutputMw,
         gridDemandMw,
         batterySocPercent,
-        batteryPowerMw,
+        batteryPowerMw: settledBatteryPowerMw,
         batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
         batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
         batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
@@ -194,4 +237,36 @@ export function simulateTick(
         cumulativeRevenueEur,
         cumulativeBessMarginEur,
     };
+}
+
+export function simulateTick(
+    prev: GridState,
+    dtReal: number,
+    now: number,
+    random: () => number = Math.random,
+): GridState {
+    const dtSim = dtReal * prev.timeSpeed;
+    const dtHours = dtSim / 3600;
+    const endTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours);
+    const boundaryHours = getTickBoundaryHours();
+
+    if (getNextBoundaryDeltaHours(prev.timeOfDay, dtHours, boundaryHours) === null) {
+        return simulateTickStep(prev, dtHours, now, random, endTimeOfDay, endTimeOfDay);
+    }
+
+    let state = prev;
+    let remainingHours = dtHours;
+    let currentTimeOfDay = prev.timeOfDay;
+
+    while (remainingHours > 1e-9) {
+        const nextBoundaryDeltaHours = getNextBoundaryDeltaHours(currentTimeOfDay, remainingHours, boundaryHours);
+        const stepHours = nextBoundaryDeltaHours ?? remainingHours;
+        const stepEndTimeOfDay = normalizeTimeOfDay(currentTimeOfDay + stepHours);
+
+        state = simulateTickStep(state, stepHours, now, random, currentTimeOfDay, stepEndTimeOfDay);
+        remainingHours -= stepHours;
+        currentTimeOfDay = stepEndTimeOfDay;
+    }
+
+    return state;
 }

@@ -103,11 +103,18 @@ export function useGridSimulation() {
                 break;
             }
             case 'SET_BESS_ENERGY_CAPACITY': {
+                const prevStoredMwh = (prev.batterySocPercent / 100) * prev.batteryEnergyCapacityMwh;
                 const batteryEnergyCapacityMwh = clamp(cmd.payload, BESS.minEnergyMwh, BESS.maxEnergyMwh);
+                const batterySocPercent = clamp(
+                    (prevStoredMwh / Math.max(batteryEnergyCapacityMwh, 1e-9)) * 100,
+                    0,
+                    100,
+                );
                 simRef.current = {
                     ...prev,
                     batteryEnergyCapacityMwh,
                     batteryDurationHours: getBatteryDurationHours(prev.batteryPowerRatingMw, batteryEnergyCapacityMwh),
+                    batterySocPercent,
                     timestamp: now,
                 };
                 break;

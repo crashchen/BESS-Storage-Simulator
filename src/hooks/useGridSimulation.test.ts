@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { GRID, SIMULATION, SOLAR } from '../config';
+import { BESS, GRID, SIMULATION, SOLAR } from '../config';
 import { computeGridDemandMw, computeSolarOutputMw } from '../utils/simulationModel';
 import { useGridSimulation } from './useGridSimulation';
 
@@ -154,5 +154,19 @@ describe('useGridSimulation dispatch', () => {
         });
 
         expect(result.current.state.solarDcCapacityMwp).toBe(SOLAR.minDcCapacityMwp);
+    });
+
+    it('preserves stored energy when BESS energy capacity changes', () => {
+        const { result } = renderHook(() => useGridSimulation());
+        const prevStoredMwh = (result.current.state.batterySocPercent / 100) * result.current.state.batteryEnergyCapacityMwh;
+        const nextCapacityMwh = 600;
+
+        act(() => {
+            result.current.dispatch({ type: 'SET_BESS_ENERGY_CAPACITY', payload: nextCapacityMwh });
+        });
+
+        expect(result.current.state.batteryEnergyCapacityMwh).toBe(nextCapacityMwh);
+        expect(result.current.state.batterySocPercent).toBeCloseTo((prevStoredMwh / nextCapacityMwh) * 100, 6);
+        expect(result.current.state.batteryDurationHours).toBeCloseTo(nextCapacityMwh / BESS.defaultPowerRatingMw, 6);
     });
 });

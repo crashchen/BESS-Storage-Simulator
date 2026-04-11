@@ -70,6 +70,33 @@ describe('simulationModel auto-arbitrage', () => {
         expect(plan.shouldGridTopUp).toBe(true);
     });
 
+    it('sizes peak-ready charging against the residual post-forecast grid gap instead of the full energy gap', () => {
+        const state = makeGridState({
+            batterySocPercent: 60,
+            batteryPowerRatingMw: 50,
+            gridBessConnectionMw: 50,
+            timeOfDay: 10,
+        });
+        const solarOutputMw = 45;
+        const gridDemandMw = 40;
+        const timeUntilPeakHours = AUTO_ARB.peakStartHour - state.timeOfDay;
+        const currentEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
+        const plan = getAutoArbPlan(
+            state,
+            state.timeOfDay,
+            solarOutputMw,
+            gridDemandMw,
+            'mid-peak',
+            state.tariffRatesEurMwh,
+        );
+        const fullGapChargeMw = (plan.targetEnergyMwh - currentEnergyMwh) /
+            (timeUntilPeakHours * BESS.chargeEfficiency);
+
+        expect(plan.mode).toBe('charging');
+        expect(plan.targetPowerMw).toBeLessThan(fullGapChargeMw);
+        expect(plan.targetPowerMw).toBeGreaterThanOrEqual(solarOutputMw - gridDemandMw);
+    });
+
     it('paces discharge across the peak window instead of requesting full transfer power immediately', () => {
         const state = makeGridState({
             batterySocPercent: 100,
