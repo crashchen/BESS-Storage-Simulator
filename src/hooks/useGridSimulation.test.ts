@@ -67,6 +67,32 @@ describe('useGridSimulation dispatch', () => {
         expect(result.current.state.batteryPowerMw).toBe(0);
     });
 
+    it('handles SET_AUTO_ARB_ENABLED idempotently', () => {
+        const { result } = renderHook(() => useGridSimulation());
+
+        act(() => {
+            result.current.dispatch({ type: 'START_SIMULATION' });
+            result.current.dispatch({ type: 'DISCHARGE' });
+        });
+        advanceFrame(1100);
+
+        act(() => {
+            result.current.dispatch({ type: 'SET_AUTO_ARB_ENABLED', payload: true });
+        });
+
+        expect(result.current.state.autoArbEnabled).toBe(true);
+        expect(result.current.state.batteryMode).toBe('idle');
+        expect(result.current.state.batteryPowerMw).toBe(0);
+
+        act(() => {
+            result.current.dispatch({ type: 'SET_AUTO_ARB_ENABLED', payload: true });
+        });
+
+        expect(result.current.state.autoArbEnabled).toBe(true);
+        expect(result.current.state.batteryMode).toBe('idle');
+        expect(result.current.state.batteryPowerMw).toBe(0);
+    });
+
     it('clamps solar AC capacity and refreshes solar output immediately', () => {
         const { result } = renderHook(() => useGridSimulation());
 

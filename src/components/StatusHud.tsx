@@ -1,3 +1,4 @@
+import { GRID } from '../config';
 import { formatTime } from '../utils/formatTime';
 import type { SimulationStatus, StatusHudProps, TariffPeriod } from '../types';
 
@@ -35,7 +36,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
 
     const mode = modeBadge[batteryMode];
     const sim = simulationBadge[simulationStatus];
-    const freqOk = gridFrequencyHz >= 49.5 && gridFrequencyHz <= 50.5;
+    const freqOk = gridFrequencyHz >= GRID.warningFrequencyLowHz && gridFrequencyHz <= GRID.warningFrequencyHighHz;
     const tariff = tariffBadge[tariffPeriod];
 
     return (

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { AUTO_ARB, BESS } from '../config';
 import { makeGridState } from '../test/fixtures';
 import { computeGridDemandMw, getAutoArbOutlook, getAutoArbPlan, settleHybridProjectTick } from './simulationModel';
 
@@ -55,7 +56,14 @@ describe('simulationModel auto-arbitrage', () => {
             gridDemandMw: 94,
         });
 
-        const plan = getAutoArbPlan(state, state.timeOfDay, state.solarOutputMw, state.gridDemandMw, 'mid-peak');
+        const plan = getAutoArbPlan(
+            state,
+            state.timeOfDay,
+            state.solarOutputMw,
+            state.gridDemandMw,
+            'mid-peak',
+            state.tariffRatesEurMwh,
+        );
 
         expect(plan.mode).toBe('charging');
         expect(plan.targetPowerMw).toBeGreaterThan(0);
@@ -70,7 +78,14 @@ describe('simulationModel auto-arbitrage', () => {
             gridDemandMw: 228,
         });
 
-        const plan = getAutoArbPlan(state, state.timeOfDay, state.solarOutputMw, state.gridDemandMw, 'peak');
+        const plan = getAutoArbPlan(
+            state,
+            state.timeOfDay,
+            state.solarOutputMw,
+            state.gridDemandMw,
+            'peak',
+            state.tariffRatesEurMwh,
+        );
 
         expect(plan.mode).toBe('discharging');
         expect(plan.targetPowerMw).toBeLessThan(0);
@@ -94,6 +109,21 @@ describe('simulationModel auto-arbitrage', () => {
         expect(settlement.bessMarginDeltaEur).toBe(-2000);
     });
 
+    it('does not charge BESS margin opportunity cost for solar that would have been clipped', () => {
+        const settlement = settleHybridProjectTick({
+            solarOutputMw: 130,
+            gridDemandMw: 0,
+            batteryPowerMw: 20,
+            gridPvEvacuationMw: 102,
+            currentPriceEurMwh: 100,
+            dtHours: 1,
+        });
+
+        expect(settlement.solarExportMw).toBe(102);
+        expect(settlement.bessMarginDeltaEur).toBe(0);
+        expect(settlement.projectPnlDeltaEur).toBe(10200);
+    });
+
     it('turns negative-price grid charging into positive project cashflow', () => {
         const settlement = settleHybridProjectTick({
             solarOutputMw: 0,
@@ -107,5 +137,74 @@ describe('simulationModel auto-arbitrage', () => {
         expect(settlement.batteryChargeFromGridMw).toBe(30);
         expect(settlement.projectPnlDeltaEur).toBe(750);
         expect(settlement.bessMarginDeltaEur).toBe(750);
+    });
+
+    it('accounts for discharge efficiency when sizing peak discharge', () => {
+        const state = makeGridState({
+            batterySocPercent: 100,
+            timeOfDay: 18.25,
+            solarOutputMw: 0,
+            gridDemandMw: 9999,
+        });
+
+        const plan = getAutoArbPlan(
+            state,
+            state.timeOfDay,
+            0,
+            9999,
+            'peak',
+            state.tariffRatesEurMwh,
+        );
+        const transferLimit = Math.min(state.batteryPowerRatingMw, state.gridBessConnectionMw);
+        const remainingHours = 23 - 18.25;
+        const availableStored = (1.0 - (AUTO_ARB.peakReserveSocPercent / 100)) * state.batteryEnergyCapacityMwh;
+        const naivePowerMw = Math.min(transferLimit, availableStored / remainingHours);
+        const correctedPowerMw = Math.min(transferLimit, (availableStored * BESS.dischargeEfficiency) / remainingHours);
+
+        expect(Math.abs(plan.targetPowerMw)).toBeCloseTo(correctedPowerMw, 4);
+        expect(Math.abs(plan.targetPowerMw)).toBeLessThan(naivePowerMw);
+    });
+
+    it('does not discharge into peak when peak price is negative', () => {
+        const state = makeGridState({
+            batterySocPercent: 100,
+            timeOfDay: 19,
+            solarOutputMw: 32,
+            gridDemandMw: 228,
+            tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 150, 'peak': -20 },
+        });
+
+        const plan = getAutoArbPlan(
+            state,
+            state.timeOfDay,
+            state.solarOutputMw,
+            state.gridDemandMw,
+            'peak',
+            state.tariffRatesEurMwh,
+        );
+
+        expect(plan.mode).not.toBe('discharging');
+        expect(plan.targetPowerMw).toBe(0);
+    });
+
+    it('does not pre-charge from grid when peak does not cover round-trip losses', () => {
+        const state = makeGridState({
+            batterySocPercent: 60,
+            timeOfDay: 14,
+            solarOutputMw: 0,
+            gridDemandMw: 80,
+            tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 150, 'peak': 140 },
+        });
+
+        const plan = getAutoArbPlan(
+            state,
+            state.timeOfDay,
+            state.solarOutputMw,
+            state.gridDemandMw,
+            'mid-peak',
+            state.tariffRatesEurMwh,
+        );
+
+        expect(plan.targetPowerMw).toBe(0);
     });
 });

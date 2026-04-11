@@ -180,19 +180,3 @@ export const SIMULATION = {
     /** Maximum real-time delta per frame (seconds) */
     maxDeltaTimeSeconds: 0.1,
 } as const;
-
-// ── 3D Scene Configuration ───────────────────────────────────
-export const SCENE_3D = {
-    /** Camera initial position */
-    cameraPosition: [15, 12, 18] as const,
-    /** Camera field of view */
-    cameraFov: 50,
-    /** Orbit controls min distance */
-    orbitMinDistance: 8,
-    /** Orbit controls max distance */
-    orbitMaxDistance: 50,
-    /** Energy flow particle count */
-    energyFlowParticleCount: 50,
-    /** Energy flow animation speed */
-    energyFlowSpeed: 2.0,
-} as const;

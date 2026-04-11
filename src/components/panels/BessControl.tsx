@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useCallback } from 'react';
-import { BESS, GRID, SOLAR } from '../../config';
+import { BESS, GRID, SIMULATION, SOLAR } from '../../config';
 import type { BESSCommand, GridState } from '../../types';
 import { getAutoArbOutlook } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
@@ -229,9 +229,10 @@ export function DispatchParameters({ gridState, onCommand }: BessControlProps) {
                 </div>
                 <input
                     type="range"
-                    min={50}
-                    max={150}
+                    min={SIMULATION.dispatchScaleMin}
+                    max={SIMULATION.dispatchScaleMax}
                     value={dispatchScalePercent}
+                    aria-label="Grid Dispatch Scale"
                     onChange={(event) => onCommand({ type: 'SET_DISPATCH_SCALE', payload: Number(event.target.value) })}
                     className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-orange-500"
                 />

@@ -37,6 +37,7 @@ function DrawerTab({
     return (
         <button
             onClick={onClick}
+            aria-label={label}
             className={`
                 pointer-events-auto flex items-center gap-2 rounded-lg 
                 border border-slate-700/60 bg-slate-900/70 px-3 py-2.5
@@ -85,6 +86,7 @@ function Drawer({
                 <>
                     <button
                         onClick={onClose}
+                        aria-label="Close panel"
                         className={`
                             absolute top-3 z-20 flex h-8 w-8 items-center justify-center
                             rounded-full bg-slate-800/80 text-slate-400 

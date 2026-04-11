@@ -63,6 +63,7 @@ export type BESSCommand =
     | { type: 'SET_GRID_PV_EVACUATION'; payload: number }
     | { type: 'SET_GRID_BESS_CONNECTION'; payload: number }
     | { type: 'SET_TARIFF_RATE'; payload: { period: TariffPeriod; value: number } }
+    | { type: 'SET_AUTO_ARB_ENABLED'; payload: boolean }
     | { type: 'TOGGLE_AUTO_ARB' };
 
 export interface GridSnapshot {

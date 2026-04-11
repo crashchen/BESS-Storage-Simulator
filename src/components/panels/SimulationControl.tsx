@@ -2,6 +2,7 @@
 // Simulation Run Controls - Start/Pause/Stop and time speed
 // ============================================================
 
+import { SIMULATION } from '../../config';
 import type { BESSCommand, SimulationStatus } from '../../types';
 import { ActionButton, PanelCard } from '../ui/PanelPrimitives';
 
@@ -45,9 +46,10 @@ export function SimulationControl({ simulationStatus, timeSpeed, onCommand }: Si
                 </div>
                 <input
                     type="range"
-                    min={1}
-                    max={1440}
+                    min={SIMULATION.minTimeSpeed}
+                    max={SIMULATION.maxTimeSpeed}
                     value={timeSpeed}
+                    aria-label="Simulation Speed"
                     onChange={(event) => onCommand({ type: 'SET_TIME_SPEED', payload: Number(event.target.value) })}
                     className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-cyan-500"
                 />
