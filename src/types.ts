@@ -14,9 +14,7 @@ export interface GridState {
     solarDcCapacityMwp: number;
     solarAcCapacityMw: number;
     batteryPowerRatingMw: number;
-    batteryDurationHours: number;
     batteryEnergyCapacityMwh: number;
-    gridConnectionTotalMw: number;
     gridPvEvacuationMw: number;
     gridBessConnectionMw: number;
     siteYieldKwhPerKwYear: number;

@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BESS, GRID, SIMULATION, SOLAR } from '../config';
 import { computeGridDemandMw, computeSolarOutputMw } from '../utils/simulationModel';
+import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../utils/gridSelectors';
 import { useGridSimulation } from './useGridSimulation';
 
 describe('useGridSimulation dispatch', () => {
@@ -133,7 +134,7 @@ describe('useGridSimulation dispatch', () => {
         );
 
         expect(result.current.state.gridPvEvacuationMw).toBe(nextPvEvacuationMw);
-        expect(result.current.state.gridConnectionTotalMw).toBe(expectedTotal);
+        expect(selectGridConnectionTotalMw(result.current.state)).toBe(expectedTotal);
         expect(result.current.state.gridDemandMw).toBeCloseTo(expectedDemand, 6);
     });
 
@@ -152,7 +153,7 @@ describe('useGridSimulation dispatch', () => {
         );
 
         expect(result.current.state.gridBessConnectionMw).toBe(GRID.maxBessConnectionMw);
-        expect(result.current.state.gridConnectionTotalMw).toBe(expectedTotal);
+        expect(selectGridConnectionTotalMw(result.current.state)).toBe(expectedTotal);
         expect(result.current.state.gridDemandMw).toBeCloseTo(expectedDemand, 6);
     });
 
@@ -211,6 +212,6 @@ describe('useGridSimulation dispatch', () => {
 
         expect(result.current.state.batteryEnergyCapacityMwh).toBe(nextCapacityMwh);
         expect(result.current.state.batterySocPercent).toBeCloseTo((prevStoredMwh / nextCapacityMwh) * 100, 6);
-        expect(result.current.state.batteryDurationHours).toBeCloseTo(nextCapacityMwh / BESS.defaultPowerRatingMw, 6);
+        expect(selectBatteryDurationHours(result.current.state)).toBeCloseTo(nextCapacityMwh / BESS.defaultPowerRatingMw, 6);
     });
 });

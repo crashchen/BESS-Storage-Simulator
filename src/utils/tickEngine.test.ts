@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FREQUENCY_MODEL, GRID, SIMULATION } from '../config';
 import { computeGridDemandMw, computeSolarOutputMw, getAutoArbPlan, getTariffPeriod } from './simulationModel';
+import { selectGridConnectionTotalMw } from './gridSelectors';
 import { createInitialGridState, simulateTick } from './tickEngine';
 
 describe('tickEngine', () => {
@@ -147,7 +148,7 @@ describe('tickEngine', () => {
         const gridDemandMw = computeGridDemandMw(
             sampledTimeOfDay,
             initial.dispatchScalePercent / 100,
-            initial.gridConnectionTotalMw,
+            selectGridConnectionTotalMw(initial),
         );
         const tariffPeriod = getTariffPeriod(sampledTimeOfDay);
         const plan = getAutoArbPlan(
@@ -180,7 +181,6 @@ describe('tickEngine', () => {
             batteryMode: 'discharging' as const,
             solarAcCapacityMw: 0,
             solarOutputMw: 0,
-            gridConnectionTotalMw: 0,
             gridDemandMw: 0,
             gridPvEvacuationMw: 0,
             cumulativeRevenueEur: 0,

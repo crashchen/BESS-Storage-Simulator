@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { GridState, SimulationStatus } from '../../types';
+import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
 import { PanelCard } from '../ui/PanelPrimitives';
 
 const STATUS_COLORS: Record<SimulationStatus, string> = {
@@ -29,13 +30,13 @@ export function MetricsPanel({ gridState }: MetricsPanelProps) {
         solarDcCapacityMwp,
         solarAcCapacityMw,
         batteryPowerRatingMw,
-        batteryDurationHours,
         batteryEnergyCapacityMwh,
-        gridConnectionTotalMw,
         gridPvEvacuationMw,
         gridBessConnectionMw,
         siteYieldKwhPerKwYear,
     } = gridState;
+    const batteryDurationHours = selectBatteryDurationHours(gridState);
+    const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
 
     return (
         <PanelCard title="Key Metrics">

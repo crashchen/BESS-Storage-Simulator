@@ -5,12 +5,12 @@ import {
     computeGridDemandMw,
     computeSolarOutputMw,
     getAutoArbPlan,
-    getBatteryDurationHours,
     getBatteryTransferLimitMw,
     getElectricityPriceEurMwh,
     getTariffPeriod,
     settleHybridProjectTick,
 } from './simulationModel';
+import { selectGridConnectionTotalMw } from './gridSelectors';
 
 export function gaussianNoise(sigma: number, random: () => number = Math.random): number {
     const u1 = random() || 1e-10;
@@ -19,7 +19,6 @@ export function gaussianNoise(sigma: number, random: () => number = Math.random)
 }
 
 export function createInitialGridState(timestamp = 0): GridState {
-    const batteryDurationHours = getBatteryDurationHours(BESS.defaultPowerRatingMw, BESS.defaultEnergyCapacityMwh);
     const gridConnectionTotalMw = GRID.pvEvacuationMw + GRID.bessConnectionMw;
     const solarOutputMw = computeSolarOutputMw(
         SIMULATION.initialTimeOfDay,
@@ -33,9 +32,7 @@ export function createInitialGridState(timestamp = 0): GridState {
         solarDcCapacityMwp: SOLAR.dcCapacityMwp,
         solarAcCapacityMw: SOLAR.acCapacityMw,
         batteryPowerRatingMw: BESS.defaultPowerRatingMw,
-        batteryDurationHours,
         batteryEnergyCapacityMwh: BESS.defaultEnergyCapacityMwh,
-        gridConnectionTotalMw,
         gridPvEvacuationMw: GRID.pvEvacuationMw,
         gridBessConnectionMw: GRID.bessConnectionMw,
         siteYieldKwhPerKwYear: SOLAR.yieldKwhPerKwYear,
@@ -121,7 +118,7 @@ function simulateTickStep(
     const gridDemandMw = computeGridDemandMw(
         operationalTimeOfDay,
         prev.dispatchScalePercent / 100,
-        prev.gridConnectionTotalMw,
+        selectGridConnectionTotalMw(prev),
     );
     const tariffPeriod = getTariffPeriod(operationalTimeOfDay);
     const currentPriceEurMwh = getElectricityPriceEurMwh(operationalTimeOfDay, prev.tariffRatesEurMwh);

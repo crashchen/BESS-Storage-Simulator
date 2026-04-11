@@ -1,5 +1,6 @@
 import type { BatteryMode, GridState, TariffPeriod } from '../types';
 import { AUTO_ARB, BESS, DEMAND_MODEL, SOLAR, TARIFF } from '../config';
+import { selectGridConnectionTotalMw } from './gridSelectors';
 
 type DispatchModelState = Pick<
     GridState,
@@ -7,10 +8,10 @@ type DispatchModelState = Pick<
     | 'batteryEnergyCapacityMwh'
     | 'batteryPowerRatingMw'
     | 'gridBessConnectionMw'
+    | 'gridPvEvacuationMw'
     | 'solarAcCapacityMw'
     | 'solarDcCapacityMwp'
     | 'dispatchScalePercent'
-    | 'gridConnectionTotalMw'
 >;
 
 export interface AutoArbOutlook {
@@ -50,10 +51,6 @@ export function getTariffPeriod(tod: number): TariffPeriod {
 
 export function getElectricityPriceEurMwh(tod: number, tariffRatesEurMwh: Record<TariffPeriod, number>): number {
     return tariffRatesEurMwh[getTariffPeriod(tod)];
-}
-
-export function getBatteryDurationHours(powerRatingMw: number, energyCapacityMwh: number): number {
-    return energyCapacityMwh / Math.max(powerRatingMw, 1e-9);
 }
 
 export function getBatteryTransferLimitMw(
@@ -130,7 +127,7 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
             const demandMw = computeGridDemandMw(
                 forecastTod,
                 state.dispatchScalePercent / 100,
-                state.gridConnectionTotalMw,
+                selectGridConnectionTotalMw(state),
             );
             const acDeficitMw = Math.min(Math.max(demandMw - solarMw, 0), transferLimitMw);
             return acDeficitMw / Math.max(BESS.dischargeEfficiency, 1e-9);
@@ -156,7 +153,7 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
             const demandMw = computeGridDemandMw(
                 forecastTod,
                 state.dispatchScalePercent / 100,
-                state.gridConnectionTotalMw,
+                selectGridConnectionTotalMw(state),
             );
             const acSurplusMw = Math.min(Math.max(solarMw - demandMw, 0), transferLimitMw);
             return acSurplusMw * BESS.chargeEfficiency;

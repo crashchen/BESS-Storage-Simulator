@@ -5,6 +5,7 @@
 import { useCallback } from 'react';
 import { BESS, GRID, SIMULATION, SOLAR } from '../../config';
 import type { BESSCommand, GridState } from '../../types';
+import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
 import { getAutoArbOutlook } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
 
@@ -24,10 +25,10 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
         autoArbEnabled,
         solarAcCapacityMw,
         batteryPowerRatingMw,
-        gridConnectionTotalMw,
         gridBessConnectionMw,
         timeOfDay,
     } = gridState;
+    const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
 
     const freqWarn = gridFrequencyHz < GRID.warningFrequencyLowHz || gridFrequencyHz > GRID.warningFrequencyHighHz;
     const batteryTransferLimitMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
@@ -95,10 +96,10 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
 export function BessCapacitySetup({ gridState, onCommand }: BessControlProps) {
     const {
         batteryPowerRatingMw,
-        batteryDurationHours,
         batteryEnergyCapacityMwh,
         gridBessConnectionMw,
     } = gridState;
+    const batteryDurationHours = selectBatteryDurationHours(gridState);
 
     const batteryTransferLimitMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
 
@@ -149,8 +150,8 @@ export function ProjectCapacitySetup({ gridState, onCommand }: BessControlProps)
         solarDcCapacityMwp,
         gridPvEvacuationMw,
         gridBessConnectionMw,
-        gridConnectionTotalMw,
     } = gridState;
+    const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
 
     return (
         <PanelCard title="🏗️ Project Capacity">
