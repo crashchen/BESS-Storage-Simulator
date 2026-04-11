@@ -22,6 +22,7 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 - **Real-time Simulation**: Start, pause, and stop the simulation clock with adjustable time speeds
 - **Dispatch Modes**: Manual control or automatic peak-ready dispatch optimization
 - **Configurable BESS**: Edit rated power and storage capacity from the UI
+- **Project Capacity Setup**: Edit solar AC/DC capacity, PV evacuation, and BESS interconnection live to model any project, not just the Romania baseline
 - **Price Scenarios**: Edit wholesale price windows, including negative-price scenarios
 - **Live Metrics**: Track SoC, grid frequency, solar output, grid demand, and BESS power
 - **P&L Tracking**: Project P&L, BESS margin, curtailment, and energy flow analysis

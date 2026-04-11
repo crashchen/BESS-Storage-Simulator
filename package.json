@@ -5,7 +5,7 @@
   "description": "Interactive Romania hybrid solar PV and BESS simulator with peak-ready dispatch, project P&L tracking, and 3D visualization.",
   "type": "module",
   "author": "Fang Chen",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/crashchen/BESS-Storage-Simulator.git"

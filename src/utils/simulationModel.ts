@@ -70,16 +70,21 @@ export function computeSolarOutputMw(timeOfDay: number, solarAcCapacityMw: numbe
 }
 
 export function computeGridDemandMw(timeOfDay: number, scaleFactor: number, gridConnectionTotalMw: number): number {
-    const morningHump = (DEMAND_MODEL.morningPeakMw - DEMAND_MODEL.baseMw) *
+    const baseMw = DEMAND_MODEL.baseFraction * gridConnectionTotalMw;
+    const morningPeakMw = DEMAND_MODEL.morningPeakFraction * gridConnectionTotalMw;
+    const eveningPeakMw = DEMAND_MODEL.eveningPeakFraction * gridConnectionTotalMw;
+    const middayTroughMw = DEMAND_MODEL.middayTroughFraction * gridConnectionTotalMw;
+
+    const morningHump = (morningPeakMw - baseMw) *
         Math.exp(-Math.pow(timeOfDay - DEMAND_MODEL.morningPeakHour, 2) / (2 * 1.6 * 1.6));
 
-    const eveningHump = (DEMAND_MODEL.eveningPeakMw - DEMAND_MODEL.baseMw) *
+    const eveningHump = (eveningPeakMw - baseMw) *
         Math.exp(-Math.pow(timeOfDay - DEMAND_MODEL.eveningPeakHour, 2) / (2 * 2.1 * 2.1));
 
-    const middayTrough = DEMAND_MODEL.middayTroughMw *
+    const middayTrough = middayTroughMw *
         Math.exp(-Math.pow(timeOfDay - DEMAND_MODEL.middayTroughHour, 2) / (2 * 2.3 * 2.3));
 
-    const rawDemand = (DEMAND_MODEL.baseMw + morningHump + eveningHump - middayTrough) * scaleFactor;
+    const rawDemand = (baseMw + morningHump + eveningHump - middayTrough) * scaleFactor;
     return clamp(rawDemand, 0, gridConnectionTotalMw);
 }
 

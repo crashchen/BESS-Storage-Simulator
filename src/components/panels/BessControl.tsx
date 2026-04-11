@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useCallback } from 'react';
+import { BESS, GRID, SOLAR } from '../../config';
 import type { BESSCommand, GridState } from '../../types';
 import { getAutoArbOutlook } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
@@ -28,7 +29,7 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
         timeOfDay,
     } = gridState;
 
-    const freqWarn = gridFrequencyHz < 49.5 || gridFrequencyHz > 50.5;
+    const freqWarn = gridFrequencyHz < GRID.warningFrequencyLowHz || gridFrequencyHz > GRID.warningFrequencyHighHz;
     const batteryTransferLimitMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
     const autoArbOutlook = getAutoArbOutlook(gridState, timeOfDay);
 
@@ -74,7 +75,15 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
 
             <div className="mt-4 flex flex-col gap-3">
                 <Gauge label="Battery SoC" value={batterySocPercent} unit="%" min={0} max={100} color="#3b82f6" />
-                <Gauge label="Grid Frequency" value={gridFrequencyHz} unit="Hz" min={49} max={51} color={freqWarn ? '#ef4444' : '#22c55e'} warn={freqWarn} />
+                <Gauge
+                    label="Grid Frequency"
+                    value={gridFrequencyHz}
+                    unit="Hz"
+                    min={GRID.minFrequencyHz}
+                    max={GRID.maxFrequencyHz}
+                    color={freqWarn ? '#ef4444' : '#22c55e'}
+                    warn={freqWarn}
+                />
                 <Gauge label="Solar Output" value={solarOutputMw} unit="MW" min={0} max={solarAcCapacityMw} color="#facc15" />
                 <Gauge label="Grid Demand" value={gridDemandMw} unit="MW" min={0} max={gridConnectionTotalMw} color="#f97316" />
                 <Gauge label="Battery Power" value={Math.abs(batteryPowerMw)} unit="MW" min={0} max={batteryTransferLimitMw} color={batteryPowerMw >= 0 ? '#22c55e' : '#f59e0b'} />
@@ -100,8 +109,8 @@ export function BessCapacitySetup({ gridState, onCommand }: BessControlProps) {
                     label="Power Rating"
                     value={batteryPowerRatingMw}
                     unit="MW"
-                    min={50}
-                    max={250}
+                    min={BESS.minPowerMw}
+                    max={BESS.maxPowerMw}
                     step={1}
                     accentClass="text-cyan-400"
                     testId="bess-power-rating-input"
@@ -111,8 +120,8 @@ export function BessCapacitySetup({ gridState, onCommand }: BessControlProps) {
                     label="Energy Capacity"
                     value={batteryEnergyCapacityMwh}
                     unit="MWh"
-                    min={100}
-                    max={1200}
+                    min={BESS.minEnergyMwh}
+                    max={BESS.maxEnergyMwh}
                     step={10}
                     accentClass="text-sky-300"
                     testId="bess-energy-capacity-input"
@@ -127,6 +136,78 @@ export function BessCapacitySetup({ gridState, onCommand }: BessControlProps) {
                     <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                         <span>Battery PCS / interconnection cap</span>
                         <span className="font-mono">{batteryTransferLimitMw.toFixed(0)} MW effective</span>
+                    </div>
+                </div>
+            </div>
+        </PanelCard>
+    );
+}
+
+export function ProjectCapacitySetup({ gridState, onCommand }: BessControlProps) {
+    const {
+        solarAcCapacityMw,
+        solarDcCapacityMwp,
+        gridPvEvacuationMw,
+        gridBessConnectionMw,
+        gridConnectionTotalMw,
+    } = gridState;
+
+    return (
+        <PanelCard title="🏗️ Project Capacity">
+            <div className="grid gap-3">
+                <NumericField
+                    label="Solar AC Capacity"
+                    value={solarAcCapacityMw}
+                    unit="MW"
+                    min={SOLAR.minAcCapacityMw}
+                    max={SOLAR.maxAcCapacityMw}
+                    step={1}
+                    accentClass="text-yellow-300"
+                    testId="solar-ac-capacity-input"
+                    onChange={(value) => onCommand({ type: 'SET_SOLAR_AC_CAPACITY', payload: value })}
+                />
+                <NumericField
+                    label="Solar DC Capacity"
+                    value={solarDcCapacityMwp}
+                    unit="MWp"
+                    min={SOLAR.minDcCapacityMwp}
+                    max={SOLAR.maxDcCapacityMwp}
+                    step={1}
+                    accentClass="text-amber-300"
+                    testId="solar-dc-capacity-input"
+                    onChange={(value) => onCommand({ type: 'SET_SOLAR_DC_CAPACITY', payload: value })}
+                />
+                <NumericField
+                    label="PV Evacuation Limit"
+                    value={gridPvEvacuationMw}
+                    unit="MW"
+                    min={GRID.minPvEvacuationMw}
+                    max={GRID.maxPvEvacuationMw}
+                    step={1}
+                    accentClass="text-orange-300"
+                    testId="grid-pv-evacuation-input"
+                    onChange={(value) => onCommand({ type: 'SET_GRID_PV_EVACUATION', payload: value })}
+                />
+                <NumericField
+                    label="BESS Grid Connection"
+                    value={gridBessConnectionMw}
+                    unit="MW"
+                    min={GRID.minBessConnectionMw}
+                    max={GRID.maxBessConnectionMw}
+                    step={1}
+                    accentClass="text-cyan-300"
+                    testId="grid-bess-connection-input"
+                    onChange={(value) => onCommand({ type: 'SET_GRID_BESS_CONNECTION', payload: value })}
+                />
+
+                <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                        <span>Derived Total Grid Connection</span>
+                        <span className="font-mono font-bold text-emerald-300">{gridConnectionTotalMw.toFixed(0)} MW</span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                        <span>PV evac + BESS interconnect</span>
+                        <span className="font-mono">{gridPvEvacuationMw.toFixed(0)} + {gridBessConnectionMw.toFixed(0)} MW</span>
                     </div>
                 </div>
             </div>

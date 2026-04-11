@@ -15,8 +15,16 @@ export const PROJECT = {
 export const SOLAR = {
     /** DC capacity at STC (MWp) */
     dcCapacityMwp: 117,
+    /** Minimum configurable DC capacity (MWp) */
+    minDcCapacityMwp: 5,
+    /** Maximum configurable DC capacity (MWp) */
+    maxDcCapacityMwp: 750,
     /** AC inverter capacity (MW) */
     acCapacityMw: 102,
+    /** Minimum configurable AC capacity (MW) */
+    minAcCapacityMw: 5,
+    /** Maximum configurable AC capacity (MW) */
+    maxAcCapacityMw: 500,
     /** Annual yield assumption (kWh/kWp/year) */
     yieldKwhPerKwYear: 1380,
     /** Sunrise hour (solar output starts) */
@@ -34,13 +42,13 @@ export const BESS = {
     /** Default energy capacity (MWh) */
     defaultEnergyCapacityMwh: 744,
     /** Minimum configurable power (MW) */
-    minPowerMw: 50,
+    minPowerMw: 5,
     /** Maximum configurable power (MW) */
-    maxPowerMw: 250,
+    maxPowerMw: 500,
     /** Minimum configurable energy (MWh) */
-    minEnergyMwh: 100,
+    minEnergyMwh: 10,
     /** Maximum configurable energy (MWh) */
-    maxEnergyMwh: 1200,
+    maxEnergyMwh: 2400,
     /** Round-trip efficiency split: charging efficiency (0-1) */
     chargeEfficiency: 0.96,
     /** Round-trip efficiency split: discharging efficiency (0-1) */
@@ -55,8 +63,16 @@ export const GRID = {
     connectionTotalMw: 288,
     /** PV evacuation limit (MW) */
     pvEvacuationMw: 102,
+    /** Minimum configurable PV evacuation limit (MW) */
+    minPvEvacuationMw: 5,
+    /** Maximum configurable PV evacuation limit (MW) */
+    maxPvEvacuationMw: 500,
     /** BESS injection/withdrawal limit (MW) */
     bessConnectionMw: 186,
+    /** Minimum configurable BESS grid connection (MW) */
+    minBessConnectionMw: 5,
+    /** Maximum configurable BESS grid connection (MW) */
+    maxBessConnectionMw: 500,
     /** Nominal grid frequency (Hz) */
     nominalFrequencyHz: 50.0,
     /** Minimum allowed frequency (Hz) */
@@ -71,14 +87,14 @@ export const GRID = {
 
 // ── Grid Demand Model ────────────────────────────────────────
 export const DEMAND_MODEL = {
-    /** Base load (MW) */
-    baseMw: 92,
-    /** Morning peak amplitude (MW above base) */
-    morningPeakMw: 155,
-    /** Evening peak amplitude (MW above base) */
-    eveningPeakMw: 234,
-    /** Midday trough depth (MW reduction) */
-    middayTroughMw: 32,
+    /** Base load as a fraction of total grid connection */
+    baseFraction: 92 / 288, // ≈ 0.319
+    /** Morning peak as a fraction of total grid connection */
+    morningPeakFraction: 155 / 288, // ≈ 0.538
+    /** Evening peak as a fraction of total grid connection */
+    eveningPeakFraction: 234 / 288, // ≈ 0.813
+    /** Midday trough depth as a fraction of total grid connection */
+    middayTroughFraction: 32 / 288, // ≈ 0.111
     /** Morning peak center hour */
     morningPeakHour: 8.0,
     /** Evening peak center hour */

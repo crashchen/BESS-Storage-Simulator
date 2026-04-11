@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { BESSCommand, GridState, TariffPeriod } from '../../types';
+import { TARIFF } from '../../config';
 import { PanelCard } from '../ui/PanelPrimitives';
 
 const TARIFF_COLORS = {
@@ -17,10 +18,14 @@ const TARIFF_LABELS = {
     'peak': 'PEAK',
 } as const;
 
+function formatHour(hour: number): string {
+    return hour.toString().padStart(2, '0');
+}
+
 const TARIFF_WINDOW_LABELS: Record<TariffPeriod, string> = {
-    'off-peak': '00-06 / 23-24',
-    'mid-peak': '06-18',
-    'peak': '18-23',
+    'off-peak': `00-${formatHour(TARIFF.periods.offPeakEnd)} / ${formatHour(TARIFF.periods.peakEnd)}-24`,
+    'mid-peak': `${formatHour(TARIFF.periods.offPeakEnd)}-${formatHour(TARIFF.periods.midPeakEnd)}`,
+    'peak': `${formatHour(TARIFF.periods.midPeakEnd)}-${formatHour(TARIFF.periods.peakEnd)}`,
 };
 
 interface EconomicsPanelProps {

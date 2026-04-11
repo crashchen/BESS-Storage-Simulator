@@ -58,6 +58,10 @@ export type BESSCommand =
     | { type: 'SET_TIME_SPEED'; payload: number }
     | { type: 'SET_BESS_POWER_RATING'; payload: number }
     | { type: 'SET_BESS_ENERGY_CAPACITY'; payload: number }
+    | { type: 'SET_SOLAR_AC_CAPACITY'; payload: number }
+    | { type: 'SET_SOLAR_DC_CAPACITY'; payload: number }
+    | { type: 'SET_GRID_PV_EVACUATION'; payload: number }
+    | { type: 'SET_GRID_BESS_CONNECTION'; payload: number }
     | { type: 'SET_TARIFF_RATE'; payload: { period: TariffPeriod; value: number } }
     | { type: 'TOGGLE_AUTO_ARB' };
 

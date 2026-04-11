@@ -9,6 +9,7 @@ import {
     SimulationControl,
     BessDispatchControl,
     BessCapacitySetup,
+    ProjectCapacitySetup,
     DispatchParameters,
     MetricsPanel,
     EconomicsPanel,
@@ -80,23 +81,26 @@ function Drawer({
                 ${position === 'left' ? 'left-0 border-r pr-4' : 'right-0 border-l pl-4'}
             `}
         >
-            {/* Close button */}
-            <button
-                onClick={onClose}
-                className={`
-                    absolute top-3 z-20 flex h-8 w-8 items-center justify-center
-                    rounded-full bg-slate-800/80 text-slate-400 
-                    transition-colors hover:bg-slate-700 hover:text-white
-                    ${position === 'left' ? 'right-2' : 'left-2'}
-                `}
-                title="Close panel"
-            >
-                {position === 'left' ? '◀' : '▶'}
-            </button>
-            
-            <div className="mt-8 flex flex-col gap-3">
-                {children}
-            </div>
+            {isOpen ? (
+                <>
+                    <button
+                        onClick={onClose}
+                        className={`
+                            absolute top-3 z-20 flex h-8 w-8 items-center justify-center
+                            rounded-full bg-slate-800/80 text-slate-400 
+                            transition-colors hover:bg-slate-700 hover:text-white
+                            ${position === 'left' ? 'right-2' : 'left-2'}
+                        `}
+                        title="Close panel"
+                    >
+                        {position === 'left' ? '◀' : '▶'}
+                    </button>
+
+                    <div className="mt-8 flex flex-col gap-3">
+                        {children}
+                    </div>
+                </>
+            ) : null}
         </div>
     );
 }
@@ -116,6 +120,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                 />
                 <BessDispatchControl gridState={gridState} onCommand={onCommand} />
                 <BessCapacitySetup gridState={gridState} onCommand={onCommand} />
+                <ProjectCapacitySetup gridState={gridState} onCommand={onCommand} />
                 <DispatchParameters gridState={gridState} onCommand={onCommand} />
             </Drawer>
 
@@ -124,7 +129,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                 <MetricsPanel gridState={gridState} />
                 <EconomicsPanel gridState={gridState} onCommand={onCommand} />
 
-                {history.length > 2 && (
+                {rightOpen && history.length > 2 && (
                     <PanelCard title="📊 Real-Time Telemetry">
                         <Suspense fallback={<div className="h-[170px] animate-pulse rounded-lg bg-slate-800/60" />}>
                             <TelemetryChart history={history} />
@@ -135,23 +140,27 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
 
             {/* Collapsed tabs - visible when drawers are closed */}
             <div className="absolute left-0 top-4 flex flex-col gap-2">
-                <DrawerTab
-                    icon="⚡"
-                    label="Controls"
-                    isOpen={leftOpen}
-                    onClick={() => setLeftOpen(true)}
-                    position="left"
-                />
+                {!leftOpen ? (
+                    <DrawerTab
+                        icon="⚡"
+                        label="Controls"
+                        isOpen={leftOpen}
+                        onClick={() => setLeftOpen(true)}
+                        position="left"
+                    />
+                ) : null}
             </div>
 
             <div className="absolute right-0 top-4 flex flex-col gap-2">
-                <DrawerTab
-                    icon="📊"
-                    label="Metrics"
-                    isOpen={rightOpen}
-                    onClick={() => setRightOpen(true)}
-                    position="right"
-                />
+                {!rightOpen ? (
+                    <DrawerTab
+                        icon="📊"
+                        label="Metrics"
+                        isOpen={rightOpen}
+                        onClick={() => setRightOpen(true)}
+                        position="right"
+                    />
+                ) : null}
             </div>
         </div>
     );

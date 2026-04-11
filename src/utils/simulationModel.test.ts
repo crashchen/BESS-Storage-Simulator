@@ -1,6 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { makeGridState } from '../test/fixtures';
-import { getAutoArbOutlook, getAutoArbPlan, settleHybridProjectTick } from './simulationModel';
+import { computeGridDemandMw, getAutoArbOutlook, getAutoArbPlan, settleHybridProjectTick } from './simulationModel';
+
+describe('simulationModel demand curve', () => {
+    it('produces the same demand curve at the Romania baseline (288 MW total)', () => {
+        const baselineFormula = (timeOfDay: number) => {
+            const base = 92;
+            const morningPeak = 155;
+            const eveningPeak = 234;
+            const middayTrough = 32;
+            const morningHump = (morningPeak - base) *
+                Math.exp(-Math.pow(timeOfDay - 8, 2) / (2 * 1.6 * 1.6));
+            const eveningHump = (eveningPeak - base) *
+                Math.exp(-Math.pow(timeOfDay - 19, 2) / (2 * 2.1 * 2.1));
+            const middayDip = middayTrough *
+                Math.exp(-Math.pow(timeOfDay - 13, 2) / (2 * 2.3 * 2.3));
+
+            return Math.max(0, Math.min(288, base + morningHump + eveningHump - middayDip));
+        };
+
+        for (const timeOfDay of [0, 6, 8, 13, 19, 22]) {
+            expect(computeGridDemandMw(timeOfDay, 1.0, 288)).toBeCloseTo(baselineFormula(timeOfDay), 6);
+        }
+    });
+
+    it('scales the demand curve linearly with gridConnectionTotalMw', () => {
+        for (const timeOfDay of [6, 12, 19]) {
+            const at288 = computeGridDemandMw(timeOfDay, 1.0, 288);
+            const at144 = computeGridDemandMw(timeOfDay, 1.0, 144);
+            expect(at144).toBeCloseTo(at288 / 2, 6);
+        }
+    });
+});
 
 describe('simulationModel auto-arbitrage', () => {
     it('forecasts a pre-peak top-up target when PV alone cannot fully prepare the battery', () => {
