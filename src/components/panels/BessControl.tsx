@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { BESS, GRID, SIMULATION, SOLAR } from '../../config';
 import type { BESSCommand, GridState } from '../../types';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
-import { getAutoArbOutlook } from '../../utils/simulationModel';
+import { getAutoArbOutlook, getBatteryTransferLimitMw } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
 
 interface BessControlProps {
@@ -24,18 +24,16 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
         batteryPowerMw,
         autoArbEnabled,
         solarAcCapacityMw,
-        batteryPowerRatingMw,
-        gridBessConnectionMw,
         timeOfDay,
     } = gridState;
     const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
 
     const freqWarn = gridFrequencyHz < GRID.warningFrequencyLowHz || gridFrequencyHz > GRID.warningFrequencyHighHz;
-    const batteryTransferLimitMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
+    const batteryTransferLimitMw = getBatteryTransferLimitMw(gridState);
     const autoArbOutlook = getAutoArbOutlook(gridState, timeOfDay);
 
     const handleMode = useCallback(
-        (type: 'CHARGE' | 'DISCHARGE' | 'IDLE') => onCommand({ type } as BESSCommand),
+        (type: 'CHARGE' | 'DISCHARGE' | 'IDLE') => onCommand({ type }),
         [onCommand],
     );
 
@@ -97,11 +95,9 @@ export function BessCapacitySetup({ gridState, onCommand }: BessControlProps) {
     const {
         batteryPowerRatingMw,
         batteryEnergyCapacityMwh,
-        gridBessConnectionMw,
     } = gridState;
     const batteryDurationHours = selectBatteryDurationHours(gridState);
-
-    const batteryTransferLimitMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
+    const batteryTransferLimitMw = getBatteryTransferLimitMw(gridState);
 
     return (
         <PanelCard title="🔋 BESS Capacity Setup">
@@ -134,7 +130,7 @@ export function BessCapacitySetup({ gridState, onCommand }: BessControlProps) {
                         <span>Derived Storage Duration</span>
                         <span className="font-mono font-bold text-emerald-300">{batteryDurationHours.toFixed(1)} h</span>
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                    <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
                         <span>Battery PCS / interconnection cap</span>
                         <span className="font-mono">{batteryTransferLimitMw.toFixed(0)} MW effective</span>
                     </div>
@@ -206,7 +202,7 @@ export function ProjectCapacitySetup({ gridState, onCommand }: BessControlProps)
                         <span>Derived Total Grid Connection</span>
                         <span className="font-mono font-bold text-emerald-300">{gridConnectionTotalMw.toFixed(0)} MW</span>
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                    <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
                         <span>PV evac + BESS interconnect</span>
                         <span className="font-mono">{gridPvEvacuationMw.toFixed(0)} + {gridBessConnectionMw.toFixed(0)} MW</span>
                     </div>
@@ -225,7 +221,7 @@ export function DispatchParameters({ gridState, onCommand }: BessControlProps) {
                 <div className="mb-1 flex justify-between text-xs text-slate-400">
                     <span>Grid Dispatch Scale</span>
                     <span className="font-mono font-bold text-orange-400">
-                        {dispatchScalePercent}% <span className="text-slate-500">({gridDemandMw.toFixed(0)} MW)</span>
+                        {dispatchScalePercent}% <span className="text-slate-400">({gridDemandMw.toFixed(0)} MW)</span>
                     </span>
                 </div>
                 <input

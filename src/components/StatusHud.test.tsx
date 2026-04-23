@@ -23,7 +23,7 @@ describe('StatusHud', () => {
         expect(screen.getByText('PEAK READY')).toBeInTheDocument();
         expect(screen.getByText('49.40 Hz')).toBeInTheDocument();
         expect(screen.getByText('45 MW')).toBeInTheDocument();
-        expect(screen.getByText('€190')).toBeInTheDocument();
+        expect(screen.getByText('€190/MWh')).toBeInTheDocument();
         expect(screen.getByText('€-2500')).toBeInTheDocument();
     });
 });

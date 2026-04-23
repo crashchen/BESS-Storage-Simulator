@@ -7,8 +7,8 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
-import { BackSide, Color, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
-import type { MicrogridSceneProps } from '../types';
+import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
+import type { BatteryMode, MicrogridSceneProps } from '../types';
 
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
@@ -28,15 +28,23 @@ function sunPosition(tod: number): [number, number, number] {
     return [x, Math.max(y, -10), z];
 }
 
+const SKY_NIGHT = new Color('#0a0a1a');
+const SKY_DAWN_A = new Color('#1a1a3e');
+const SKY_DAWN_B = new Color('#4a6fa5');
+const SKY_DAY_A = new Color('#87CEEB');
+const SKY_DAY_B = new Color('#4a9edb');
+const _skyResult = new Color();
+const _skyTmp = new Color();
+
 function skyColor(tod: number): Color {
-    if (tod < 5 || tod > 20) return new Color('#0a0a1a');
-    if (tod < 7) return new Color('#1a1a3e').lerp(new Color('#4a6fa5'), (tod - 5) / 2);
-    if (tod > 18) return new Color('#4a6fa5').lerp(new Color('#1a1a3e'), (tod - 18) / 2);
-    return new Color('#87CEEB').lerp(new Color('#4a9edb'), Math.abs(tod - 12) / 6);
+    if (tod < 5 || tod > 20) return _skyResult.copy(SKY_NIGHT);
+    if (tod < 7) return _skyResult.copy(SKY_DAWN_A).lerp(_skyTmp.copy(SKY_DAWN_B), (tod - 5) / 2);
+    if (tod > 18) return _skyResult.copy(SKY_DAWN_B).lerp(_skyTmp.copy(SKY_DAWN_A), (tod - 18) / 2);
+    return _skyResult.copy(SKY_DAY_A).lerp(_skyTmp.copy(SKY_DAY_B), Math.abs(tod - 12) / 6);
 }
 
 // ── BESS Container ───────────────────────────────────────────
-function BESSContainer({ mode, soc }: { mode: string; soc: number }) {
+function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
     const meshRef = useRef<Mesh>(null);
     const glowRef = useRef<Mesh>(null);
 
@@ -114,7 +122,7 @@ function BESSContainer({ mode, soc }: { mode: string; soc: number }) {
                         <boxGeometry args={[1.0, 0.18, 0.05]} />
                         <meshStandardMaterial
                             color={segment.active ? levelColor : '#0f172a'}
-                            emissive={segment.active ? levelColor : new Color('#020617')}
+                            emissive={segment.active ? levelColor : '#020617'}
                             emissiveIntensity={segment.active ? 0.9 : 0.05}
                             metalness={0.15}
                             roughness={0.25}
@@ -177,6 +185,10 @@ function SolarPanel({
     solarAcCapacityMw: number;
 }) {
     const brightness = solarOutputMw / Math.max(solarAcCapacityMw, 1e-9);
+    const panelColor = useMemo(
+        () => COLOR_SOLAR_OFF.clone().lerp(COLOR_SOLAR_ON, brightness),
+        [brightness],
+    );
 
     return (
         <group position={position} rotation={[-0.35, 0, 0]}>
@@ -189,7 +201,7 @@ function SolarPanel({
             <mesh position={[0, 0.035, 0]}>
                 <planeGeometry args={[1.6, 1.0]} />
                 <meshStandardMaterial
-                    color={COLOR_SOLAR_OFF.clone().lerp(COLOR_SOLAR_ON, brightness)}
+                    color={panelColor}
                     emissive={COLOR_SOLAR_ON}
                     emissiveIntensity={brightness * 0.8}
                     metalness={0.9}
@@ -498,7 +510,6 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
     } = gridState;
 
     const sunPos = sunPosition(timeOfDay);
-    const sky = skyColor(timeOfDay);
     const ambientIntensity = timeOfDay > 6 && timeOfDay < 19
         ? 0.4 + 0.5 * Math.sin(((timeOfDay - 6) / 12) * Math.PI)
         : 0.15;
@@ -508,10 +519,21 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
 
     const maxBessMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
 
+    const fogRef = useRef<Fog>(null);
+    const ambientRef = useRef<AmbientLight>(null);
+    const hemiRef = useRef<HemisphereLight>(null);
+
+    useFrame(() => {
+        const sky = skyColor(timeOfDay);
+        if (fogRef.current) fogRef.current.color.copy(sky);
+        if (ambientRef.current) ambientRef.current.color.copy(sky);
+        if (hemiRef.current) hemiRef.current.color.copy(sky);
+    });
+
     return (
         <>
             {/* Lighting — boosted for visibility */}
-            <ambientLight intensity={ambientIntensity} color={sky} />
+            <ambientLight ref={ambientRef} intensity={ambientIntensity} />
             <directionalLight
                 position={sunPos}
                 intensity={sunIntensity}
@@ -526,7 +548,7 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
                 shadow-camera-bottom={-30}
             />
             <hemisphereLight
-                color={sky}
+                ref={hemiRef}
                 groundColor="#1a1a2e"
                 intensity={0.35}
             />
@@ -534,7 +556,7 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
             <pointLight position={[0, 10, 10]} intensity={0.5} color="#94a3b8" />
 
             {/* Fog */}
-            <fog attach="fog" args={[sky, 50, 150]} />
+            <fog ref={fogRef} attach="fog" args={['#0a0a1a', 50, 150]} />
 
             {/* Ground */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.01, 0]}>

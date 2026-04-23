@@ -45,7 +45,7 @@ export function MetricsPanel({ gridState }: MetricsPanelProps) {
                     <p className="text-sm font-bold uppercase tracking-[0.18em] text-slate-300">
                         {projectName}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">{projectLocation}</p>
+                    <p className="mt-1 text-xs text-slate-400">{projectLocation}</p>
                 </div>
                 <span
                     className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white"
@@ -57,15 +57,15 @@ export function MetricsPanel({ gridState }: MetricsPanelProps) {
 
             <div className="mt-4 grid gap-3 text-sm text-slate-200 sm:grid-cols-2">
                 <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Solar PV</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Solar PV</p>
                     <p className="mt-1 font-mono text-base text-yellow-300">{solarDcCapacityMwp.toFixed(0)} MWp DC / {solarAcCapacityMw.toFixed(0)} MW AC</p>
                 </div>
                 <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">BESS</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS</p>
                     <p className="mt-1 font-mono text-base text-cyan-300">{batteryPowerRatingMw.toFixed(0)} MW @ {batteryDurationHours.toFixed(1)} h ({batteryEnergyCapacityMwh.toFixed(0)} MWh)</p>
                 </div>
                 <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3 sm:col-span-2">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Grid Connection</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Grid Connection</p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300">
                         <span className="font-mono text-base text-slate-100">{gridConnectionTotalMw.toFixed(0)} MW total</span>
                         <span>PV evacuation {gridPvEvacuationMw.toFixed(0)} MW</span>

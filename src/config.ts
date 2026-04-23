@@ -59,8 +59,6 @@ export const BESS = {
 
 // ── Grid Connection ──────────────────────────────────────────
 export const GRID = {
-    /** Total grid connection capacity (MW) */
-    connectionTotalMw: 288,
     /** PV evacuation limit (MW) */
     pvEvacuationMw: 102,
     /** Minimum configurable PV evacuation limit (MW) */

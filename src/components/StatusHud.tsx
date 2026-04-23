@@ -41,9 +41,9 @@ export function StatusHud({ gridState }: StatusHudProps) {
 
     return (
         <div className="pointer-events-none absolute top-0 left-0 right-0 select-none">
-            <div className="mx-auto mt-3 flex w-fit items-center justify-center gap-3 rounded-full border border-slate-700/50 bg-slate-900/80 px-5 py-2.5 shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto mt-3 flex w-fit max-w-[95vw] flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-slate-700/50 bg-slate-900/80 px-5 py-2.5 shadow-2xl backdrop-blur-xl">
                 <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-500">🕐</span>
+                    <span className="text-xs text-slate-400">🕐</span>
                     <span className="font-mono text-sm font-bold tabular-nums text-slate-100">
                         {formatTime(timeOfDay)}
                     </span>
@@ -64,7 +64,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
                 <div className="h-5 w-px bg-slate-700" />
 
                 <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-500">🔋</span>
+                    <span className="text-xs text-slate-400">🔋</span>
                     <span className="font-mono text-sm font-bold tabular-nums text-blue-400">
                         {batterySocPercent.toFixed(0)}%
                     </span>
@@ -73,7 +73,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
                 <div className="h-5 w-px bg-slate-700" />
 
                 <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-500">☀️</span>
+                    <span className="text-xs text-slate-400">☀️</span>
                     <span className="font-mono text-sm font-bold tabular-nums text-yellow-400">
                         {solarOutputMw.toFixed(0)} MW
                     </span>
@@ -91,7 +91,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
                 <div className="h-5 w-px bg-slate-700" />
 
                 <span className="font-mono text-sm font-bold tabular-nums" style={{ color: tariff.color }}>
-                    €{currentPriceEurMwh.toFixed(0)}
+                    €{currentPriceEurMwh.toFixed(0)}/MWh
                 </span>
 
                 <div className="h-5 w-px bg-slate-700" />

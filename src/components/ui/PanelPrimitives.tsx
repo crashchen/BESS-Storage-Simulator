@@ -2,7 +2,7 @@
 // Shared UI primitives for control panels
 // ============================================================
 
-import type { ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 
 export function Gauge({
     label,
@@ -60,6 +60,7 @@ export function ActionButton({
             data-testid={testId}
             className={`
                 relative rounded-lg border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200
+                focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400
                 ${active
                     ? 'scale-[1.02] text-white shadow-lg'
                     : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:bg-slate-700/60 hover:text-slate-100'}
@@ -92,6 +93,21 @@ export function NumericField({
     onChange: (value: number) => void;
     testId: string;
 }) {
+    const [draft, setDraft] = useState(String(value));
+
+    useEffect(() => {
+        setDraft(String(value));
+    }, [value]);
+
+    const commit = () => {
+        const n = Number(draft);
+        if (draft !== '' && Number.isFinite(n)) {
+            onChange(n);
+        } else {
+            setDraft(String(value));
+        }
+    };
+
     return (
         <label className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between text-xs text-slate-400">
@@ -107,13 +123,10 @@ export function NumericField({
                 min={min}
                 max={max}
                 step={step}
-                value={value}
-                onChange={(event) => {
-                    const nextValue = Number(event.target.value);
-                    if (Number.isFinite(nextValue)) {
-                        onChange(nextValue);
-                    }
-                }}
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                onBlur={commit}
+                onKeyDown={(event) => { if (event.key === 'Enter') commit(); }}
                 className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 font-mono text-sm text-slate-100 outline-none transition focus:border-slate-500"
             />
         </label>

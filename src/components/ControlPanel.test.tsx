@@ -66,6 +66,7 @@ describe('ControlPanel', () => {
 
         const capacityInput = screen.getByTestId('bess-energy-capacity-input');
         fireEvent.change(capacityInput, { target: { value: '800' } });
+        fireEvent.blur(capacityInput);
 
         expect(onCommand).toHaveBeenCalledWith({ type: 'START_SIMULATION' });
         expect(onCommand).toHaveBeenCalledWith({ type: 'SET_BESS_ENERGY_CAPACITY', payload: 800 });
@@ -84,7 +85,9 @@ describe('ControlPanel', () => {
         );
 
         await openRightDrawer(user);
-        fireEvent.change(screen.getByTestId('tariff-rate-peak'), { target: { value: '420' } });
+        const tariffInput = screen.getByTestId('tariff-rate-peak');
+        fireEvent.change(tariffInput, { target: { value: '420' } });
+        fireEvent.blur(tariffInput);
 
         expect(onCommand).toHaveBeenCalledWith({
             type: 'SET_TARIFF_RATE',
@@ -107,7 +110,9 @@ describe('ControlPanel', () => {
         await openLeftDrawer(user);
 
         expect(screen.getByText(/project capacity/i)).toBeInTheDocument();
-        fireEvent.change(screen.getByTestId('solar-ac-capacity-input'), { target: { value: '140' } });
+        const solarInput = screen.getByTestId('solar-ac-capacity-input');
+        fireEvent.change(solarInput, { target: { value: '140' } });
+        fireEvent.blur(solarInput);
 
         expect(onCommand).toHaveBeenCalledWith({ type: 'SET_SOLAR_AC_CAPACITY', payload: 140 });
     });

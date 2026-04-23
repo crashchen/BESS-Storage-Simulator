@@ -51,31 +51,46 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
 
         case 'CHARGE':
             return {
-                next: { ...prev, batteryMode: 'charging', autoArbEnabled: false, timestamp: now },
+                next: {
+                    ...prev, batteryMode: 'charging', autoArbEnabled: false,
+                    batteryPowerMw: 0, batteryChargeFromSolarMw: 0, batteryChargeFromGridMw: 0,
+                    batteryDischargeToGridMw: 0, timestamp: now,
+                },
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
         case 'DISCHARGE':
             return {
-                next: { ...prev, batteryMode: 'discharging', autoArbEnabled: false, timestamp: now },
+                next: {
+                    ...prev, batteryMode: 'discharging', autoArbEnabled: false,
+                    batteryPowerMw: 0, batteryChargeFromSolarMw: 0, batteryChargeFromGridMw: 0,
+                    batteryDischargeToGridMw: 0, timestamp: now,
+                },
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
         case 'IDLE':
             return {
-                next: { ...prev, batteryMode: 'idle', autoArbEnabled: false, timestamp: now },
-                sideEffects: NO_SIDE_EFFECTS,
-            };
-
-        case 'SET_DISPATCH_SCALE':
-            return {
                 next: {
-                    ...prev,
-                    dispatchScalePercent: clamp(cmd.payload, SIMULATION.dispatchScaleMin, SIMULATION.dispatchScaleMax),
-                    timestamp: now,
+                    ...prev, batteryMode: 'idle', autoArbEnabled: false,
+                    batteryPowerMw: 0, batteryChargeFromSolarMw: 0, batteryChargeFromGridMw: 0,
+                    batteryDischargeToGridMw: 0, timestamp: now,
                 },
                 sideEffects: NO_SIDE_EFFECTS,
             };
+
+        case 'SET_DISPATCH_SCALE': {
+            const dispatchScalePercent = clamp(cmd.payload, SIMULATION.dispatchScaleMin, SIMULATION.dispatchScaleMax);
+            const gridDemandMw = computeGridDemandMw(
+                prev.timeOfDay,
+                dispatchScalePercent / 100,
+                selectGridConnectionTotalMw(prev),
+            );
+            return {
+                next: { ...prev, dispatchScalePercent, gridDemandMw, timestamp: now },
+                sideEffects: NO_SIDE_EFFECTS,
+            };
+        }
 
         case 'SET_TIME_SPEED':
             return {

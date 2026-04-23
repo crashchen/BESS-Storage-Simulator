@@ -27,22 +27,27 @@ function DrawerTab({
     isOpen,
     onClick,
     position,
+    controlsId,
 }: {
     icon: string;
     label: string;
     isOpen: boolean;
     onClick: () => void;
     position: 'left' | 'right';
+    controlsId: string;
 }) {
     return (
         <button
             onClick={onClick}
             aria-label={label}
+            aria-expanded={isOpen}
+            aria-controls={controlsId}
             className={`
-                pointer-events-auto flex items-center gap-2 rounded-lg 
+                pointer-events-auto flex items-center gap-2 rounded-lg
                 border border-slate-700/60 bg-slate-900/70 px-3 py-2.5
                 text-xs font-semibold text-slate-300 backdrop-blur-md
                 transition-all duration-300 hover:bg-slate-800/80 hover:text-white
+                focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400
                 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}
                 ${position === 'left' ? 'rounded-l-none border-l-0' : 'rounded-r-none border-r-0'}
             `}
@@ -56,11 +61,15 @@ function DrawerTab({
 
 // Drawer container with slide animation
 function Drawer({
+    id,
+    label,
     isOpen,
     onClose,
     position,
     children,
 }: {
+    id: string;
+    label: string;
     isOpen: boolean;
     onClose: () => void;
     position: 'left' | 'right';
@@ -72,6 +81,9 @@ function Drawer({
 
     return (
         <div
+            id={id}
+            role="region"
+            aria-label={label}
             className={`
                 pointer-events-auto absolute top-0 bottom-0 w-[380px] max-w-[90vw]
                 flex flex-col gap-3 overflow-y-auto p-3
@@ -89,8 +101,9 @@ function Drawer({
                         aria-label="Close panel"
                         className={`
                             absolute top-3 z-20 flex h-8 w-8 items-center justify-center
-                            rounded-full bg-slate-800/80 text-slate-400 
+                            rounded-full bg-slate-800/80 text-slate-400
                             transition-colors hover:bg-slate-700 hover:text-white
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400
                             ${position === 'left' ? 'right-2' : 'left-2'}
                         `}
                         title="Close panel"
@@ -114,7 +127,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
     return (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[4.75rem] z-10 select-none">
             {/* Left drawer - Controls */}
-            <Drawer isOpen={leftOpen} onClose={() => setLeftOpen(false)} position="left">
+            <Drawer id="drawer-controls" label="Controls" isOpen={leftOpen} onClose={() => setLeftOpen(false)} position="left">
                 <SimulationControl
                     simulationStatus={gridState.simulationStatus}
                     timeSpeed={gridState.timeSpeed}
@@ -127,7 +140,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
             </Drawer>
 
             {/* Right drawer - Metrics & Economics */}
-            <Drawer isOpen={rightOpen} onClose={() => setRightOpen(false)} position="right">
+            <Drawer id="drawer-metrics" label="Metrics & Economics" isOpen={rightOpen} onClose={() => setRightOpen(false)} position="right">
                 <MetricsPanel gridState={gridState} />
                 <EconomicsPanel gridState={gridState} onCommand={onCommand} />
 
@@ -147,8 +160,9 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                         icon="⚡"
                         label="Controls"
                         isOpen={leftOpen}
-                        onClick={() => setLeftOpen(true)}
+                        onClick={() => { setLeftOpen(true); setRightOpen(false); }}
                         position="left"
+                        controlsId="drawer-controls"
                     />
                 ) : null}
             </div>
@@ -159,8 +173,9 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                         icon="📊"
                         label="Metrics"
                         isOpen={rightOpen}
-                        onClick={() => setRightOpen(true)}
+                        onClick={() => { setRightOpen(true); setLeftOpen(false); }}
                         position="right"
+                        controlsId="drawer-metrics"
                     />
                 ) : null}
             </div>

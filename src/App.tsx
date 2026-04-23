@@ -29,7 +29,7 @@ export default function App() {
       <ControlPanel gridState={state} history={history} onCommand={dispatch} />
 
       {/* ── Attribution ───────────────────────────────────── */}
-      <div className="absolute bottom-2 right-4 text-[10px] text-slate-600 font-mono pointer-events-none select-none">
+      <div className="absolute bottom-2 right-4 text-[10px] text-slate-500 font-mono pointer-events-none select-none">
         ROMANIA HYBRID BESS SIMULATOR v0.1
       </div>
     </div>
