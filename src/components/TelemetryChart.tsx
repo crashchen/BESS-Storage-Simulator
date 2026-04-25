@@ -10,6 +10,7 @@ import {
     ReferenceLine,
 } from 'recharts';
 import type { GridSnapshot } from '../types';
+import { formatTime } from '../utils/formatTime';
 
 interface TelemetryChartProps {
     history: GridSnapshot[];
@@ -24,7 +25,7 @@ export function TelemetryChart({ history }: TelemetryChartProps) {
                     <XAxis
                         dataKey="t"
                         tick={{ fontSize: 9, fill: '#64748b' }}
-                        tickFormatter={(v: number) => `${Math.round(v)}s`}
+                        tickFormatter={(v: number) => formatTime(v)}
                     />
                     <YAxis
                         tick={{ fontSize: 9, fill: '#64748b' }}
@@ -38,7 +39,7 @@ export function TelemetryChart({ history }: TelemetryChartProps) {
                             fontSize: '11px',
                         }}
                         labelStyle={{ color: '#94a3b8' }}
-                        labelFormatter={(v) => `${Number(v).toFixed(1)}s`}
+                        labelFormatter={(v) => `Sim ${formatTime(Number(v))}`}
                     />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', color: '#94a3b8' }} />
                     <ReferenceLine y={0} stroke="#475569" strokeDasharray="2 2" />

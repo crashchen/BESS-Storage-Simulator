@@ -14,6 +14,7 @@ describe('useGridSimulation dispatch', () => {
         nowMs = 1000;
 
         vi.spyOn(performance, 'now').mockImplementation(() => nowMs);
+        vi.spyOn(Date, 'now').mockImplementation(() => 1_700_000_000_000 + nowMs);
         vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
             frameCallback = callback;
             return 1;
@@ -51,6 +52,17 @@ describe('useGridSimulation dispatch', () => {
         });
 
         expect(result.current.state.timeSpeed).toBe(SIMULATION.maxTimeSpeed);
+    });
+
+    it('records tick timestamps using wall-clock time instead of performance time', () => {
+        const { result } = renderHook(() => useGridSimulation());
+
+        act(() => {
+            result.current.dispatch({ type: 'START_SIMULATION' });
+        });
+        advanceFrame(1100);
+
+        expect(result.current.state.timestamp).toBe(1_700_000_001_100);
     });
 
     it('resets battery mode and power when peak-ready is toggled', () => {
@@ -199,6 +211,19 @@ describe('useGridSimulation dispatch', () => {
             ),
             6,
         );
+    });
+
+    it('stores telemetry history on the simulated-time axis', () => {
+        const { result } = renderHook(() => useGridSimulation());
+
+        act(() => {
+            result.current.dispatch({ type: 'SET_TIME_SPEED', payload: 240 });
+            result.current.dispatch({ type: 'START_SIMULATION' });
+        });
+        advanceFrame(1100);
+
+        expect(result.current.history).toHaveLength(1);
+        expect(result.current.history[0]?.t).toBeCloseTo((0.1 * 240) / 3600, 3);
     });
 
     it('preserves stored energy when BESS energy capacity changes', () => {

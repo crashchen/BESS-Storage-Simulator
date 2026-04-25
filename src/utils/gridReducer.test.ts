@@ -3,7 +3,13 @@ import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
 import { makeGridState } from '../test/fixtures';
 import { applyCommand } from './gridReducer';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from './gridSelectors';
-import { computeGridDemandMw, computeSolarOutputMw, getElectricityPriceEurMwh } from './simulationModel';
+import {
+    computeGridDemandMw,
+    computeSolarOutputMw,
+    getElectricityPriceEurMwh,
+    getTariffPeriod,
+    settleHybridProjectTick,
+} from './simulationModel';
 import { createInitialGridState } from './tickEngine';
 
 const NOW = 1700000000000;
@@ -163,6 +169,58 @@ describe('gridReducer applyCommand', () => {
         );
     });
 
+    it('reconciles paused-state telemetry when solar capacity changes', () => {
+        const prev = makeGridState({
+            simulationStatus: 'paused',
+            timeOfDay: SOLAR.solarNoon,
+            solarAcCapacityMw: 100,
+            solarDcCapacityMwp: 110,
+            batteryMode: 'discharging',
+            batteryPowerMw: -150,
+            batteryChargeFromSolarMw: 12,
+            batteryChargeFromGridMw: 8,
+            batteryDischargeToGridMw: 150,
+            solarExportMw: 77,
+            solarCurtailedMw: 9,
+            projectNetExportMw: -4,
+        });
+        const payload = 160;
+        const expectedSolarOutputMw = computeSolarOutputMw(prev.timeOfDay, prev.solarAcCapacityMw, payload);
+        const expectedDemandMw = computeGridDemandMw(
+            prev.timeOfDay,
+            prev.dispatchScalePercent / 100,
+            selectGridConnectionTotalMw(prev),
+        );
+        const expectedPriceEurMwh = getElectricityPriceEurMwh(prev.timeOfDay, prev.tariffRatesEurMwh);
+        const expectedSettlement = settleHybridProjectTick({
+            solarOutputMw: expectedSolarOutputMw,
+            gridDemandMw: expectedDemandMw,
+            batteryPowerMw: 0,
+            gridPvEvacuationMw: prev.gridPvEvacuationMw,
+            currentPriceEurMwh: expectedPriceEurMwh,
+            dtHours: 0,
+        });
+
+        const { next } = applyCommand(
+            prev,
+            { type: 'SET_SOLAR_DC_CAPACITY', payload },
+            NOW,
+        );
+
+        expect(next.solarDcCapacityMwp).toBe(payload);
+        expect(next.solarOutputMw).toBeCloseTo(expectedSolarOutputMw, 6);
+        expect(next.gridDemandMw).toBeCloseTo(expectedDemandMw, 6);
+        expect(next.batteryPowerMw).toBe(0);
+        expect(next.batteryChargeFromSolarMw).toBe(expectedSettlement.batteryChargeFromSolarMw);
+        expect(next.batteryChargeFromGridMw).toBe(expectedSettlement.batteryChargeFromGridMw);
+        expect(next.batteryDischargeToGridMw).toBe(expectedSettlement.batteryDischargeToGridMw);
+        expect(next.solarExportMw).toBe(expectedSettlement.solarExportMw);
+        expect(next.solarCurtailedMw).toBe(expectedSettlement.solarCurtailedMw);
+        expect(next.projectNetExportMw).toBe(expectedSettlement.projectNetExportMw);
+        expect(next.tariffPeriod).toBe(getTariffPeriod(prev.timeOfDay));
+        expect(next.currentPriceEurMwh).toBe(expectedPriceEurMwh);
+    });
+
     it('SET_GRID_PV_EVACUATION updates the field and recomputes demand without storing the total', () => {
         const prev = makeGridState({
             gridPvEvacuationMw: 102,
@@ -235,15 +293,22 @@ describe('gridReducer applyCommand', () => {
 
     it('TOGGLE_AUTO_ARB flips auto-arb, resets the battery to idle, and zeroes commanded power', () => {
         const prev = makeGridState({
+            simulationStatus: 'paused',
             autoArbEnabled: false,
             batteryMode: 'discharging',
             batteryPowerMw: -150,
+            batteryChargeFromSolarMw: 20,
+            batteryChargeFromGridMw: 5,
+            batteryDischargeToGridMw: 150,
         });
         const { next } = applyCommand(prev, { type: 'TOGGLE_AUTO_ARB' }, NOW);
 
         expect(next.autoArbEnabled).toBe(true);
         expect(next.batteryMode).toBe('idle');
         expect(next.batteryPowerMw).toBe(0);
+        expect(next.batteryChargeFromSolarMw).toBe(0);
+        expect(next.batteryChargeFromGridMw).toBe(0);
+        expect(next.batteryDischargeToGridMw).toBe(0);
     });
 
     it('SET_AUTO_ARB_ENABLED sets the flag exactly to the payload idempotently', () => {

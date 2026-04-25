@@ -11,7 +11,7 @@ import { createInitialGridState, simulateTick } from '../utils/tickEngine';
 export function useGridSimulation() {
     const simRef = useRef<GridState>(createInitialGridState());
     const historyRef = useRef<GridSnapshot[]>([]);
-    const elapsedChartSecondsRef = useRef(0);
+    const elapsedChartSimHoursRef = useRef(0);
     const lastFrameRef = useRef(0);
     const lastSnapshotRef = useRef(0);
     const lastRenderSyncRef = useRef(0);
@@ -32,7 +32,7 @@ export function useGridSimulation() {
 
         if (sideEffects.resetHistory) {
             historyRef.current = [];
-            elapsedChartSecondsRef.current = 0;
+            elapsedChartSimHoursRef.current = 0;
             setHistory([]);
         }
         if (sideEffects.resetTimerRefs) {
@@ -55,6 +55,7 @@ export function useGridSimulation() {
 
         const tick = () => {
             const now = performance.now();
+            const wallNow = Date.now();
 
             if (simRef.current.simulationStatus !== 'running') {
                 lastFrameRef.current = now;
@@ -64,16 +65,16 @@ export function useGridSimulation() {
 
             const dtReal = Math.min((now - lastFrameRef.current) / 1000, SIMULATION.maxDeltaTimeSeconds);
             lastFrameRef.current = now;
-            elapsedChartSecondsRef.current += dtReal;
+            elapsedChartSimHoursRef.current += (dtReal * simRef.current.timeSpeed) / 3600;
 
-            simRef.current = simulateTick(simRef.current, dtReal, now);
+            simRef.current = simulateTick(simRef.current, dtReal, wallNow);
 
             if (now - lastSnapshotRef.current >= SIMULATION.snapshotIntervalMs) {
                 lastSnapshotRef.current = now;
 
                 const s = simRef.current;
                 const snap: GridSnapshot = {
-                    t: parseFloat(elapsedChartSecondsRef.current.toFixed(1)),
+                    t: parseFloat(elapsedChartSimHoursRef.current.toFixed(3)),
                     solarMw: parseFloat(s.solarOutputMw.toFixed(1)),
                     demandMw: parseFloat(s.gridDemandMw.toFixed(1)),
                     batteryMw: parseFloat(s.batteryPowerMw.toFixed(1)),

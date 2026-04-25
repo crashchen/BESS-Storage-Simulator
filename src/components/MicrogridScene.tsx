@@ -18,6 +18,20 @@ const COLOR_SOLAR_ON = new Color('#facc15');
 const COLOR_SOLAR_OFF = new Color('#1e293b');
 const COLOR_SOLAR_FLOW = new Color('#fbbf24');
 const COLOR_GRID_FLOW = new Color('#3b82f6');
+const COLOR_CURTAIL = new Color('#ef4444');
+
+// SoC health gradient: red (0%) → amber (50%) → green (100%)
+const SOC_COLOR_LOW = new Color('#ef4444');
+const SOC_COLOR_MID = new Color('#f59e0b');
+const SOC_COLOR_HIGH = new Color('#22c55e');
+const _socColor = new Color();
+
+function socHealthColor(soc: number): Color {
+    if (soc < 50) {
+        return _socColor.copy(SOC_COLOR_LOW).lerp(SOC_COLOR_MID, soc / 50);
+    }
+    return _socColor.copy(SOC_COLOR_MID).lerp(SOC_COLOR_HIGH, (soc - 50) / 50);
+}
 
 // ── Helper: Sun position from timeOfDay ──────────────────────
 function sunPosition(tod: number): [number, number, number] {
@@ -49,7 +63,7 @@ function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
     const glowRef = useRef<Mesh>(null);
 
     const targetColor = mode === 'charging' ? COLOR_CHARGE : mode === 'discharging' ? COLOR_DISCHARGE : COLOR_IDLE;
-    const levelColor = targetColor;
+    const levelColor = useMemo(() => socHealthColor(soc).clone(), [soc]);
     const currentColor = useRef(targetColor.clone());
     const socSegments = useMemo(() => {
         const segmentCount = 8;
@@ -312,6 +326,60 @@ function LoadBuilding() {
     );
 }
 
+// ── Curtailment Particles ───────────────────────────────────
+function CurtailmentParticle({ offset, bounds }: {
+    offset: number;
+    bounds: { x: number; z: number; spread: number };
+}) {
+    const meshRef = useRef<Mesh>(null);
+    const progressRef = useRef(offset);
+
+    useFrame((_, delta) => {
+        if (!meshRef.current) return;
+        progressRef.current = (progressRef.current + delta * 0.4) % 1;
+        const t = progressRef.current;
+        meshRef.current.position.set(
+            bounds.x + Math.sin(t * Math.PI * 3 + offset * 10) * bounds.spread,
+            2.2 + t * 3.5,
+            bounds.z + Math.cos(t * Math.PI * 2 + offset * 7) * bounds.spread,
+        );
+        const fade = t < 0.3 ? t / 0.3 : 1 - (t - 0.3) / 0.7;
+        meshRef.current.scale.setScalar(0.06 + fade * 0.08);
+        const mat = meshRef.current.material as MeshStandardMaterial;
+        mat.opacity = fade * 0.85;
+    });
+
+    return (
+        <mesh ref={meshRef}>
+            <sphereGeometry args={[1, 6, 6]} />
+            <meshStandardMaterial
+                color={COLOR_CURTAIL}
+                emissive={COLOR_CURTAIL}
+                emissiveIntensity={2}
+                transparent
+                opacity={0.8}
+            />
+        </mesh>
+    );
+}
+
+function CurtailmentEffect({ curtailedMw, maxSolarMw }: { curtailedMw: number; maxSolarMw: number }) {
+    const count = Math.min(20, Math.max(0, Math.ceil((curtailedMw / Math.max(maxSolarMw, 1)) * 20)));
+    if (count === 0) return null;
+
+    return (
+        <group>
+            {Array.from({ length: count }).map((_, i) => (
+                <CurtailmentParticle
+                    key={i}
+                    offset={i / count}
+                    bounds={{ x: -6.5, z: -2, spread: 4 }}
+                />
+            ))}
+        </group>
+    );
+}
+
 // ── Energy Flow Paths ────────────────────────────────────────
 // Define curved paths for energy particles
 const FLOW_PATHS = {
@@ -502,6 +570,7 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
         solarAcCapacityMw,
         timeOfDay,
         solarExportMw,
+        solarCurtailedMw,
         batteryChargeFromSolarMw,
         batteryChargeFromGridMw,
         batteryDischargeToGridMw,
@@ -592,6 +661,9 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
                 maxSolarMw={solarAcCapacityMw}
                 maxBessMw={maxBessMw}
             />
+
+            {/* Curtailment visual */}
+            <CurtailmentEffect curtailedMw={solarCurtailedMw} maxSolarMw={solarAcCapacityMw} />
 
             {/* Camera controls */}
             <OrbitControls

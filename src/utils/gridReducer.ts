@@ -12,6 +12,8 @@ import {
     computeGridDemandMw,
     computeSolarOutputMw,
     getElectricityPriceEurMwh,
+    getTariffPeriod,
+    settleHybridProjectTick,
 } from './simulationModel';
 import { selectGridConnectionTotalMw } from './gridSelectors';
 import { createInitialGridState } from './tickEngine';
@@ -28,6 +30,45 @@ export interface ReducerResult {
 }
 
 const NO_SIDE_EFFECTS: ReducerSideEffects = {};
+
+function reconcileStaticTelemetry(state: GridState, now: number): GridState {
+    const solarOutputMw = computeSolarOutputMw(
+        state.timeOfDay,
+        state.solarAcCapacityMw,
+        state.solarDcCapacityMwp,
+    );
+    const gridDemandMw = computeGridDemandMw(
+        state.timeOfDay,
+        state.dispatchScalePercent / 100,
+        selectGridConnectionTotalMw(state),
+    );
+    const tariffPeriod = getTariffPeriod(state.timeOfDay);
+    const currentPriceEurMwh = getElectricityPriceEurMwh(state.timeOfDay, state.tariffRatesEurMwh);
+    const settlement = settleHybridProjectTick({
+        solarOutputMw,
+        gridDemandMw,
+        batteryPowerMw: 0,
+        gridPvEvacuationMw: state.gridPvEvacuationMw,
+        currentPriceEurMwh,
+        dtHours: 0,
+    });
+
+    return {
+        ...state,
+        solarOutputMw,
+        gridDemandMw,
+        batteryPowerMw: 0,
+        batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
+        batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
+        batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
+        solarExportMw: settlement.solarExportMw,
+        solarCurtailedMw: settlement.solarCurtailedMw,
+        projectNetExportMw: settlement.projectNetExportMw,
+        tariffPeriod,
+        currentPriceEurMwh,
+        timestamp: now,
+    };
+}
 
 export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): ReducerResult {
     switch (cmd.type) {
@@ -51,31 +92,25 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
 
         case 'CHARGE':
             return {
-                next: {
+                next: reconcileStaticTelemetry({
                     ...prev, batteryMode: 'charging', autoArbEnabled: false,
-                    batteryPowerMw: 0, batteryChargeFromSolarMw: 0, batteryChargeFromGridMw: 0,
-                    batteryDischargeToGridMw: 0, timestamp: now,
-                },
+                }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
         case 'DISCHARGE':
             return {
-                next: {
+                next: reconcileStaticTelemetry({
                     ...prev, batteryMode: 'discharging', autoArbEnabled: false,
-                    batteryPowerMw: 0, batteryChargeFromSolarMw: 0, batteryChargeFromGridMw: 0,
-                    batteryDischargeToGridMw: 0, timestamp: now,
-                },
+                }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
         case 'IDLE':
             return {
-                next: {
+                next: reconcileStaticTelemetry({
                     ...prev, batteryMode: 'idle', autoArbEnabled: false,
-                    batteryPowerMw: 0, batteryChargeFromSolarMw: 0, batteryChargeFromGridMw: 0,
-                    batteryDischargeToGridMw: 0, timestamp: now,
-                },
+                }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
@@ -87,7 +122,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 selectGridConnectionTotalMw(prev),
             );
             return {
-                next: { ...prev, dispatchScalePercent, gridDemandMw, timestamp: now },
+                next: prev.simulationStatus === 'running'
+                    ? { ...prev, dispatchScalePercent, gridDemandMw, timestamp: now }
+                    : reconcileStaticTelemetry({ ...prev, dispatchScalePercent }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
@@ -105,7 +142,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
         case 'SET_BESS_POWER_RATING': {
             const batteryPowerRatingMw = clamp(cmd.payload, BESS.minPowerMw, BESS.maxPowerMw);
             return {
-                next: { ...prev, batteryPowerRatingMw, timestamp: now },
+                next: prev.simulationStatus === 'running'
+                    ? { ...prev, batteryPowerRatingMw, timestamp: now }
+                    : reconcileStaticTelemetry({ ...prev, batteryPowerRatingMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
@@ -119,7 +158,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 100,
             );
             return {
-                next: { ...prev, batteryEnergyCapacityMwh, batterySocPercent, timestamp: now },
+                next: prev.simulationStatus === 'running'
+                    ? { ...prev, batteryEnergyCapacityMwh, batterySocPercent, timestamp: now }
+                    : reconcileStaticTelemetry({ ...prev, batteryEnergyCapacityMwh, batterySocPercent }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
@@ -132,7 +173,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 prev.solarDcCapacityMwp,
             );
             return {
-                next: { ...prev, solarAcCapacityMw, solarOutputMw, timestamp: now },
+                next: prev.simulationStatus === 'running'
+                    ? { ...prev, solarAcCapacityMw, solarOutputMw, timestamp: now }
+                    : reconcileStaticTelemetry({ ...prev, solarAcCapacityMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
@@ -145,7 +188,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 solarDcCapacityMwp,
             );
             return {
-                next: { ...prev, solarDcCapacityMwp, solarOutputMw, timestamp: now },
+                next: prev.simulationStatus === 'running'
+                    ? { ...prev, solarDcCapacityMwp, solarOutputMw, timestamp: now }
+                    : reconcileStaticTelemetry({ ...prev, solarDcCapacityMwp }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
@@ -162,7 +207,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 gridConnectionTotalMw,
             );
             return {
-                next: { ...prev, gridPvEvacuationMw, gridDemandMw, timestamp: now },
+                next: prev.simulationStatus === 'running'
+                    ? { ...prev, gridPvEvacuationMw, gridDemandMw, timestamp: now }
+                    : reconcileStaticTelemetry({ ...prev, gridPvEvacuationMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
@@ -179,7 +226,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 gridConnectionTotalMw,
             );
             return {
-                next: { ...prev, gridBessConnectionMw, gridDemandMw, timestamp: now },
+                next: prev.simulationStatus === 'running'
+                    ? { ...prev, gridBessConnectionMw, gridDemandMw, timestamp: now }
+                    : reconcileStaticTelemetry({ ...prev, gridBessConnectionMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
@@ -191,37 +240,38 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 [period]: clamp(value, TARIFF.minRateEurMwh, TARIFF.maxRateEurMwh),
             };
             return {
-                next: {
-                    ...prev,
-                    tariffRatesEurMwh,
-                    currentPriceEurMwh: getElectricityPriceEurMwh(prev.timeOfDay, tariffRatesEurMwh),
-                    timestamp: now,
-                },
+                next: prev.simulationStatus === 'running'
+                    ? {
+                        ...prev,
+                        tariffRatesEurMwh,
+                        currentPriceEurMwh: getElectricityPriceEurMwh(prev.timeOfDay, tariffRatesEurMwh),
+                        timestamp: now,
+                    }
+                    : reconcileStaticTelemetry({
+                        ...prev,
+                        tariffRatesEurMwh,
+                    }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
 
         case 'TOGGLE_AUTO_ARB':
             return {
-                next: {
+                next: reconcileStaticTelemetry({
                     ...prev,
                     autoArbEnabled: !prev.autoArbEnabled,
                     batteryMode: 'idle',
-                    batteryPowerMw: 0,
-                    timestamp: now,
-                },
+                }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
         case 'SET_AUTO_ARB_ENABLED':
             return {
-                next: {
+                next: reconcileStaticTelemetry({
                     ...prev,
                     autoArbEnabled: cmd.payload,
                     batteryMode: 'idle',
-                    batteryPowerMw: 0,
-                    timestamp: now,
-                },
+                }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
 

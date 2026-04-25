@@ -148,10 +148,13 @@ function simulateTickStep(
 
     const transferLimitMw = getBatteryTransferLimitMw(prev);
     const powerMismatchMw = solarOutputMw - gridDemandMw;
-    if (prev.autoArbEnabled && requestedMode === 'charging') {
+    if (requestedMode === 'charging') {
+        const requestedChargeMw = prev.autoArbEnabled
+            ? clamp(autoArbPowerMw, 0, transferLimitMw)
+            : transferLimitMw;
         const remainingEnergyMwh = ((100 - prev.batterySocPercent) / 100) * prev.batteryEnergyCapacityMwh;
         const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
-        const clampedChargeMw = Math.min(clamp(autoArbPowerMw, 0, transferLimitMw), maxChargeMw);
+        const clampedChargeMw = Math.min(requestedChargeMw, maxChargeMw);
         const projectedUncompensatedMw = powerMismatchMw - clampedChargeMw;
         const projectedFrequencyHz = GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * projectedUncompensatedMw;
         if (projectedFrequencyHz < FREQUENCY_MODEL.chargeLockoutHz) {

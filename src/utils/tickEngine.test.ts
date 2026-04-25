@@ -71,8 +71,9 @@ describe('tickEngine', () => {
             simulationStatus: 'running' as const,
             batterySocPercent: 99,
             batteryMode: 'charging' as const,
-            timeOfDay: 5,
+            timeOfDay: 12,
             timeSpeed: SIMULATION.maxTimeSpeed,
+            dispatchScalePercent: 50,
             cumulativeRevenueEur: 1000,
         };
 
@@ -125,6 +126,49 @@ describe('tickEngine', () => {
 
         expect(next.batteryChargeFromGridMw).toBe(0);
         expect(next.batteryMode).toBe('idle');
+    });
+
+    it('locks out manual charging when the projected frequency would dip below the threshold', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            autoArbEnabled: false,
+            timeOfDay: 19,
+            dispatchScalePercent: 150,
+            batterySocPercent: 30,
+            batteryMode: 'charging' as const,
+            batteryPowerMw: 0,
+        };
+
+        const next = simulateTick(initial, 1, 1, () => 0.5);
+
+        expect(next.batteryPowerMw).toBe(0);
+        expect(next.batteryChargeFromGridMw).toBe(0);
+        expect(next.batteryMode).toBe('idle');
+    });
+
+    it('allows manual charging when solar surplus keeps projected frequency above the threshold', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            autoArbEnabled: false,
+            timeOfDay: 12,
+            dispatchScalePercent: 50,
+            batterySocPercent: 30,
+            batteryMode: 'charging' as const,
+            solarAcCapacityMw: 250,
+            solarDcCapacityMwp: 300,
+            gridPvEvacuationMw: 260,
+            gridBessConnectionMw: 80,
+            batteryPowerRatingMw: 80,
+        };
+
+        const next = simulateTick(initial, 1, 1, () => 0.5);
+
+        expect(next.batteryPowerMw).toBeGreaterThan(0);
+        expect(next.batteryChargeFromSolarMw).toBeGreaterThan(0);
+        expect(next.gridFrequencyHz).toBeGreaterThanOrEqual(FREQUENCY_MODEL.chargeLockoutHz);
+        expect(next.batteryMode).toBe('charging');
     });
 
     it('does not bypass the frequency lockout when a small solar surplus still requires substantial grid charging', () => {
