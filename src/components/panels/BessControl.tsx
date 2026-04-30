@@ -230,6 +230,7 @@ export function DispatchParameters({ gridState, onCommand }: BessControlProps) {
                     max={SIMULATION.dispatchScaleMax}
                     value={dispatchScalePercent}
                     aria-label="Grid Dispatch Scale"
+                    aria-valuetext={`${dispatchScalePercent}% demand scale, ${gridDemandMw.toFixed(0)} MW`}
                     onChange={(event) => onCommand({ type: 'SET_DISPATCH_SCALE', payload: Number(event.target.value) })}
                     className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-orange-500"
                 />

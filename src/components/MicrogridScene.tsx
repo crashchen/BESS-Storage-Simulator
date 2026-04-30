@@ -427,13 +427,14 @@ interface EnergyParticleProps {
 function EnergyParticle({ curve, color, speed, offset, size, intensity }: EnergyParticleProps) {
     const meshRef = useRef<Mesh>(null);
     const progressRef = useRef((offset % 1));
+    const pointRef = useRef(new Vector3());
 
     useFrame((_, delta) => {
         if (!meshRef.current) return;
         
         progressRef.current = (progressRef.current + delta * speed) % 1;
-        const point = curve.getPoint(progressRef.current);
-        meshRef.current.position.copy(point);
+        curve.getPoint(progressRef.current, pointRef.current);
+        meshRef.current.position.copy(pointRef.current);
         
         // Pulse effect
         const pulse = 0.8 + 0.4 * Math.sin(progressRef.current * Math.PI * 4);

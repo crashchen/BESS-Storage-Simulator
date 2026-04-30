@@ -2,7 +2,7 @@
 // Shared UI primitives for control panels
 // ============================================================
 
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 export function Gauge({
     label,
@@ -56,8 +56,10 @@ export function ActionButton({
 }) {
     return (
         <button
+            type="button"
             onClick={onClick}
             data-testid={testId}
+            aria-pressed={active}
             className={`
                 relative rounded-lg border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200
                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400
@@ -93,20 +95,28 @@ export function NumericField({
     onChange: (value: number) => void;
     testId: string;
 }) {
-    const [draft, setDraft] = useState(String(value));
-
-    useEffect(() => {
-        setDraft(String(value));
-    }, [value]);
+    const [draftState, setDraftState] = useState({
+        sourceValue: value,
+        draft: String(value),
+        invalid: false,
+    });
+    const isCurrentDraft = Object.is(draftState.sourceValue, value);
+    const draft = isCurrentDraft ? draftState.draft : String(value);
+    const invalid = isCurrentDraft ? draftState.invalid : false;
 
     const commit = () => {
-        const n = Number(draft);
-        if (draft !== '' && Number.isFinite(n)) {
+        const trimmedDraft = draft.trim();
+        const n = Number(trimmedDraft);
+        if (trimmedDraft !== '' && Number.isFinite(n) && n >= min && n <= max) {
+            setDraftState({ sourceValue: value, draft, invalid: false });
             onChange(n);
         } else {
-            setDraft(String(value));
+            setDraftState({ sourceValue: value, draft, invalid: true });
         }
     };
+    const precision = step < 1 ? 1 : 0;
+    const errorId = `${testId}-error`;
+    const formatLimit = (limit: number) => limit.toFixed(precision);
 
     return (
         <label className="flex flex-col gap-1.5">
@@ -119,16 +129,34 @@ export function NumericField({
             <input
                 type="number"
                 aria-label={label}
+                aria-invalid={invalid || undefined}
+                aria-describedby={invalid ? errorId : undefined}
                 data-testid={testId}
                 min={min}
                 max={max}
                 step={step}
                 value={draft}
-                onChange={(event) => setDraft(event.target.value)}
+                onChange={(event) => {
+                    setDraftState({
+                        sourceValue: value,
+                        draft: event.target.value,
+                        invalid: false,
+                    });
+                }}
                 onBlur={commit}
                 onKeyDown={(event) => { if (event.key === 'Enter') commit(); }}
-                className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 font-mono text-sm text-slate-100 outline-none transition focus:border-slate-500"
+                className={`
+                    rounded-lg border bg-slate-950/70 px-3 py-2 font-mono text-sm text-slate-100 outline-none transition
+                    ${invalid
+                        ? 'border-red-400 shadow-[0_0_0_1px_rgba(248,113,113,0.4)] focus:border-red-300'
+                        : 'border-slate-700 focus:border-slate-500'}
+                `}
             />
+            {invalid ? (
+                <span id={errorId} role="alert" className="text-[11px] font-medium text-red-300">
+                    Enter {formatLimit(min)}-{formatLimit(max)} {unit}.
+                </span>
+            ) : null}
         </label>
     );
 }

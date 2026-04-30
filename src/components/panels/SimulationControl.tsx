@@ -50,6 +50,7 @@ export function SimulationControl({ simulationStatus, timeSpeed, onCommand }: Si
                     max={SIMULATION.maxTimeSpeed}
                     value={timeSpeed}
                     aria-label="Simulation Speed"
+                    aria-valuetext={`${timeSpeed} times real time`}
                     onChange={(event) => onCommand({ type: 'SET_TIME_SPEED', payload: Number(event.target.value) })}
                     className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-cyan-500"
                 />
