@@ -31,8 +31,9 @@ The app is a single-page React + Three.js simulator. There is **no backend** —
 Everything flows from `src/hooks/useGridSimulation.ts`. Key points that aren't obvious from the file tree:
 
 - **Ref-based tick, throttled React updates.** The `requestAnimationFrame` loop mutates `simRef.current` every frame but only calls `setState` every `SIMULATION.renderSyncIntervalMs` (~33 ms / 30 fps). Chart snapshots are pushed on a separate `SIMULATION.snapshotIntervalMs` cadence into `historyRef`. If you add state consumed by the UI, read it from `state` (throttled) — do not subscribe components to `simRef` directly.
-- **`dispatch(cmd)` is the only write path.** All UI interactions produce a `BESSCommand` union (`src/types.ts`) handled by a switch in `useGridSimulation.ts`. New controls should add a command variant, not mutate state ad hoc. `STOP_SIMULATION` fully resets via `createInitialGridState()` and clears history/refs.
-- **`simulateTick` is pure-ish.** Given `(prev, dtReal, now)` it returns the next `GridState`. Dispatch logic (manual mode vs. auto-arb), SoC clamping, efficiency losses, and the frequency droop model all live here. The *economic* settlement and forecast math is delegated to `src/utils/simulationModel.ts` so it can be unit-tested without the RAF loop — add new simulation math there, not inline in the hook.
+- **`dispatch(cmd)` is the only write path.** All UI interactions produce a `BESSCommand` union (`src/types.ts`) handled by `applyCommand()` in `src/utils/gridReducer.ts`. The reducer is pure — it returns a `ReducerResult` containing the next `GridState` plus a `sideEffects` manifest (reset history, reset timer refs, etc.) that the hook applies. New controls should add a command variant to the `BESSCommand` union, not mutate state ad hoc.
+- **`simulateTick` lives in `src/utils/tickEngine.ts`.** Given `(prev, dtReal, now)` it returns the next `GridState`. It handles tariff-boundary sub-stepping, dispatch logic (manual vs. auto-arb), SoC clamping, efficiency losses, and the frequency droop model. The *economic* settlement and forecast math is delegated to `src/utils/simulationModel.ts` so it can be unit-tested without the RAF loop — add new simulation math there, not inline in the hook.
+- **Selectors** in `src/utils/gridSelectors.ts` compute derived values (`selectBatteryDurationHours`, `selectGridConnectionTotalMw`, `getBatteryTransferLimitMw`) used by both the reducer and UI components.
 
 ### Config is the single source of truth
 
@@ -55,7 +56,7 @@ This split is a product decision, not a bug. Don't "simplify" them into one numb
 
 `App.tsx` composes three overlays over a fullscreen container:
 
-1. `SimulationViewport` — r3f `Canvas` hosting `MicrogridScene` (3D BESS container, solar array, energy-flow particles, time-of-day lighting). Props-only subscription to `GridState`; do not hold React state for the scene here.
+1. `SimulationViewport` — r3f `Canvas` wrapped in a `CanvasErrorBoundary` (graceful fallback on WebGL crashes), hosting `MicrogridScene` (3D BESS container with SoC health-color gradient, solar array, energy-flow particles, curtailment particles, time-of-day lighting). A `FrequencyVignette` CSS overlay pulses red when grid frequency deviates from the safe band. Props-only subscription to `GridState`; do not hold React state for the scene here.
 2. `StatusHud` — compact top-of-screen live metrics bar.
 3. `ControlPanel` — left/right slide-out drawers. Inside, individual panels live under `src/components/panels/` and share primitives (`Gauge`, `ActionButton`, `NumericField`, `PanelCard`) from `src/components/ui/PanelPrimitives.tsx`. `TelemetryChart` is `lazy()`-loaded to keep the initial bundle small.
 
@@ -63,6 +64,14 @@ This split is a product decision, not a bug. Don't "simplify" them into one numb
 
 `vite.config.ts` defines manual `rollupOptions.output.manualChunks` that split `react`, `three`, `@react-three/fiber`, `@react-three/drei` (+ troika/three-stdlib/camera-controls/meshline), `recharts`/`d3`, and `three/examples` into separate vendor chunks. If you add a heavy dependency, consider whether it needs its own chunk here — otherwise it lands in the app bundle.
 
+### R3F scene patterns
+
+`MicrogridScene.tsx` (~660 lines) contains many sub-components (BESSContainer, SolarPanel, EnergyParticle, CurtailmentParticle, etc.). Key patterns to follow when editing:
+
+- **Avoid mixing declarative JSX material props with imperative `useFrame` updates on the same property.** R3F's reconciler may overwrite your `useFrame` changes on re-render. If you animate a property in `useFrame`, don't also set it via JSX.
+- **Reuse Vector3 and Color objects** — pass a target ref to `curve.getPoint(t, targetVec)` instead of allocating each frame.
+- **`useMemo` dependencies on floating-point values** like `soc` should be discretized (e.g., `Math.round(soc / 100 * 8)`) since the raw float changes every frame, making the memo pointless.
+
 ### Tests
 
-Vitest runs in `jsdom` (`vitest.config.ts`) with `src/test/setup.ts` and a `makeGridState` fixture in `src/test/fixtures.ts` for building partial `GridState` objects. The pure simulation math in `src/utils/simulationModel.ts` has dedicated unit tests; UI tests (`*.test.tsx`) use React Testing Library. When adding simulation behavior, prefer extending `simulationModel.ts` + a unit test over testing through the RAF loop.
+Vitest runs in `jsdom` (`vitest.config.ts`) with `src/test/setup.ts` and a `makeGridState` fixture in `src/test/fixtures.ts` for building partial `GridState` objects. The pure simulation math in `src/utils/simulationModel.ts` has dedicated unit tests; UI tests (`*.test.tsx`) use React Testing Library. `PanelPrimitives.test.tsx` covers `ActionButton` (aria-pressed) and `NumericField` (input validation, error states). When adding simulation behavior, prefer extending `simulationModel.ts` + a unit test over testing through the RAF loop.

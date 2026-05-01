@@ -14,12 +14,13 @@ interface CanvasErrorBoundaryProps {
 
 interface CanvasErrorBoundaryState {
   error: Error | null;
+  canvasKey: number;
 }
 
 class CanvasErrorBoundary extends Component<CanvasErrorBoundaryProps, CanvasErrorBoundaryState> {
-  state: CanvasErrorBoundaryState = { error: null };
+  state: CanvasErrorBoundaryState = { error: null, canvasKey: 0 };
 
-  static getDerivedStateFromError(error: Error): CanvasErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<CanvasErrorBoundaryState> {
     return { error };
   }
 
@@ -30,7 +31,7 @@ class CanvasErrorBoundary extends Component<CanvasErrorBoundaryProps, CanvasErro
   }
 
   private reset = () => {
-    this.setState({ error: null });
+    this.setState(prev => ({ error: null, canvasKey: prev.canvasKey + 1 }));
   };
 
   render() {
@@ -59,7 +60,7 @@ class CanvasErrorBoundary extends Component<CanvasErrorBoundaryProps, CanvasErro
       );
     }
 
-    return this.props.children;
+    return <div key={this.state.canvasKey} className="h-full w-full">{this.props.children}</div>;
   }
 }
 

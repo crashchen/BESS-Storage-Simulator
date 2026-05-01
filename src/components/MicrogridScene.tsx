@@ -4,7 +4,7 @@
 // dynamic time-of-day lighting. Subscribes to GridState.
 // ============================================================
 
-import { useRef, useMemo } from 'react';
+import { memo, useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
@@ -63,18 +63,16 @@ function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
     const glowRef = useRef<Mesh>(null);
 
     const targetColor = mode === 'charging' ? COLOR_CHARGE : mode === 'discharging' ? COLOR_DISCHARGE : COLOR_IDLE;
-    const levelColor = useMemo(() => socHealthColor(soc).clone(), [soc]);
+    const activeSegments = Math.max(0, Math.min(8, Math.round((soc / 100) * 8)));
+    const levelColor = useMemo(() => socHealthColor((activeSegments / 8) * 100).clone(), [activeSegments]);
     const currentColor = useRef(targetColor.clone());
     const socSegments = useMemo(() => {
-        const segmentCount = 8;
-        const activeSegments = Math.max(0, Math.min(segmentCount, Math.round((soc / 100) * segmentCount)));
-
-        return Array.from({ length: segmentCount }, (_, index) => ({
+        return Array.from({ length: 8 }, (_, index) => ({
             key: index,
             active: index < activeSegments,
             y: -0.95 + index * 0.28,
         }));
-    }, [soc]);
+    }, [activeSegments]);
     const fillHeight = Math.max(0.08, (soc / 100) * 2.0);
     const fillCenterY = -1.0 + fillHeight / 2;
 
@@ -102,8 +100,6 @@ function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
                     color="#1e293b"
                     metalness={0.8}
                     roughness={0.3}
-                    emissive={COLOR_IDLE}
-                    emissiveIntensity={0.3}
                 />
             </mesh>
 
@@ -160,8 +156,6 @@ function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
                 <boxGeometry args={[4, 3, 2]} />
                 <meshStandardMaterial
                     color="#000000"
-                    emissive={COLOR_IDLE}
-                    emissiveIntensity={0.3}
                     transparent
                     opacity={0.2}
                     side={BackSide}
@@ -262,7 +256,7 @@ function SolarArray({ solarOutputMw, solarAcCapacityMw }: { solarOutputMw: numbe
 }
 
 // ── Power Lines (using Drei Line) ────────────────────────────
-function PowerLines() {
+const PowerLines = memo(function PowerLines() {
     const wirePoints = useMemo<[number, number, number][]>(() => [
         [-6, 3, 0],
         [-3, 4, 0],
@@ -290,10 +284,10 @@ function PowerLines() {
             <Line points={wirePoints} color="#94a3b8" lineWidth={1.5} />
         </group>
     );
-}
+});
 
 // ── Grid Building (Load Consumer) ────────────────────────────
-function LoadBuilding() {
+const LoadBuilding = memo(function LoadBuilding() {
     return (
         <group position={[8, 0, 0]}>
             <mesh position={[0, 2, 0]} castShadow receiveShadow>
@@ -324,18 +318,22 @@ function LoadBuilding() {
             </Text>
         </group>
     );
-}
+});
 
 // ── Curtailment Particles ───────────────────────────────────
-function CurtailmentParticle({ offset, bounds }: {
+const MAX_CURTAILMENT_PARTICLES = 20;
+const CURTAILMENT_BOUNDS = { x: -6.5, z: -2, spread: 4 };
+
+function CurtailmentParticle({ offset, bounds, visible = true }: {
     offset: number;
     bounds: { x: number; z: number; spread: number };
+    visible?: boolean;
 }) {
     const meshRef = useRef<Mesh>(null);
     const progressRef = useRef(offset);
 
     useFrame((_, delta) => {
-        if (!meshRef.current) return;
+        if (!meshRef.current || !visible) return;
         progressRef.current = (progressRef.current + delta * 0.4) % 1;
         const t = progressRef.current;
         meshRef.current.position.set(
@@ -350,7 +348,7 @@ function CurtailmentParticle({ offset, bounds }: {
     });
 
     return (
-        <mesh ref={meshRef}>
+        <mesh ref={meshRef} visible={visible}>
             <sphereGeometry args={[1, 6, 6]} />
             <meshStandardMaterial
                 color={COLOR_CURTAIL}
@@ -364,16 +362,16 @@ function CurtailmentParticle({ offset, bounds }: {
 }
 
 function CurtailmentEffect({ curtailedMw, maxSolarMw }: { curtailedMw: number; maxSolarMw: number }) {
-    const count = Math.min(20, Math.max(0, Math.ceil((curtailedMw / Math.max(maxSolarMw, 1)) * 20)));
-    if (count === 0) return null;
+    const count = Math.min(MAX_CURTAILMENT_PARTICLES, Math.max(0, Math.ceil((curtailedMw / Math.max(maxSolarMw, 1)) * MAX_CURTAILMENT_PARTICLES)));
 
     return (
-        <group>
-            {Array.from({ length: count }).map((_, i) => (
+        <group visible={count > 0}>
+            {Array.from({ length: MAX_CURTAILMENT_PARTICLES }).map((_, i) => (
                 <CurtailmentParticle
                     key={i}
-                    offset={i / count}
-                    bounds={{ x: -6.5, z: -2, spread: 4 }}
+                    offset={i / MAX_CURTAILMENT_PARTICLES}
+                    bounds={CURTAILMENT_BOUNDS}
+                    visible={i < count}
                 />
             ))}
         </group>
@@ -415,6 +413,8 @@ const FLOW_PATHS = {
 };
 
 // ── Energy Particle ──────────────────────────────────────────
+const MAX_ENERGY_PARTICLES = 12;
+
 interface EnergyParticleProps {
     curve: CatmullRomCurve3;
     color: Color;
@@ -422,27 +422,28 @@ interface EnergyParticleProps {
     offset: number;
     size: number;
     intensity: number;
+    visible?: boolean;
 }
 
-function EnergyParticle({ curve, color, speed, offset, size, intensity }: EnergyParticleProps) {
+function EnergyParticle({ curve, color, speed, offset, size, intensity, visible = true }: EnergyParticleProps) {
     const meshRef = useRef<Mesh>(null);
     const progressRef = useRef((offset % 1));
     const pointRef = useRef(new Vector3());
 
     useFrame((_, delta) => {
-        if (!meshRef.current) return;
-        
+        if (!meshRef.current || !visible) return;
+
         progressRef.current = (progressRef.current + delta * speed) % 1;
         curve.getPoint(progressRef.current, pointRef.current);
         meshRef.current.position.copy(pointRef.current);
-        
+
         // Pulse effect
         const pulse = 0.8 + 0.4 * Math.sin(progressRef.current * Math.PI * 4);
         meshRef.current.scale.setScalar(size * pulse);
     });
 
     return (
-        <mesh ref={meshRef}>
+        <mesh ref={meshRef} visible={visible}>
             <sphereGeometry args={[1, 8, 8]} />
             <meshStandardMaterial
                 color={color}
@@ -465,38 +466,39 @@ interface EnergyFlowProps {
 }
 
 function EnergyFlow({ curve, color, powerMw, maxPowerMw, active }: EnergyFlowProps) {
-    const particleCount = active ? Math.max(3, Math.min(12, Math.ceil((powerMw / maxPowerMw) * 12))) : 0;
-    const intensity = 0.5 + (powerMw / maxPowerMw) * 1.5;
-    const baseSize = 0.08 + (powerMw / maxPowerMw) * 0.12;
-    const speed = 0.3 + (powerMw / maxPowerMw) * 0.4;
-    
-    // Get points for the flow line
+    const isActive = active && powerMw >= 0.5;
+    const ratio = powerMw / Math.max(maxPowerMw, 1e-9);
+    const particleCount = isActive ? Math.max(3, Math.min(MAX_ENERGY_PARTICLES, Math.ceil(ratio * MAX_ENERGY_PARTICLES))) : 0;
+    const intensity = 0.5 + ratio * 1.5;
+    const baseSize = 0.08 + ratio * 0.12;
+    const speed = 0.3 + ratio * 0.4;
+
+    // Get points for the flow line — curves are static, compute once
     const linePoints = useMemo(() => {
         return curve.getPoints(20).map(p => [p.x, p.y, p.z] as [number, number, number]);
     }, [curve]);
 
-    if (!active || powerMw < 0.5) return null;
-
     return (
-        <group>
+        <group visible={isActive}>
             {/* Glowing path line */}
             <Line
                 points={linePoints}
                 color={color}
-                lineWidth={1.5 + (powerMw / maxPowerMw) * 2}
+                lineWidth={1.5 + ratio * 2}
                 transparent
-                opacity={0.3 + (powerMw / maxPowerMw) * 0.3}
+                opacity={0.3 + ratio * 0.3}
             />
-            {/* Energy particles */}
-            {Array.from({ length: particleCount }).map((_, i) => (
+            {/* Energy particles — pooled to avoid mount/unmount churn */}
+            {Array.from({ length: MAX_ENERGY_PARTICLES }).map((_, i) => (
                 <EnergyParticle
                     key={i}
                     curve={curve}
                     color={color}
                     speed={speed}
-                    offset={i / particleCount}
+                    offset={i / MAX_ENERGY_PARTICLES}
                     size={baseSize}
                     intensity={intensity}
+                    visible={i < particleCount}
                 />
             ))}
         </group>

@@ -26,8 +26,11 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 - **Price Scenarios**: Edit wholesale price windows, including negative-price scenarios
 - **Live Metrics**: Track SoC, grid frequency, solar output, grid demand, and BESS power
 - **P&L Tracking**: Project P&L, BESS margin, curtailment, and energy flow analysis
-- **3D Visualization**: Interactive Three.js scene with animated energy flow particles
+- **3D Visualization**: Interactive Three.js scene with animated energy flow particles, SoC health-color gradient, and curtailment particle effects
+- **Frequency Vignette**: Visual red-pulse overlay when grid frequency deviates from the safe band
 - **Collapsible UI**: Slide-out panels with glassmorphism design for maximum scene visibility
+- **Error Resilience**: 3D viewport gracefully handles WebGL rendering errors with retry option
+- **Accessibility**: ARIA support for screen readers (aria-pressed, aria-valuetext), keyboard navigation, and input validation feedback
 - **Efficiency Modeling**: BESS charge/discharge efficiency losses
 
 ## Tech Stack
@@ -67,6 +70,7 @@ src/
   hooks/
     useGridSimulation.ts         Utility-scale dispatch and simulation loop
   components/
+    SimulationViewport.tsx       Canvas wrapper with error boundary and frequency vignette
     MicrogridScene.tsx           3D scene with energy flow particle animations
     ControlPanel.tsx             Collapsible drawer layout
     StatusHud.tsx                Compact live status bar
@@ -78,7 +82,11 @@ src/
       EconomicsPanel.tsx         Tariffs and P&L display
     ui/
       PanelPrimitives.tsx        Reusable UI components (Gauge, ActionButton, etc.)
-  utils/                         Shared helpers
+  utils/
+    gridReducer.ts               Pure reducer for BESSCommand handling
+    tickEngine.ts                Simulation tick with tariff-boundary sub-stepping
+    simulationModel.ts           Economic settlement, solar model, auto-arb logic
+    gridSelectors.ts             Derived state selectors
   test/                          Test setup and fixtures
 ```
 
@@ -88,7 +96,7 @@ src/
 - `Project P&L` and `BESS Margin` are intentionally separated:
   - `Project P&L` includes direct PV exports, grid-paid charging, and BESS discharge revenue.
   - `BESS Margin` isolates storage uplift and treats `Solar -> BESS` as delayed sale value rather than as purchased grid power.
-- The simulation is front-end only for now; there is no backend persistence, SCADA integration, or optimizer yet.
+- The simulation is front-end only for now; there is no backend persistence, SCADA integration, or production-grade market optimizer yet (the built-in peak-ready dispatch is a simplified forecast-driven strategy).
 
 ## Contributing
 
