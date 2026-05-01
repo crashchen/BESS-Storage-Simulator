@@ -84,7 +84,27 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
-        case 'STOP_SIMULATION':
+        case 'STOP_SIMULATION': {
+            const fresh = createInitialGridState(now);
+            return {
+                next: reconcileStaticTelemetry({
+                    ...fresh,
+                    batteryPowerRatingMw: prev.batteryPowerRatingMw,
+                    batteryEnergyCapacityMwh: prev.batteryEnergyCapacityMwh,
+                    solarAcCapacityMw: prev.solarAcCapacityMw,
+                    solarDcCapacityMwp: prev.solarDcCapacityMwp,
+                    gridPvEvacuationMw: prev.gridPvEvacuationMw,
+                    gridBessConnectionMw: prev.gridBessConnectionMw,
+                    siteYieldKwhPerKwYear: prev.siteYieldKwhPerKwYear,
+                    tariffRatesEurMwh: prev.tariffRatesEurMwh,
+                    dispatchScalePercent: prev.dispatchScalePercent,
+                    timeSpeed: prev.timeSpeed,
+                }, now),
+                sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },
+            };
+        }
+
+        case 'RESET_SIMULATION':
             return {
                 next: createInitialGridState(now),
                 sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },

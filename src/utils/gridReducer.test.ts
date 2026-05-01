@@ -33,13 +33,39 @@ describe('gridReducer applyCommand', () => {
         expect(sideEffects).toEqual({});
     });
 
-    it('STOP_SIMULATION returns a fresh initial state and requests history/timer/frame resets', () => {
+    it('STOP_SIMULATION resets simulation but preserves user config', () => {
         const prev = makeGridState({
             simulationStatus: 'running',
             batterySocPercent: 25,
             cumulativeRevenueEur: 99999,
+            batteryPowerRatingMw: 250,
+            batteryEnergyCapacityMwh: 1000,
+            tariffRatesEurMwh: { 'off-peak': 40, 'mid-peak': 120, peak: 400 },
         });
         const { next, sideEffects } = applyCommand(prev, { type: 'STOP_SIMULATION' }, NOW);
+
+        expect(next.simulationStatus).toBe('stopped');
+        expect(next.cumulativeRevenueEur).toBe(0);
+        expect(next.batterySocPercent).toBe(65); // initial SoC
+        // User config preserved
+        expect(next.batteryPowerRatingMw).toBe(250);
+        expect(next.batteryEnergyCapacityMwh).toBe(1000);
+        expect(next.tariffRatesEurMwh).toEqual({ 'off-peak': 40, 'mid-peak': 120, peak: 400 });
+        expect(sideEffects).toEqual({
+            resetHistory: true,
+            resetTimerRefs: true,
+            resetFrameRef: true,
+        });
+    });
+
+    it('RESET_SIMULATION returns a full factory-default state', () => {
+        const prev = makeGridState({
+            simulationStatus: 'running',
+            batterySocPercent: 25,
+            cumulativeRevenueEur: 99999,
+            batteryPowerRatingMw: 250,
+        });
+        const { next, sideEffects } = applyCommand(prev, { type: 'RESET_SIMULATION' }, NOW);
 
         expect(next).toEqual(createInitialGridState(NOW));
         expect(sideEffects).toEqual({

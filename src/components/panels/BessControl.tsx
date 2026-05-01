@@ -3,11 +3,32 @@
 // ============================================================
 
 import { useCallback } from 'react';
-import { BESS, GRID, SIMULATION, SOLAR } from '../../config';
-import type { BESSCommand, GridState } from '../../types';
+import { AUTO_ARB, BESS, GRID, SIMULATION, SOLAR } from '../../config';
+import type { BESSCommand, GridState, TariffPeriod } from '../../types';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
 import { getAutoArbOutlook, getBatteryTransferLimitMw } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
+
+function getDispatchPhaseText(
+    tariffPeriod: TariffPeriod,
+    timeOfDay: number,
+    batterySocPercent: number,
+    shouldGridTopUp: boolean,
+    targetSocPercent: number,
+): string {
+    if (tariffPeriod === 'peak') {
+        if (batterySocPercent <= 0) return 'Battery depleted — holding idle through peak.';
+        return 'Pacing discharge across the evening peak window.';
+    }
+    if (timeOfDay < AUTO_ARB.peakStartHour) {
+        if (batterySocPercent >= targetSocPercent) return 'Target SoC reached — holding charge until peak.';
+        if (shouldGridTopUp) return 'Solar forecast insufficient — topping up from grid.';
+        return 'Absorbing solar surplus toward peak-ready target.';
+    }
+    // Post-peak (off-peak night)
+    if (batterySocPercent < AUTO_ARB.nightTargetSocPercent) return 'Night reserve top-up from off-peak grid.';
+    return 'Post-peak idle — awaiting next solar cycle.';
+}
 
 interface BessControlProps {
     gridState: GridState;
@@ -40,9 +61,9 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
     return (
         <PanelCard title="⚡ BESS Dispatch Control">
             <div className="grid grid-cols-4 gap-2">
-                <ActionButton label="Charge" active={!autoArbEnabled && batteryMode === 'charging'} color="#22c55e" onClick={() => handleMode('CHARGE')} />
+                <ActionButton label="Charge" active={!autoArbEnabled && batteryMode === 'charging'} color="#22c55e" onClick={() => handleMode('CHARGE')} disabled={batterySocPercent >= 100} />
                 <ActionButton label="Idle" active={!autoArbEnabled && batteryMode === 'idle'} color="#64748b" onClick={() => handleMode('IDLE')} />
-                <ActionButton label="Discharge" active={!autoArbEnabled && batteryMode === 'discharging'} color="#f59e0b" onClick={() => handleMode('DISCHARGE')} />
+                <ActionButton label="Discharge" active={!autoArbEnabled && batteryMode === 'discharging'} color="#f59e0b" onClick={() => handleMode('DISCHARGE')} disabled={batterySocPercent <= 0} />
                 <ActionButton label="Peak Ready" active={autoArbEnabled} color="#8b5cf6" onClick={() => onCommand({ type: 'TOGGLE_AUTO_ARB' })} />
             </div>
 
@@ -54,7 +75,13 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
                     </span>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                    Forecasts remaining PV surplus against the 18:00-23:00 peak deficit. If solar alone will miss the peak-ready target, it tops up earlier from the grid and then paces discharge across the evening peak instead of dumping the battery all at once.
+                    {getDispatchPhaseText(
+                        gridState.tariffPeriod,
+                        timeOfDay,
+                        batterySocPercent,
+                        autoArbOutlook.shouldGridTopUp,
+                        autoArbOutlook.targetSocPercent,
+                    )}
                 </p>
                 <div className="mt-2 grid gap-1 text-[11px] text-slate-400">
                     <div className="grid grid-cols-[1fr_auto] items-center gap-3">

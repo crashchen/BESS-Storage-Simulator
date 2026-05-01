@@ -223,7 +223,7 @@ describe('useGridSimulation dispatch', () => {
         advanceFrame(1100);
 
         expect(result.current.history).toHaveLength(1);
-        expect(result.current.history[0]?.t).toBeCloseTo((0.1 * 240) / 3600, 3);
+        expect(result.current.history[0]?.t).toBeCloseTo(8.0 + (0.1 * 240) / 3600, 3);
     });
 
     it('preserves stored energy when BESS energy capacity changes', () => {

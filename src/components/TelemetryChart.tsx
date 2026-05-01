@@ -39,7 +39,7 @@ export function TelemetryChart({ history }: TelemetryChartProps) {
                             fontSize: '11px',
                         }}
                         labelStyle={{ color: '#94a3b8' }}
-                        labelFormatter={(v) => `Sim ${formatTime(Number(v))}`}
+                        labelFormatter={(v) => formatTime(Number(v))}
                     />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', color: '#94a3b8' }} />
                     <ReferenceLine y={0} stroke="#475569" strokeDasharray="2 2" />

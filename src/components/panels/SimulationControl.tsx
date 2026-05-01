@@ -15,7 +15,7 @@ interface SimulationControlProps {
 export function SimulationControl({ simulationStatus, timeSpeed, onCommand }: SimulationControlProps) {
     return (
         <PanelCard title="▶ Simulation Run State">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
                 <ActionButton
                     label="Start"
                     active={simulationStatus === 'running'}
@@ -36,6 +36,13 @@ export function SimulationControl({ simulationStatus, timeSpeed, onCommand }: Si
                     color="#64748b"
                     testId="simulation-stop"
                     onClick={() => onCommand({ type: 'STOP_SIMULATION' })}
+                />
+                <ActionButton
+                    label="Reset"
+                    active={false}
+                    color="#ef4444"
+                    testId="simulation-reset"
+                    onClick={() => onCommand({ type: 'RESET_SIMULATION' })}
                 />
             </div>
 

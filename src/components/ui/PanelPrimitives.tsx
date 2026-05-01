@@ -47,27 +47,32 @@ export function ActionButton({
     color,
     onClick,
     testId,
+    disabled,
 }: {
     label: string;
     active: boolean;
     color: string;
     onClick: () => void;
     testId?: string;
+    disabled?: boolean;
 }) {
     return (
         <button
             type="button"
             onClick={onClick}
             data-testid={testId}
+            disabled={disabled}
             aria-pressed={active}
             className={`
                 relative rounded-lg border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200
                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400
-                ${active
-                    ? 'scale-[1.02] text-white shadow-lg'
-                    : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:bg-slate-700/60 hover:text-slate-100'}
+                ${disabled
+                    ? 'cursor-not-allowed border-slate-800 bg-slate-900/50 text-slate-600'
+                    : active
+                        ? 'scale-[1.02] text-white shadow-lg'
+                        : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:bg-slate-700/60 hover:text-slate-100'}
             `}
-            style={active ? { backgroundColor: color, borderColor: color, boxShadow: `0 0 18px ${color}55` } : undefined}
+            style={active && !disabled ? { backgroundColor: color, borderColor: color, boxShadow: `0 0 18px ${color}55` } : undefined}
         >
             {label}
         </button>

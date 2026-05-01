@@ -49,6 +49,7 @@ export type BESSCommand =
     | { type: 'START_SIMULATION' }
     | { type: 'PAUSE_SIMULATION' }
     | { type: 'STOP_SIMULATION' }
+    | { type: 'RESET_SIMULATION' }
     | { type: 'CHARGE' }
     | { type: 'DISCHARGE' }
     | { type: 'IDLE' }
