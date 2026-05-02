@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import { MicrogridScene } from './MicrogridScene';
 import { GRID } from '../config';
 import type { GridState } from '../types';
@@ -95,6 +96,9 @@ export function SimulationViewport({ gridState }: SimulationViewportProps) {
           gl={{ antialias: true, alpha: false }}
           dpr={[1, 2]}
         >
+          <PerformanceMonitor flipflops={3} bounds={(refreshrate) => [refreshrate > 90 ? 45 : 30, refreshrate > 90 ? 75 : 55]}>
+            <AdaptiveDpr pixelated />
+          </PerformanceMonitor>
           <MicrogridScene gridState={gridState} />
         </Canvas>
       </CanvasErrorBoundary>

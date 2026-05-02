@@ -41,62 +41,62 @@ export function StatusHud({ gridState }: StatusHudProps) {
 
     return (
         <div className="pointer-events-none absolute top-0 left-0 right-0 select-none">
-            <div className="mx-auto mt-3 flex w-fit max-w-[95vw] flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-slate-700/50 bg-slate-900/80 px-5 py-2.5 shadow-2xl backdrop-blur-xl">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">🕐</span>
-                    <span className="font-mono text-sm font-bold tabular-nums text-slate-100">
+            <div className="mx-auto mt-2 flex w-fit max-w-[98vw] flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-slate-700/50 bg-slate-900/80 px-3 py-1.5 shadow-2xl backdrop-blur-xl sm:mt-3 sm:gap-x-3 sm:px-5 sm:py-2.5">
+                <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-slate-400 sm:text-xs">🕐</span>
+                    <span className="font-mono text-xs font-bold tabular-nums text-slate-100 sm:text-sm">
                         {formatTime(timeOfDay)}
                     </span>
                 </div>
 
-                <div className="h-5 w-px bg-slate-700" />
+                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-white ${sim.bg}`}>
+                <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white sm:px-2 sm:text-[10px] ${sim.bg}`}>
                     {sim.label}
                 </span>
 
-                <div className="h-5 w-px bg-slate-700" />
+                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <div className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white ${mode.bg} ${mode.glow} transition-all duration-300`}>
+                <div className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white sm:px-2.5 sm:text-[10px] ${mode.bg} ${mode.glow} transition-all duration-300`}>
                     {autoArbEnabled ? 'PEAK READY' : mode.label}
                 </div>
 
-                <div className="h-5 w-px bg-slate-700" />
+                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">🔋</span>
-                    <span className="font-mono text-sm font-bold tabular-nums text-blue-400">
+                <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-slate-400 sm:text-xs">🔋</span>
+                    <span className="font-mono text-xs font-bold tabular-nums text-blue-400 sm:text-sm">
                         {batterySocPercent.toFixed(0)}%
                     </span>
                 </div>
 
-                <div className="h-5 w-px bg-slate-700" />
+                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">☀️</span>
-                    <span className="font-mono text-sm font-bold tabular-nums text-yellow-400">
-                        {solarOutputMw.toFixed(0)} MW
+                <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-slate-400 sm:text-xs">☀️</span>
+                    <span className="font-mono text-xs font-bold tabular-nums text-yellow-400 sm:text-sm">
+                        {solarOutputMw.toFixed(0)}<span className="hidden sm:inline"> MW</span>
                     </span>
                 </div>
 
-                <div className="h-5 w-px bg-slate-700" />
+                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <div className="flex items-center gap-1.5">
-                    <span className={`h-2 w-2 rounded-full ${freqOk ? 'bg-green-500' : 'animate-pulse bg-red-500'}`} />
-                    <span className={`font-mono text-sm font-bold tabular-nums ${freqOk ? 'text-green-400' : 'text-red-400'}`}>
-                        {gridFrequencyHz.toFixed(2)} Hz
+                <div className="flex items-center gap-1">
+                    <span className={`h-1.5 w-1.5 rounded-full sm:h-2 sm:w-2 ${freqOk ? 'bg-green-500' : 'animate-pulse bg-red-500'}`} />
+                    <span className={`font-mono text-xs font-bold tabular-nums sm:text-sm ${freqOk ? 'text-green-400' : 'text-red-400'}`}>
+                        {gridFrequencyHz.toFixed(2)}<span className="hidden sm:inline"> Hz</span>
                     </span>
                 </div>
 
-                <div className="h-5 w-px bg-slate-700" />
+                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <span className="font-mono text-sm font-bold tabular-nums" style={{ color: tariff.color }}>
-                    €{currentPriceEurMwh.toFixed(0)}/MWh
+                <span className="font-mono text-xs font-bold tabular-nums sm:text-sm" style={{ color: tariff.color }}>
+                    €{currentPriceEurMwh.toFixed(0)}<span className="hidden sm:inline">/MWh</span>
                 </span>
 
-                <div className="h-5 w-px bg-slate-700" />
+                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <span className={`font-mono text-sm font-bold tabular-nums ${cumulativeRevenueEur >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <span className={`font-mono text-xs font-bold tabular-nums sm:text-sm ${cumulativeRevenueEur >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {cumulativeRevenueEur >= 0 ? '+' : ''}€{cumulativeRevenueEur.toFixed(0)}
                 </span>
             </div>

@@ -85,8 +85,8 @@ function Drawer({
             role="region"
             aria-label={label}
             className={`
-                pointer-events-auto absolute top-0 bottom-0 w-[380px] max-w-[90vw]
-                flex flex-col gap-3 overflow-y-auto p-3
+                pointer-events-auto absolute top-0 bottom-0 w-[85vw] sm:w-[380px]
+                flex flex-col gap-3 overflow-y-auto p-2 sm:p-3
                 bg-slate-950/60 backdrop-blur-xl
                 border-slate-700/40 shadow-2xl
                 transition-transform duration-300 ease-out
@@ -125,7 +125,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
     const [rightOpen, setRightOpen] = useState(false);
 
     return (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[4.75rem] z-10 select-none">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[3.5rem] z-10 select-none sm:top-[4.75rem]">
             {/* Left drawer - Controls */}
             <Drawer id="drawer-controls" label="Controls" isOpen={leftOpen} onClose={() => setLeftOpen(false)} position="left">
                 <SimulationControl

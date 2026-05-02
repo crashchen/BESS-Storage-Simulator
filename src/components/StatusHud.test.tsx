@@ -21,9 +21,10 @@ describe('StatusHud', () => {
         expect(screen.getByText('08:30')).toBeInTheDocument();
         expect(screen.getByText('PAUSE')).toBeInTheDocument();
         expect(screen.getByText('PEAK READY')).toBeInTheDocument();
-        expect(screen.getByText('49.40 Hz')).toBeInTheDocument();
-        expect(screen.getByText('45 MW')).toBeInTheDocument();
-        expect(screen.getByText('€190/MWh')).toBeInTheDocument();
+        // Units are in responsive-hidden spans, so text is split across elements
+        expect(screen.getByText((_, el) => el?.tagName === 'SPAN' && el.textContent === '49.40 Hz')).toBeInTheDocument();
+        expect(screen.getByText((_, el) => el?.tagName === 'SPAN' && el.textContent === '45 MW')).toBeInTheDocument();
+        expect(screen.getByText((_, el) => el?.tagName === 'SPAN' && el.textContent === '€190/MWh')).toBeInTheDocument();
         expect(screen.getByText('€-2500')).toBeInTheDocument();
     });
 });

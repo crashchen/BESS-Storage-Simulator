@@ -8,6 +8,7 @@ import { memo, useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
+import { BESS, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps } from '../types';
 
 // ── Color palette ────────────────────────────────────────────
@@ -58,7 +59,7 @@ function skyColor(tod: number): Color {
 }
 
 // ── BESS Container ───────────────────────────────────────────
-function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
+function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: number; capacityScale: number }) {
     const meshRef = useRef<Mesh>(null);
     const glowRef = useRef<Mesh>(null);
 
@@ -91,11 +92,15 @@ function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
         }
     });
 
+    // Scale width with capacity (clamp 0.6–2.0× range for visual sanity)
+    const widthScale = Math.max(0.6, Math.min(2.0, capacityScale));
+    const containerWidth = 4 * widthScale;
+
     return (
         <group position={[0, 1.5, 0]}>
             {/* Main container body */}
             <mesh ref={meshRef} castShadow receiveShadow>
-                <boxGeometry args={[4, 3, 2]} />
+                <boxGeometry args={[containerWidth, 3, 2]} />
                 <meshStandardMaterial
                     color="#1e293b"
                     metalness={0.8}
@@ -153,7 +158,7 @@ function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
 
             {/* Glow shell */}
             <mesh ref={glowRef} scale={[1.08, 1.08, 1.08]}>
-                <boxGeometry args={[4, 3, 2]} />
+                <boxGeometry args={[containerWidth, 3, 2]} />
                 <meshStandardMaterial
                     color="#000000"
                     transparent
@@ -175,7 +180,7 @@ function BESSContainer({ mode, soc }: { mode: BatteryMode; soc: number }) {
 
             {/* Mounting base */}
             <mesh position={[0, -1.7, 0]} receiveShadow>
-                <boxGeometry args={[4.5, 0.3, 2.5]} />
+                <boxGeometry args={[containerWidth + 0.5, 0.3, 2.5]} />
                 <meshStandardMaterial color="#374151" metalness={0.9} roughness={0.2} />
             </mesh>
         </group>
@@ -226,16 +231,23 @@ function SolarPanel({
 }
 
 // ── Solar Array ──────────────────────────────────────────────
-function SolarArray({ solarOutputMw, solarAcCapacityMw }: { solarOutputMw: number; solarAcCapacityMw: number }) {
+function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solarOutputMw: number; solarAcCapacityMw: number; dcCapacityMwp: number }) {
+    // Scale panel grid: baseline 117 MWp = 3×4 grid.
+    // Scale cols (3–6) and rows (2–5) with capacity ratio.
+    const capacityRatio = dcCapacityMwp / SOLAR.dcCapacityMwp;
+    const cols = Math.max(3, Math.min(6, Math.round(4 * Math.sqrt(capacityRatio))));
+    const rows = Math.max(2, Math.min(5, Math.round(3 * Math.sqrt(capacityRatio))));
+
     const panels = useMemo(() => {
         const result: [number, number, number][] = [];
-        for (let row = 0; row < 3; row++) {
-            for (let col = 0; col < 4; col++) {
-                result.push([-10 + col * 2.2, 1.2, -4 + row * 1.8]);
+        const startX = -10 - (cols - 4) * 1.1; // shift left for wider arrays
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                result.push([startX + col * 2.2, 1.2, -4 + row * 1.8]);
             }
         }
         return result;
-    }, []);
+    }, [cols, rows]);
 
     return (
         <group>
@@ -578,9 +590,12 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
         batteryChargeFromGridMw,
         batteryDischargeToGridMw,
         batteryPowerRatingMw,
+        batteryEnergyCapacityMwh,
+        solarDcCapacityMwp,
         gridBessConnectionMw,
     } = gridState;
 
+    const bessCapacityScale = batteryEnergyCapacityMwh / BESS.defaultEnergyCapacityMwh;
     const sunPos = sunPosition(timeOfDay);
     const ambientIntensity = timeOfDay > 6 && timeOfDay < 19
         ? 0.4 + 0.5 * Math.sin(((timeOfDay - 6) / 12) * Math.PI)
@@ -650,8 +665,8 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
             />
 
             {/* Scene objects */}
-            <BESSContainer mode={batteryMode} soc={batterySocPercent} />
-            <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} />
+            <BESSContainer mode={batteryMode} soc={batterySocPercent} capacityScale={bessCapacityScale} />
+            <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} dcCapacityMwp={solarDcCapacityMwp} />
             <PowerLines />
             <LoadBuilding />
 
