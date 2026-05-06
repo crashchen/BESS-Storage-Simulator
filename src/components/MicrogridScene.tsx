@@ -8,7 +8,7 @@ import { memo, useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
-import { BESS, SOLAR } from '../config';
+import { BESS, SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps } from '../types';
 
 // ── Color palette ────────────────────────────────────────────
@@ -92,8 +92,11 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
         }
     });
 
-    // Scale width with capacity (clamp 0.6–2.0× range for visual sanity)
-    const widthScale = Math.max(0.6, Math.min(2.0, capacityScale));
+    // Scale width with capacity while keeping the demo composition readable.
+    const widthScale = Math.max(
+        SCENE_3D.capacityScale.minBessWidthScale,
+        Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale),
+    );
     const containerWidth = 4 * widthScale;
 
     return (
@@ -235,15 +238,26 @@ function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solar
     // Scale panel grid: baseline 117 MWp = 3×4 grid.
     // Scale cols (3–6) and rows (2–5) with capacity ratio.
     const capacityRatio = dcCapacityMwp / SOLAR.dcCapacityMwp;
-    const cols = Math.max(3, Math.min(6, Math.round(4 * Math.sqrt(capacityRatio))));
-    const rows = Math.max(2, Math.min(5, Math.round(3 * Math.sqrt(capacityRatio))));
+    const cols = Math.max(
+        SCENE_3D.solarArray.minCols,
+        Math.min(SCENE_3D.solarArray.maxCols, Math.round(SCENE_3D.solarArray.baselineCols * Math.sqrt(capacityRatio))),
+    );
+    const rows = Math.max(
+        SCENE_3D.solarArray.minRows,
+        Math.min(SCENE_3D.solarArray.maxRows, Math.round(SCENE_3D.solarArray.baselineRows * Math.sqrt(capacityRatio))),
+    );
 
     const panels = useMemo(() => {
         const result: [number, number, number][] = [];
-        const startX = -10 - (cols - 4) * 1.1; // shift left for wider arrays
+        const startX = SCENE_3D.solarArray.baseStartX -
+            ((cols - SCENE_3D.solarArray.baselineCols) * SCENE_3D.solarArray.spacingX) / 2;
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
-                result.push([startX + col * 2.2, 1.2, -4 + row * 1.8]);
+                result.push([
+                    startX + col * SCENE_3D.solarArray.spacingX,
+                    1.2,
+                    SCENE_3D.solarArray.baseStartZ + row * SCENE_3D.solarArray.spacingZ,
+                ]);
             }
         }
         return result;
@@ -332,9 +346,54 @@ const LoadBuilding = memo(function LoadBuilding() {
     );
 });
 
+function SitePads({ capacityScale }: { capacityScale: number }) {
+    const bessWidthScale = Math.max(1, Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale));
+    const bessPadSize: [number, number, number] = [
+        SCENE_3D.pads.bess.size[0] * bessWidthScale,
+        SCENE_3D.pads.bess.size[1],
+        SCENE_3D.pads.bess.size[2],
+    ];
+
+    return (
+        <group>
+            <mesh position={SCENE_3D.pads.solar.position} receiveShadow>
+                <boxGeometry args={[...SCENE_3D.pads.solar.size]} />
+                <meshStandardMaterial color={SCENE_3D.pads.solar.color} roughness={0.92} metalness={0.05} />
+            </mesh>
+            <mesh position={SCENE_3D.pads.bess.position} receiveShadow>
+                <boxGeometry args={bessPadSize} />
+                <meshStandardMaterial color={SCENE_3D.pads.bess.color} roughness={0.78} metalness={0.12} />
+            </mesh>
+            <mesh position={SCENE_3D.pads.substation.position} castShadow receiveShadow>
+                <boxGeometry args={[...SCENE_3D.pads.substation.size]} />
+                <meshStandardMaterial color={SCENE_3D.pads.substation.color} roughness={0.55} metalness={0.35} />
+            </mesh>
+            <group position={[SCENE_3D.pads.substation.position[0], 0.45, SCENE_3D.pads.substation.position[2]]}>
+                <mesh castShadow>
+                    <boxGeometry args={[0.55, 0.55, 0.42]} />
+                    <meshStandardMaterial color="#475569" roughness={0.45} metalness={0.6} />
+                </mesh>
+                <mesh position={[0.48, 0, 0]} castShadow>
+                    <boxGeometry args={[0.32, 0.4, 0.34]} />
+                    <meshStandardMaterial color="#334155" roughness={0.5} metalness={0.5} />
+                </mesh>
+                <Text
+                    position={[0, 0.55, 0]}
+                    fontSize={0.14}
+                    color="#cbd5e1"
+                    anchorX="center"
+                    anchorY="bottom"
+                >
+                    PCS / MV
+                </Text>
+            </group>
+        </group>
+    );
+}
+
 // ── Curtailment Particles ───────────────────────────────────
-const MAX_CURTAILMENT_PARTICLES = 20;
-const CURTAILMENT_BOUNDS = { x: -6.5, z: -2, spread: 4 };
+const MAX_CURTAILMENT_PARTICLES = SCENE_3D.particles.maxCurtailment;
+const CURTAILMENT_BOUNDS = SCENE_3D.particles.curtailmentBounds;
 
 function CurtailmentParticle({ offset, bounds, visible = true }: {
     offset: number;
@@ -425,7 +484,7 @@ const FLOW_PATHS = {
 };
 
 // ── Energy Particle ──────────────────────────────────────────
-const MAX_ENERGY_PARTICLES = 12;
+const MAX_ENERGY_PARTICLES = SCENE_3D.particles.maxEnergy;
 
 interface EnergyParticleProps {
     curve: CatmullRomCurve3;
@@ -626,13 +685,13 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
                 intensity={sunIntensity}
                 color="#fff4e0"
                 castShadow
-                shadow-mapSize-width={2048}
-                shadow-mapSize-height={2048}
-                shadow-camera-far={200}
-                shadow-camera-left={-30}
-                shadow-camera-right={30}
-                shadow-camera-top={30}
-                shadow-camera-bottom={-30}
+                shadow-mapSize-width={SCENE_3D.shadows.mapSize}
+                shadow-mapSize-height={SCENE_3D.shadows.mapSize}
+                shadow-camera-far={SCENE_3D.shadows.cameraFar}
+                shadow-camera-left={-SCENE_3D.shadows.cameraBounds}
+                shadow-camera-right={SCENE_3D.shadows.cameraBounds}
+                shadow-camera-top={SCENE_3D.shadows.cameraBounds}
+                shadow-camera-bottom={-SCENE_3D.shadows.cameraBounds}
             />
             <hemisphereLight
                 ref={hemiRef}
@@ -643,28 +702,29 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
             <pointLight position={[0, 10, 10]} intensity={0.5} color="#94a3b8" />
 
             {/* Fog */}
-            <fog ref={fogRef} attach="fog" args={['#0a0a1a', 50, 150]} />
+            <fog ref={fogRef} attach="fog" args={[SCENE_3D.fog.color, SCENE_3D.fog.near, SCENE_3D.fog.far]} />
 
             {/* Ground */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.01, 0]}>
-                <planeGeometry args={[200, 200]} />
-                <meshStandardMaterial color="#111827" />
+                <planeGeometry args={[SCENE_3D.ground.size, SCENE_3D.ground.size]} />
+                <meshStandardMaterial color={SCENE_3D.ground.color} />
             </mesh>
             <Grid
-                args={[100, 100]}
+                args={[...SCENE_3D.grid.args]}
                 position={[0, 0, 0]}
-                cellSize={2}
-                cellThickness={0.5}
-                cellColor="#1e293b"
-                sectionSize={10}
-                sectionThickness={1}
-                sectionColor="#334155"
-                fadeDistance={60}
-                fadeStrength={1}
+                cellSize={SCENE_3D.grid.cellSize}
+                cellThickness={SCENE_3D.grid.cellThickness}
+                cellColor={SCENE_3D.grid.cellColor}
+                sectionSize={SCENE_3D.grid.sectionSize}
+                sectionThickness={SCENE_3D.grid.sectionThickness}
+                sectionColor={SCENE_3D.grid.sectionColor}
+                fadeDistance={SCENE_3D.grid.fadeDistance}
+                fadeStrength={SCENE_3D.grid.fadeStrength}
                 infiniteGrid
             />
 
             {/* Scene objects */}
+            <SitePads capacityScale={bessCapacityScale} />
             <BESSContainer mode={batteryMode} soc={batterySocPercent} capacityScale={bessCapacityScale} />
             <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} dcCapacityMwp={solarDcCapacityMwp} />
             <PowerLines />
@@ -688,10 +748,10 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
                 enablePan
                 enableZoom
                 enableRotate
-                minDistance={8}
-                maxDistance={50}
-                maxPolarAngle={Math.PI / 2.1}
-                target={[0, 1.5, 0]}
+                minDistance={SCENE_3D.orbit.minDistance}
+                maxDistance={SCENE_3D.orbit.maxDistance}
+                maxPolarAngle={Math.PI / SCENE_3D.orbit.maxPolarAngleDivisor}
+                target={SCENE_3D.orbit.target}
             />
         </>
     );

@@ -107,8 +107,7 @@ function simulateTickStep(
     operationalTimeOfDay: number,
     nextTimeOfDay: number,
 ): GridState {
-    let timeOfDay = normalizeTimeOfDay(nextTimeOfDay);
-    if (timeOfDay < 0) timeOfDay += 24;
+    const timeOfDay = normalizeTimeOfDay(nextTimeOfDay);
 
     const solarOutputMw = computeSolarOutputMw(
         operationalTimeOfDay,
@@ -256,10 +255,11 @@ export function simulateTick(
     const dtSim = dtReal * prev.timeSpeed;
     const dtHours = dtSim / 3600;
     const endTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours);
+    const sampleTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours / 2);
     const boundaryHours = getTickBoundaryHours();
 
     if (getNextBoundaryDeltaHours(prev.timeOfDay, dtHours, boundaryHours) === null) {
-        return simulateTickStep(prev, dtHours, now, random, endTimeOfDay, endTimeOfDay);
+        return simulateTickStep(prev, dtHours, now, random, sampleTimeOfDay, endTimeOfDay);
     }
 
     let state = prev;
@@ -270,8 +270,9 @@ export function simulateTick(
         const nextBoundaryDeltaHours = getNextBoundaryDeltaHours(currentTimeOfDay, remainingHours, boundaryHours);
         const stepHours = nextBoundaryDeltaHours ?? remainingHours;
         const stepEndTimeOfDay = normalizeTimeOfDay(currentTimeOfDay + stepHours);
+        const stepSampleTimeOfDay = normalizeTimeOfDay(currentTimeOfDay + stepHours / 2);
 
-        state = simulateTickStep(state, stepHours, now, random, currentTimeOfDay, stepEndTimeOfDay);
+        state = simulateTickStep(state, stepHours, now, random, stepSampleTimeOfDay, stepEndTimeOfDay);
         remainingHours -= stepHours;
         currentTimeOfDay = stepEndTimeOfDay;
     }

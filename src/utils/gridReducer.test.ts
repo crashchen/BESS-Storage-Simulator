@@ -84,11 +84,37 @@ describe('gridReducer applyCommand', () => {
         expect(sideEffects).toEqual({});
     });
 
+    it('CHARGE falls back to idle when the battery is already full', () => {
+        const prev = makeGridState({
+            batterySocPercent: 100,
+            batteryMode: 'idle',
+            autoArbEnabled: true,
+        });
+        const { next, sideEffects } = applyCommand(prev, { type: 'CHARGE' }, NOW);
+
+        expect(next.batteryMode).toBe('idle');
+        expect(next.autoArbEnabled).toBe(false);
+        expect(sideEffects).toEqual({});
+    });
+
     it('DISCHARGE switches to discharging mode and disables auto-arb', () => {
         const prev = makeGridState({ batteryMode: 'idle', autoArbEnabled: true });
         const { next, sideEffects } = applyCommand(prev, { type: 'DISCHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('discharging');
+        expect(next.autoArbEnabled).toBe(false);
+        expect(sideEffects).toEqual({});
+    });
+
+    it('DISCHARGE falls back to idle when the battery is already empty', () => {
+        const prev = makeGridState({
+            batterySocPercent: 0,
+            batteryMode: 'idle',
+            autoArbEnabled: true,
+        });
+        const { next, sideEffects } = applyCommand(prev, { type: 'DISCHARGE' }, NOW);
+
+        expect(next.batteryMode).toBe('idle');
         expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });

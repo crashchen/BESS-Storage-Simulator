@@ -183,7 +183,7 @@ describe('tickEngine', () => {
             dispatchScalePercent: 80,
         };
         const dtHours = initial.timeSpeed / 3600;
-        const sampledTimeOfDay = initial.timeOfDay + dtHours;
+        const sampledTimeOfDay = initial.timeOfDay + dtHours / 2;
         const solarOutputMw = computeSolarOutputMw(
             sampledTimeOfDay,
             initial.solarAcCapacityMw,
@@ -214,6 +214,38 @@ describe('tickEngine', () => {
 
         expect(next.batteryChargeFromGridMw).toBe(0);
         expect(next.batteryMode).toBe('idle');
+    });
+
+    it('samples solar and demand at the tick midpoint when no tariff boundary is crossed', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            batteryMode: 'idle' as const,
+            timeOfDay: 10,
+            timeSpeed: 360,
+            solarAcCapacityMw: 180,
+            solarDcCapacityMwp: 220,
+        };
+        const dtRealSeconds = 1;
+        const dtHours = (dtRealSeconds * initial.timeSpeed) / 3600;
+        const midpointTimeOfDay = initial.timeOfDay + dtHours / 2;
+        const endTimeOfDay = initial.timeOfDay + dtHours;
+
+        const next = simulateTick(initial, dtRealSeconds, 1, () => 0.5);
+
+        expect(next.timeOfDay).toBeCloseTo(endTimeOfDay, 10);
+        expect(next.solarOutputMw).toBeCloseTo(
+            computeSolarOutputMw(midpointTimeOfDay, initial.solarAcCapacityMw, initial.solarDcCapacityMwp),
+            6,
+        );
+        expect(next.gridDemandMw).toBeCloseTo(
+            computeGridDemandMw(
+                midpointTimeOfDay,
+                initial.dispatchScalePercent / 100,
+                selectGridConnectionTotalMw(initial),
+            ),
+            6,
+        );
     });
 
     it('splits a boundary-crossing tick so tariff settlement changes at 18:00', () => {

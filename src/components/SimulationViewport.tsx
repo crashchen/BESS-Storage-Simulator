@@ -2,7 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import { MicrogridScene } from './MicrogridScene';
-import { GRID } from '../config';
+import { GRID, SCENE_3D } from '../config';
 import type { GridState } from '../types';
 
 interface SimulationViewportProps {
@@ -92,11 +92,21 @@ export function SimulationViewport({ gridState }: SimulationViewportProps) {
       <CanvasErrorBoundary>
         <Canvas
           shadows
-          camera={{ position: [15, 12, 18], fov: 50, near: 0.1, far: 500 }}
+          camera={{
+            position: SCENE_3D.camera.position,
+            fov: SCENE_3D.camera.fov,
+            near: SCENE_3D.camera.near,
+            far: SCENE_3D.camera.far,
+          }}
           gl={{ antialias: true, alpha: false }}
-          dpr={[1, 2]}
+          dpr={[SCENE_3D.dpr.min, SCENE_3D.dpr.max]}
         >
-          <PerformanceMonitor flipflops={3} bounds={(refreshrate) => [refreshrate > 90 ? 45 : 30, refreshrate > 90 ? 75 : 55]}>
+          <PerformanceMonitor
+            flipflops={SCENE_3D.performance.flipflops}
+            bounds={(refreshrate) => refreshrate > SCENE_3D.performance.highRefreshRateHz
+              ? [...SCENE_3D.performance.highRefreshBoundsFps]
+              : [...SCENE_3D.performance.standardBoundsFps]}
+          >
             <AdaptiveDpr pixelated />
           </PerformanceMonitor>
           <MicrogridScene gridState={gridState} />

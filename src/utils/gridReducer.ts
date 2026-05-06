@@ -30,6 +30,8 @@ export interface ReducerResult {
 }
 
 const NO_SIDE_EFFECTS: ReducerSideEffects = {};
+const SOC_EMPTY_EPSILON = 1e-9;
+const SOC_FULL_EPSILON = 100 - 1e-9;
 
 function reconcileStaticTelemetry(state: GridState, now: number): GridState {
     const solarOutputMw = computeSolarOutputMw(
@@ -113,7 +115,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
         case 'CHARGE':
             return {
                 next: reconcileStaticTelemetry({
-                    ...prev, batteryMode: 'charging', autoArbEnabled: false,
+                    ...prev,
+                    batteryMode: prev.batterySocPercent >= SOC_FULL_EPSILON ? 'idle' : 'charging',
+                    autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -121,7 +125,9 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
         case 'DISCHARGE':
             return {
                 next: reconcileStaticTelemetry({
-                    ...prev, batteryMode: 'discharging', autoArbEnabled: false,
+                    ...prev,
+                    batteryMode: prev.batterySocPercent <= SOC_EMPTY_EPSILON ? 'idle' : 'discharging',
+                    autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };

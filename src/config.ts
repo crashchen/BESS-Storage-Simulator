@@ -178,3 +178,92 @@ export const SIMULATION = {
     /** Maximum real-time delta per frame (seconds) */
     maxDeltaTimeSeconds: 0.1,
 } as const;
+
+// ── 3D Scene Configuration ─────────────────────────────────────
+export const SCENE_3D = {
+    camera: {
+        position: [15, 12, 18] as const,
+        fov: 50,
+        near: 0.1,
+        far: 500,
+    },
+    dpr: {
+        min: 1,
+        max: 2,
+    },
+    performance: {
+        flipflops: 3,
+        highRefreshRateHz: 90,
+        standardBoundsFps: [30, 55] as const,
+        highRefreshBoundsFps: [45, 75] as const,
+    },
+    shadows: {
+        mapSize: 2048,
+        cameraFar: 200,
+        cameraBounds: 30,
+    },
+    fog: {
+        color: '#0a0a1a',
+        near: 50,
+        far: 150,
+    },
+    orbit: {
+        minDistance: 8,
+        maxDistance: 50,
+        maxPolarAngleDivisor: 2.1,
+        target: [0, 1.5, 0] as const,
+    },
+    ground: {
+        size: 200,
+        color: '#111827',
+    },
+    grid: {
+        args: [100, 100] as const,
+        cellSize: 2,
+        cellThickness: 0.5,
+        cellColor: '#1e293b',
+        sectionSize: 10,
+        sectionThickness: 1,
+        sectionColor: '#334155',
+        fadeDistance: 60,
+        fadeStrength: 1,
+    },
+    capacityScale: {
+        minBessWidthScale: 0.6,
+        maxBessWidthScale: 2.0,
+    },
+    solarArray: {
+        baselineCols: 4,
+        baselineRows: 3,
+        minCols: 3,
+        maxCols: 6,
+        minRows: 2,
+        maxRows: 5,
+        spacingX: 2.2,
+        spacingZ: 1.8,
+        baseStartX: -10,
+        baseStartZ: -4,
+    },
+    particles: {
+        maxEnergy: 12,
+        maxCurtailment: 20,
+        curtailmentBounds: { x: -6.5, z: -2, spread: 4 },
+    },
+    pads: {
+        bess: {
+            position: [0, 0.01, 0] as const,
+            size: [6.5, 0.04, 3.6] as const,
+            color: '#1f2937',
+        },
+        solar: {
+            position: [-6.5, 0, -2] as const,
+            size: [12.5, 0.02, 8.5] as const,
+            color: '#172033',
+        },
+        substation: {
+            position: [4.7, 0.08, 1.9] as const,
+            size: [2.2, 0.16, 1.4] as const,
+            color: '#263244',
+        },
+    },
+} as const;
