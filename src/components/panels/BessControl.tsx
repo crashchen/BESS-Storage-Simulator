@@ -6,27 +6,37 @@ import { useCallback } from 'react';
 import { AUTO_ARB, BESS, GRID, SIMULATION, SOLAR } from '../../config';
 import type { BESSCommand, GridState, TariffPeriod } from '../../types';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
-import { getAutoArbOutlook, getBatteryTransferLimitMw } from '../../utils/simulationModel';
+import type { AutoArbPlan } from '../../utils/simulationModel';
+import { getAutoArbOutlook, getAutoArbPlan, getBatteryTransferLimitMw } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
+
+function formatTargetHour(hour: number): string {
+    return `${Math.trunc(hour).toString().padStart(2, '0')}:00`;
+}
 
 function getDispatchPhaseText(
     tariffPeriod: TariffPeriod,
     timeOfDay: number,
     batterySocPercent: number,
-    shouldGridTopUp: boolean,
-    targetSocPercent: number,
+    autoArbPlan: AutoArbPlan,
 ): string {
     if (tariffPeriod === 'peak') {
         if (batterySocPercent <= 0) return 'Battery depleted — holding idle through peak.';
-        return 'Pacing discharge across the evening peak window.';
+        if (autoArbPlan.mode === 'discharging' && autoArbPlan.targetPowerMw < 0) {
+            return 'Pacing discharge across the evening peak window.';
+        }
+        return 'Peak window — holding idle (uneconomic to discharge).';
     }
     if (timeOfDay < AUTO_ARB.peakStartHour) {
-        if (batterySocPercent >= targetSocPercent) return 'Target SoC reached — holding charge until peak.';
-        if (shouldGridTopUp) return 'Solar forecast insufficient — topping up from grid.';
-        return 'Absorbing solar surplus toward peak-ready target.';
+        if (batterySocPercent >= autoArbPlan.targetSocPercent) return 'Target SoC reached — holding charge until peak.';
+        if (autoArbPlan.mode === 'charging' && autoArbPlan.targetPowerMw > 0) {
+            if (autoArbPlan.shouldGridTopUp) return 'Solar forecast insufficient — topping up from grid.';
+            return 'Absorbing solar surplus toward peak-ready target.';
+        }
+        return 'Peak-ready idle — awaiting solar surplus or economical grid top-up.';
     }
     // Post-peak (off-peak night)
-    if (batterySocPercent < AUTO_ARB.nightTargetSocPercent) return 'Night reserve top-up from off-peak grid.';
+    if (autoArbPlan.mode === 'charging' && autoArbPlan.targetPowerMw > 0) return "Off-peak grid top-up for tomorrow's peak.";
     return 'Post-peak idle — awaiting next solar cycle.';
 }
 
@@ -46,12 +56,16 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
         autoArbEnabled,
         solarAcCapacityMw,
         timeOfDay,
+        tariffPeriod,
+        tariffRatesEurMwh,
     } = gridState;
     const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
 
     const freqWarn = gridFrequencyHz < GRID.warningFrequencyLowHz || gridFrequencyHz > GRID.warningFrequencyHighHz;
     const batteryTransferLimitMw = getBatteryTransferLimitMw(gridState);
     const autoArbOutlook = getAutoArbOutlook(gridState, timeOfDay);
+    const autoArbPlan = getAutoArbPlan(gridState, timeOfDay, solarOutputMw, gridDemandMw, tariffPeriod, tariffRatesEurMwh);
+    const peakReadyTargetHour = `${formatTargetHour(AUTO_ARB.peakStartHour)}${timeOfDay >= AUTO_ARB.peakEndHour ? ' (next day)' : ''}`;
 
     const handleMode = useCallback(
         (type: 'CHARGE' | 'DISCHARGE' | 'IDLE') => onCommand({ type }),
@@ -71,16 +85,15 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
                 <div className="flex items-center justify-between gap-3">
                     <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-300">Peak-Ready Dispatch</p>
                     <span className="font-mono text-xs font-bold text-violet-200">
-                        Target {autoArbOutlook.targetSocPercent.toFixed(0)}% by 18:00
+                        Target {autoArbOutlook.targetSocPercent.toFixed(0)}% by {peakReadyTargetHour}
                     </span>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-slate-300">
                     {getDispatchPhaseText(
-                        gridState.tariffPeriod,
+                        tariffPeriod,
                         timeOfDay,
                         batterySocPercent,
-                        autoArbOutlook.shouldGridTopUp,
-                        autoArbOutlook.targetSocPercent,
+                        autoArbPlan,
                     )}
                 </p>
                 <div className="mt-2 grid gap-1 text-[11px] text-slate-400">

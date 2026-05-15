@@ -193,8 +193,8 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                 <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                     <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Settlement Logic</p>
                     <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
-                        `Project P&amp;L` includes direct PV sales, grid-paid charging, and BESS discharge revenue.
-                        `BESS Margin` isolates the storage uplift, where `Solar → BESS` is treated as delayed sale value rather than as grid power purchased.
+                        `Project P&amp;L` = direct PV sales + BESS discharge revenue − grid-paid charging cost.
+                        `BESS Margin` = BESS discharge revenue − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
                     </p>
                 </div>
 

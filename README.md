@@ -94,8 +94,8 @@ src/
 
 - The baseline numbers intentionally follow the provided project screenshot, including the displayed `188 MW / 744 MWh` BESS configuration.
 - `Project P&L` and `BESS Margin` are intentionally separated:
-  - `Project P&L` includes direct PV exports, grid-paid charging, and BESS discharge revenue.
-  - `BESS Margin` isolates storage uplift and treats `Solar -> BESS` as delayed sale value rather than as purchased grid power.
+  - `Project P&L` = direct PV sales + BESS discharge revenue − grid-paid charging cost.
+  - `BESS Margin` = BESS discharge revenue − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
 - The simulation is front-end only for now; there is no backend persistence, SCADA integration, or production-grade market optimizer yet (the built-in peak-ready dispatch is a simplified forecast-driven strategy).
 
 ## Contributing
