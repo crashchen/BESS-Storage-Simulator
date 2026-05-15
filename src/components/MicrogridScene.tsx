@@ -165,7 +165,6 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
                 <meshStandardMaterial
                     color="#000000"
                     transparent
-                    opacity={0.2}
                     side={BackSide}
                 />
             </mesh>
@@ -348,16 +347,18 @@ const LoadBuilding = memo(function LoadBuilding() {
 
 function SitePads({ capacityScale }: { capacityScale: number }) {
     const bessWidthScale = Math.max(1, Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale));
-    const bessPadSize: [number, number, number] = [
+    const solarPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.solar.size], []);
+    const bessPadSize = useMemo<[number, number, number]>(() => [
         SCENE_3D.pads.bess.size[0] * bessWidthScale,
         SCENE_3D.pads.bess.size[1],
         SCENE_3D.pads.bess.size[2],
-    ];
+    ], [bessWidthScale]);
+    const substationPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.substation.size], []);
 
     return (
         <group>
             <mesh position={SCENE_3D.pads.solar.position} receiveShadow>
-                <boxGeometry args={[...SCENE_3D.pads.solar.size]} />
+                <boxGeometry args={solarPadSize} />
                 <meshStandardMaterial color={SCENE_3D.pads.solar.color} roughness={0.92} metalness={0.05} />
             </mesh>
             <mesh position={SCENE_3D.pads.bess.position} receiveShadow>
@@ -365,7 +366,7 @@ function SitePads({ capacityScale }: { capacityScale: number }) {
                 <meshStandardMaterial color={SCENE_3D.pads.bess.color} roughness={0.78} metalness={0.12} />
             </mesh>
             <mesh position={SCENE_3D.pads.substation.position} castShadow receiveShadow>
-                <boxGeometry args={[...SCENE_3D.pads.substation.size]} />
+                <boxGeometry args={substationPadSize} />
                 <meshStandardMaterial color={SCENE_3D.pads.substation.color} roughness={0.55} metalness={0.35} />
             </mesh>
             <group position={[SCENE_3D.pads.substation.position[0], 0.45, SCENE_3D.pads.substation.position[2]]}>
@@ -426,7 +427,6 @@ function CurtailmentParticle({ offset, bounds, visible = true }: {
                 emissive={COLOR_CURTAIL}
                 emissiveIntensity={2}
                 transparent
-                opacity={0.8}
             />
         </mesh>
     );
