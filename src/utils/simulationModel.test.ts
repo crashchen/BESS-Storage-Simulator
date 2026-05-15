@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AUTO_ARB, BESS, SOLAR } from '../config';
 import { makeGridState } from '../test/fixtures';
-import { computeGridDemandMw, computeSolarOutputMw, getAutoArbOutlook, getAutoArbPlan, settleHybridProjectTick } from './simulationModel';
+import { computeGridDemandMw, computeSolarOutputMw, getAutoArbOutlook, getAutoArbPlan, integrateWindowEnergy, settleHybridProjectTick } from './simulationModel';
 
 describe('simulationModel demand curve', () => {
     it('produces the same demand curve at the Romania baseline (288 MW total)', () => {
@@ -68,6 +68,26 @@ describe('simulationModel solar output', () => {
     });
 });
 
+describe('simulationModel energy integration', () => {
+    it('integrates cross-midnight windows with wrapped time-of-day samples', () => {
+        const sampledHours: number[] = [];
+        const energyMwh = integrateWindowEnergy(23, 2, (timeOfDay) => {
+            sampledHours.push(timeOfDay);
+            expect(timeOfDay).toBeGreaterThanOrEqual(0);
+            expect(timeOfDay).toBeLessThan(24);
+            return 10;
+        });
+
+        expect(energyMwh).toBeCloseTo(30, 6);
+        expect(sampledHours.some((timeOfDay) => timeOfDay > 23)).toBe(true);
+        expect(sampledHours.some((timeOfDay) => timeOfDay < 2)).toBe(true);
+    });
+
+    it('keeps non-wrapping window integration unchanged', () => {
+        expect(integrateWindowEnergy(9, 11.5, () => 4)).toBeCloseTo(10, 6);
+    });
+});
+
 describe('simulationModel auto-arbitrage', () => {
     it('forecasts a pre-peak top-up target when PV alone cannot fully prepare the battery', () => {
         const state = makeGridState({
@@ -80,6 +100,21 @@ describe('simulationModel auto-arbitrage', () => {
         expect(outlook.targetSocPercent).toBeGreaterThanOrEqual(92);
         expect(outlook.shouldGridTopUp).toBe(true);
         expect(outlook.forecastPeakDemandMwh).toBeGreaterThan(0);
+    });
+
+    it('forecasts next-day solar and peak demand after the current peak has ended', () => {
+        const state = makeGridState({
+            batterySocPercent: 25,
+            timeOfDay: 23.5,
+        });
+
+        const outlook = getAutoArbOutlook(state, state.timeOfDay);
+        const currentEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
+
+        expect(outlook.forecastSolarChargeMwh).toBeGreaterThan(0);
+        expect(outlook.forecastPeakDemandMwh).toBeGreaterThan(0);
+        expect(outlook.targetEnergyMwh).toBeGreaterThan(currentEnergyMwh);
+        expect(outlook.shouldGridTopUp).toBe(true);
     });
 
     it('charges ahead of peak when the forecast says grid support is needed', () => {
@@ -96,6 +131,32 @@ describe('simulationModel auto-arbitrage', () => {
             state.solarOutputMw,
             state.gridDemandMw,
             'mid-peak',
+            state.tariffRatesEurMwh,
+        );
+
+        expect(plan.mode).toBe('charging');
+        expect(plan.targetPowerMw).toBeGreaterThan(0);
+        expect(plan.shouldGridTopUp).toBe(true);
+    });
+
+    it('continues charging after peak when night reserve is met but next-day peak needs more energy', () => {
+        const state = makeGridState({
+            batterySocPercent: AUTO_ARB.nightTargetSocPercent,
+            timeOfDay: 23.5,
+            solarOutputMw: 0,
+        });
+        const gridDemandMw = computeGridDemandMw(
+            state.timeOfDay,
+            state.dispatchScalePercent / 100,
+            state.gridPvEvacuationMw + state.gridBessConnectionMw,
+        );
+
+        const plan = getAutoArbPlan(
+            state,
+            state.timeOfDay,
+            state.solarOutputMw,
+            gridDemandMw,
+            'off-peak',
             state.tariffRatesEurMwh,
         );
 

@@ -14,6 +14,8 @@ type DispatchModelState = Pick<
     | 'dispatchScalePercent'
 >;
 
+const HOURS_PER_DAY = 24;
+
 export interface AutoArbOutlook {
     targetSocPercent: number;
     targetEnergyMwh: number;
@@ -96,15 +98,18 @@ export function computeGridDemandMw(timeOfDay: number, scaleFactor: number, grid
     return clamp(rawDemand, 0, gridConnectionTotalMw);
 }
 
-function integrateWindowEnergy(fromHour: number, toHour: number, samplePowerMw: (timeOfDay: number) => number): number {
-    if (fromHour >= toHour) return 0;
-
+export function integrateWindowEnergy(fromHour: number, toHour: number, samplePowerMw: (timeOfDay: number) => number): number {
+    let effectiveToHour = toHour;
+    while (effectiveToHour <= fromHour) {
+        effectiveToHour += HOURS_PER_DAY;
+    }
     let energyMwh = 0;
 
-    for (let cursor = fromHour; cursor < toHour; cursor += AUTO_ARB.forecastStepHours) {
-        const windowHours = Math.min(AUTO_ARB.forecastStepHours, toHour - cursor);
+    for (let cursor = fromHour; cursor < effectiveToHour; cursor += AUTO_ARB.forecastStepHours) {
+        const windowHours = Math.min(AUTO_ARB.forecastStepHours, effectiveToHour - cursor);
         const sampleHour = cursor + windowHours / 2;
-        energyMwh += samplePowerMw(sampleHour) * windowHours;
+        const timeOfDay = ((sampleHour % HOURS_PER_DAY) + HOURS_PER_DAY) % HOURS_PER_DAY;
+        energyMwh += samplePowerMw(timeOfDay) * windowHours;
     }
 
     return energyMwh;
@@ -114,10 +119,17 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
     const transferLimitMw = getBatteryTransferLimitMw(state);
     const currentEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
     const reserveEnergyMwh = (AUTO_ARB.peakReserveSocPercent / 100) * state.batteryEnergyCapacityMwh;
+    const isPostPeak = timeOfDay >= AUTO_ARB.peakEndHour;
+    const forecastPeakStartHour = isPostPeak
+        ? AUTO_ARB.peakStartHour + HOURS_PER_DAY
+        : Math.max(timeOfDay, AUTO_ARB.peakStartHour);
+    const forecastPeakEndHour = isPostPeak
+        ? AUTO_ARB.peakEndHour + HOURS_PER_DAY
+        : AUTO_ARB.peakEndHour;
 
     const forecastPeakDemandMwh = integrateWindowEnergy(
-        Math.max(timeOfDay, AUTO_ARB.peakStartHour),
-        AUTO_ARB.peakEndHour,
+        forecastPeakStartHour,
+        forecastPeakEndHour,
         (forecastTod) => {
             const solarMw = computeSolarOutputMw(
                 forecastTod,
@@ -143,8 +155,13 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
         state.batteryEnergyCapacityMwh,
     );
 
-    const forecastSolarChargeMwh = timeOfDay < AUTO_ARB.peakStartHour
-        ? integrateWindowEnergy(timeOfDay, AUTO_ARB.peakStartHour, (forecastTod) => {
+    const forecastSolarChargeEndHour = timeOfDay < AUTO_ARB.peakStartHour
+        ? AUTO_ARB.peakStartHour
+        : isPostPeak
+            ? AUTO_ARB.peakStartHour + HOURS_PER_DAY
+            : timeOfDay;
+    const forecastSolarChargeMwh = forecastSolarChargeEndHour > timeOfDay
+        ? integrateWindowEnergy(timeOfDay, forecastSolarChargeEndHour, (forecastTod) => {
             const solarMw = computeSolarOutputMw(
                 forecastTod,
                 state.solarAcCapacityMw,
@@ -161,6 +178,7 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
         : 0;
 
     const forecastSolarUsableMwh = Math.max(0, forecastSolarChargeMwh - AUTO_ARB.solarConfidenceBufferMwh);
+    const canTopUpAheadOfPeak = timeOfDay < AUTO_ARB.peakStartHour || isPostPeak;
 
     return {
         targetSocPercent: (targetEnergyMwh / Math.max(state.batteryEnergyCapacityMwh, 1e-9)) * 100,
@@ -168,7 +186,7 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
         forecastSolarChargeMwh,
         forecastPeakDemandMwh,
         shouldGridTopUp:
-            timeOfDay < AUTO_ARB.peakStartHour &&
+            canTopUpAheadOfPeak &&
             currentEnergyMwh + forecastSolarUsableMwh < targetEnergyMwh,
     };
 }
@@ -236,12 +254,32 @@ export function getAutoArbPlan(
                 targetPowerMw: targetChargeMw,
             };
         }
-    } else if (tariffPeriod === 'off-peak' && state.batterySocPercent < AUTO_ARB.nightTargetSocPercent) {
-        return {
-            ...outlook,
-            mode: 'charging',
-            targetPowerMw: transferLimitMw * AUTO_ARB.offPeakTopUpFraction,
-        };
+    } else if (timeOfDay >= AUTO_ARB.peakEndHour && tariffPeriod === 'off-peak' && state.batterySocPercent < 100) {
+        const nightTargetEnergyMwh = (AUTO_ARB.nightTargetSocPercent / 100) * capacityMwh;
+        const nightReserveGapMwh = Math.max(0, nightTargetEnergyMwh - currentEnergyMwh);
+        const forecastSolarUsableMwh = Math.max(0, outlook.forecastSolarChargeMwh - AUTO_ARB.solarConfidenceBufferMwh);
+        const nextPeakGridGapMwh = Math.max(0, outlook.targetEnergyMwh - currentEnergyMwh - forecastSolarUsableMwh);
+        const peakProfitableVsCurrent = peakRate > currentRate / Math.max(roundTripEff, 1e-9);
+        const wantsForecastTopUp = outlook.shouldGridTopUp && peakProfitableVsCurrent;
+        const energyGapMwh = Math.max(nightReserveGapMwh, wantsForecastTopUp ? nextPeakGridGapMwh : 0);
+
+        if (energyGapMwh > 0) {
+            const timeUntilPeakHours = Math.max(0.5, AUTO_ARB.peakStartHour + HOURS_PER_DAY - timeOfDay);
+            const requiredGridChargeMw = energyGapMwh / Math.max(timeUntilPeakHours * BESS.chargeEfficiency, 1e-9);
+            const targetChargeMw = clamp(
+                Math.max(requiredGridChargeMw, transferLimitMw * AUTO_ARB.offPeakTopUpFraction),
+                0,
+                transferLimitMw,
+            );
+
+            if (targetChargeMw > 0.5) {
+                return {
+                    ...outlook,
+                    mode: 'charging',
+                    targetPowerMw: targetChargeMw,
+                };
+            }
+        }
     }
 
     return {
