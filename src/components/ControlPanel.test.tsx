@@ -95,6 +95,56 @@ describe('ControlPanel', () => {
         });
     });
 
+    it('moves focus to the close button when opening a drawer', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={vi.fn()}
+            />,
+        );
+
+        await openLeftDrawer(user);
+
+        expect(screen.getByRole('button', { name: /close panel/i })).toHaveFocus();
+    });
+
+    it('closes the drawer when pressing Escape', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={vi.fn()}
+            />,
+        );
+
+        await openLeftDrawer(user);
+        await user.keyboard('{Escape}');
+
+        expect(screen.queryByRole('button', { name: /close panel/i })).not.toBeInTheDocument();
+    });
+
+    it('restores focus to the trigger when closing a drawer', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={vi.fn()}
+            />,
+        );
+
+        await openLeftDrawer(user);
+        await user.click(screen.getByRole('button', { name: /close panel/i }));
+
+        expect(screen.getByTitle('Controls')).toHaveFocus();
+    });
+
     it('reveals the project capacity card and dispatches solar AC capacity changes', async () => {
         const user = userEvent.setup();
         const onCommand = vi.fn();

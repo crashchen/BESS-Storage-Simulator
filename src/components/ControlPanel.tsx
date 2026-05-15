@@ -2,7 +2,8 @@
 // Control Panel - Collapsible drawer layout
 // ============================================================
 
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent, ReactNode, RefObject } from 'react';
 import type { ControlPanelProps } from '../types';
 import { PanelCard } from './ui/PanelPrimitives';
 import {
@@ -20,14 +21,15 @@ const TelemetryChart = lazy(async () => {
     return { default: module.TelemetryChart };
 });
 
-// Collapsed sidebar tab button
-function DrawerTab({
+// Collapsed sidebar trigger button
+function DrawerTrigger({
     icon,
     label,
     isOpen,
     onClick,
     position,
     controlsId,
+    triggerRef,
 }: {
     icon: string;
     label: string;
@@ -35,9 +37,11 @@ function DrawerTab({
     onClick: () => void;
     position: 'left' | 'right';
     controlsId: string;
+    triggerRef: RefObject<HTMLButtonElement | null>;
 }) {
     return (
         <button
+            ref={triggerRef}
             onClick={onClick}
             aria-label={label}
             aria-expanded={isOpen}
@@ -66,6 +70,7 @@ function Drawer({
     isOpen,
     onClose,
     position,
+    triggerRef,
     children,
 }: {
     id: string;
@@ -73,17 +78,46 @@ function Drawer({
     isOpen: boolean;
     onClose: () => void;
     position: 'left' | 'right';
-    children: React.ReactNode;
+    triggerRef: RefObject<HTMLButtonElement | null>;
+    children: ReactNode;
 }) {
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const restoreFocusOnCloseRef = useRef(false);
+
     const translateClass = position === 'left'
         ? isOpen ? 'translate-x-0' : '-translate-x-full'
         : isOpen ? 'translate-x-0' : 'translate-x-full';
+
+    useEffect(() => {
+        if (isOpen) {
+            closeButtonRef.current?.focus();
+            return;
+        }
+
+        if (restoreFocusOnCloseRef.current) {
+            restoreFocusOnCloseRef.current = false;
+            triggerRef.current?.focus();
+        }
+    }, [isOpen, triggerRef]);
+
+    const handleClose = () => {
+        restoreFocusOnCloseRef.current = true;
+        onClose();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Escape') {
+            event.stopPropagation();
+            handleClose();
+        }
+    };
 
     return (
         <div
             id={id}
             role="region"
             aria-label={label}
+            onKeyDown={handleKeyDown}
             className={`
                 pointer-events-auto absolute top-0 bottom-0 w-[85vw] sm:w-[380px]
                 flex flex-col gap-3 overflow-y-auto p-2 sm:p-3
@@ -94,10 +128,12 @@ function Drawer({
                 ${position === 'left' ? 'left-0 border-r pr-4' : 'right-0 border-l pl-4'}
             `}
         >
+            {/* Focus trap intentionally omitted for this demo drawer. */}
             {isOpen ? (
                 <>
                     <button
-                        onClick={onClose}
+                        ref={closeButtonRef}
+                        onClick={handleClose}
                         aria-label="Close panel"
                         className={`
                             absolute top-3 z-20 flex h-8 w-8 items-center justify-center
@@ -123,11 +159,20 @@ function Drawer({
 export function ControlPanel({ gridState, history, onCommand }: ControlPanelProps) {
     const [leftOpen, setLeftOpen] = useState(false);
     const [rightOpen, setRightOpen] = useState(false);
+    const leftTriggerRef = useRef<HTMLButtonElement>(null);
+    const rightTriggerRef = useRef<HTMLButtonElement>(null);
 
     return (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[3.5rem] z-10 select-none sm:top-[4.75rem]">
             {/* Left drawer - Controls */}
-            <Drawer id="drawer-controls" label="Controls" isOpen={leftOpen} onClose={() => setLeftOpen(false)} position="left">
+            <Drawer
+                id="drawer-controls"
+                label="Controls"
+                isOpen={leftOpen}
+                onClose={() => setLeftOpen(false)}
+                position="left"
+                triggerRef={leftTriggerRef}
+            >
                 <SimulationControl
                     simulationStatus={gridState.simulationStatus}
                     timeSpeed={gridState.timeSpeed}
@@ -140,7 +185,14 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
             </Drawer>
 
             {/* Right drawer - Metrics & Economics */}
-            <Drawer id="drawer-metrics" label="Metrics & Economics" isOpen={rightOpen} onClose={() => setRightOpen(false)} position="right">
+            <Drawer
+                id="drawer-metrics"
+                label="Metrics & Economics"
+                isOpen={rightOpen}
+                onClose={() => setRightOpen(false)}
+                position="right"
+                triggerRef={rightTriggerRef}
+            >
                 <MetricsPanel gridState={gridState} />
                 <EconomicsPanel gridState={gridState} onCommand={onCommand} />
 
@@ -156,26 +208,28 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
             {/* Collapsed tabs - visible when drawers are closed */}
             <div className="absolute left-0 top-4 flex flex-col gap-2">
                 {!leftOpen ? (
-                    <DrawerTab
+                    <DrawerTrigger
                         icon="⚡"
                         label="Controls"
                         isOpen={leftOpen}
                         onClick={() => { setLeftOpen(true); setRightOpen(false); }}
                         position="left"
                         controlsId="drawer-controls"
+                        triggerRef={leftTriggerRef}
                     />
                 ) : null}
             </div>
 
             <div className="absolute right-0 top-4 flex flex-col gap-2">
                 {!rightOpen ? (
-                    <DrawerTab
+                    <DrawerTrigger
                         icon="📊"
                         label="Metrics"
                         isOpen={rightOpen}
                         onClick={() => { setRightOpen(true); setLeftOpen(false); }}
                         position="right"
                         controlsId="drawer-metrics"
+                        triggerRef={rightTriggerRef}
                     />
                 ) : null}
             </div>
