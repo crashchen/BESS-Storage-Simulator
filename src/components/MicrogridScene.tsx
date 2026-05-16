@@ -358,7 +358,7 @@ const LoadBuilding = memo(function LoadBuilding() {
     );
 });
 
-function SitePads({ capacityScale }: { capacityScale: number }) {
+const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: number }) {
     const bessWidthScale = Math.max(1, Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale));
     const solarPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.solar.size], []);
     const bessPadSize = useMemo<[number, number, number]>(() => [
@@ -403,7 +403,55 @@ function SitePads({ capacityScale }: { capacityScale: number }) {
             </group>
         </group>
     );
-}
+});
+
+// ── Static scene primitives ─────────────────────────────────
+// Ground + Grid + fog never change with the simulation tick, but they re-render
+// any time the parent does because they sit inside the parent's JSX tree. Hoist
+// them into a memoized component with stable props so React skips reconciliation
+// for them on every 30 fps state update.
+const GROUND_ARGS: [number, number] = [SCENE_3D.ground.size, SCENE_3D.ground.size];
+const GROUND_ROTATION: [number, number, number] = [-Math.PI / 2, 0, 0];
+const GROUND_POSITION: [number, number, number] = [0, -0.01, 0];
+const GRID_POSITION: [number, number, number] = [0, 0, 0];
+const GRID_ARGS: [number, number] = [...SCENE_3D.grid.args];
+
+const StaticTerrain = memo(function StaticTerrain() {
+    return (
+        <>
+            <mesh rotation={GROUND_ROTATION} receiveShadow position={GROUND_POSITION}>
+                <planeGeometry args={GROUND_ARGS} />
+                <meshStandardMaterial color={SCENE_3D.ground.color} />
+            </mesh>
+            <Grid
+                args={GRID_ARGS}
+                position={GRID_POSITION}
+                cellSize={SCENE_3D.grid.cellSize}
+                cellThickness={SCENE_3D.grid.cellThickness}
+                cellColor={SCENE_3D.grid.cellColor}
+                sectionSize={SCENE_3D.grid.sectionSize}
+                sectionThickness={SCENE_3D.grid.sectionThickness}
+                sectionColor={SCENE_3D.grid.sectionColor}
+                fadeDistance={SCENE_3D.grid.fadeDistance}
+                fadeStrength={SCENE_3D.grid.fadeStrength}
+                infiniteGrid
+            />
+        </>
+    );
+});
+
+// Substation + power lines + load building are visually static; only the BESS
+// pad width depends on capacityScale. Wrapping in memo means re-renders only
+// fire when the user actually edits BESS energy capacity, not every tick.
+const StaticSiteFurniture = memo(function StaticSiteFurniture({ capacityScale }: { capacityScale: number }) {
+    return (
+        <>
+            <SitePads capacityScale={capacityScale} />
+            <PowerLines />
+            <LoadBuilding />
+        </>
+    );
+});
 
 // ── Curtailment Particles ───────────────────────────────────
 const MAX_CURTAILMENT_PARTICLES = SCENE_3D.particles.maxCurtailment;
@@ -717,31 +765,13 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
             {/* Fog */}
             <fog ref={fogRef} attach="fog" args={[SCENE_3D.fog.color, SCENE_3D.fog.near, SCENE_3D.fog.far]} />
 
-            {/* Ground */}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.01, 0]}>
-                <planeGeometry args={[SCENE_3D.ground.size, SCENE_3D.ground.size]} />
-                <meshStandardMaterial color={SCENE_3D.ground.color} />
-            </mesh>
-            <Grid
-                args={[...SCENE_3D.grid.args]}
-                position={[0, 0, 0]}
-                cellSize={SCENE_3D.grid.cellSize}
-                cellThickness={SCENE_3D.grid.cellThickness}
-                cellColor={SCENE_3D.grid.cellColor}
-                sectionSize={SCENE_3D.grid.sectionSize}
-                sectionThickness={SCENE_3D.grid.sectionThickness}
-                sectionColor={SCENE_3D.grid.sectionColor}
-                fadeDistance={SCENE_3D.grid.fadeDistance}
-                fadeStrength={SCENE_3D.grid.fadeStrength}
-                infiniteGrid
-            />
+            {/* Static environment — memoized, only re-renders on capacity edits */}
+            <StaticTerrain />
+            <StaticSiteFurniture capacityScale={bessCapacityScale} />
 
-            {/* Scene objects */}
-            <SitePads capacityScale={bessCapacityScale} />
+            {/* Dynamic scene objects */}
             <BESSContainer mode={batteryMode} soc={batterySocPercent} capacityScale={bessCapacityScale} />
             <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} dcCapacityMwp={solarDcCapacityMwp} />
-            <PowerLines />
-            <LoadBuilding />
 
             {/* Energy flow animations */}
             <EnergyFlowSystem

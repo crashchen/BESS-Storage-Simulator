@@ -2,8 +2,8 @@
 // Control Panel - Collapsible drawer layout
 // ============================================================
 
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import type { KeyboardEvent, ReactNode, RefObject } from 'react';
+import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { ControlPanelProps } from '../types';
 import { PanelCard } from './ui/PanelPrimitives';
 import {
@@ -63,7 +63,18 @@ function DrawerTrigger({
     );
 }
 
-// Drawer container with slide animation
+// Drawer container with slide animation.
+//
+// Semantics: this is a **non-modal** region. The 3D scene behind it stays live
+// and interactive (orbit/zoom must keep working while users tweak parameters),
+// so we intentionally do NOT trap focus or apply background `inert`. We do:
+//   - aria role="region" + aria-labelledby for landmark navigation
+//   - move focus to the close button on open, restore to the trigger on close
+//   - listen for Escape at the *window* level (only the currently-open drawer
+//     reacts) so the key works even when focus has moved to the Canvas behind.
+// Click-outside-to-close is also intentionally omitted: with the 3D scene
+// occupying the rest of the viewport, accidental closes during orbit drag would
+// be a worse UX than requiring an explicit close action.
 function Drawer({
     id,
     label,
@@ -83,6 +94,7 @@ function Drawer({
 }) {
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const restoreFocusOnCloseRef = useRef(false);
+    const labelId = useId();
 
     const translateClass = position === 'left'
         ? isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -105,19 +117,29 @@ function Drawer({
         onClose();
     };
 
-    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        if (event.key === 'Escape') {
-            event.stopPropagation();
-            handleClose();
-        }
-    };
+    // Window-level Escape: works even when focus has moved to the Canvas or
+    // anywhere else on the page. Only the open drawer subscribes, so multiple
+    // drawer instances do not race.
+    useEffect(() => {
+        if (!isOpen) return;
+        const handler = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+                handleClose();
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+        // handleClose intentionally not in deps — capturing isOpen close above is sufficient
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     return (
         <div
             id={id}
             role="region"
-            aria-label={label}
-            onKeyDown={handleKeyDown}
+            aria-labelledby={labelId}
+            aria-hidden={!isOpen}
             className={`
                 pointer-events-auto absolute top-0 bottom-0 w-[85vw] sm:w-[380px]
                 flex flex-col gap-3 overflow-y-auto p-2 sm:p-3
@@ -128,13 +150,13 @@ function Drawer({
                 ${position === 'left' ? 'left-0 border-r pr-4' : 'right-0 border-l pl-4'}
             `}
         >
-            {/* Focus trap intentionally omitted for this demo drawer. */}
+            <h2 id={labelId} className="sr-only">{label}</h2>
             {isOpen ? (
                 <>
                     <button
                         ref={closeButtonRef}
                         onClick={handleClose}
-                        aria-label="Close panel"
+                        aria-label={`Close ${label} panel`}
                         className={`
                             absolute top-3 z-20 flex h-8 w-8 items-center justify-center
                             rounded-full bg-slate-800/80 text-slate-400

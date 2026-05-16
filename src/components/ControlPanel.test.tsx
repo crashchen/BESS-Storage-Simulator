@@ -108,7 +108,7 @@ describe('ControlPanel', () => {
 
         await openLeftDrawer(user);
 
-        expect(screen.getByRole('button', { name: /close panel/i })).toHaveFocus();
+        expect(screen.getByRole('button', { name: /close .* panel/i })).toHaveFocus();
     });
 
     it('closes the drawer when pressing Escape', async () => {
@@ -125,7 +125,45 @@ describe('ControlPanel', () => {
         await openLeftDrawer(user);
         await user.keyboard('{Escape}');
 
-        expect(screen.queryByRole('button', { name: /close panel/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /close .* panel/i })).not.toBeInTheDocument();
+    });
+
+    it('closes the drawer with Escape even after focus has left the drawer (window-level listener)', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={vi.fn()}
+            />,
+        );
+
+        await openLeftDrawer(user);
+        // Simulate focus moving outside the drawer (e.g., into the 3D Canvas).
+        (document.activeElement as HTMLElement | null)?.blur();
+        document.body.focus();
+
+        await user.keyboard('{Escape}');
+
+        expect(screen.queryByRole('button', { name: /close .* panel/i })).not.toBeInTheDocument();
+    });
+
+    it('exposes drawers as labelled regions for assistive tech', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={vi.fn()}
+            />,
+        );
+
+        await openLeftDrawer(user);
+        const region = screen.getByRole('region', { name: /controls/i });
+        expect(region).toBeInTheDocument();
+        expect(region.getAttribute('aria-hidden')).toBe('false');
     });
 
     it('restores focus to the trigger when closing a drawer', async () => {
@@ -140,7 +178,7 @@ describe('ControlPanel', () => {
         );
 
         await openLeftDrawer(user);
-        await user.click(screen.getByRole('button', { name: /close panel/i }));
+        await user.click(screen.getByRole('button', { name: /close .* panel/i }));
 
         expect(screen.getByTitle('Controls')).toHaveFocus();
     });
