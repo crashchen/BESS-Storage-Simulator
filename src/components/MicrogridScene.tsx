@@ -190,21 +190,18 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
 }
 
 // ── Solar Panel ──────────────────────────────────────────────
-function SolarPanel({
+// Brightness/color are computed once per render in SolarArray (since every panel
+// sees the same value) and passed in as shared THREE objects. SolarPanel itself
+// is memoized so identical color/intensity props don't re-render N×panel meshes.
+const SolarPanel = memo(function SolarPanel({
     position,
-    solarOutputMw,
-    solarAcCapacityMw,
+    panelColor,
+    emissiveIntensity,
 }: {
     position: [number, number, number];
-    solarOutputMw: number;
-    solarAcCapacityMw: number;
+    panelColor: Color;
+    emissiveIntensity: number;
 }) {
-    const brightness = solarOutputMw / Math.max(solarAcCapacityMw, 1e-9);
-    const panelColor = useMemo(
-        () => COLOR_SOLAR_OFF.clone().lerp(COLOR_SOLAR_ON, brightness),
-        [brightness],
-    );
-
     return (
         <group position={position} rotation={[-0.35, 0, 0]}>
             {/* Panel frame */}
@@ -218,7 +215,7 @@ function SolarPanel({
                 <meshStandardMaterial
                     color={panelColor}
                     emissive={COLOR_SOLAR_ON}
-                    emissiveIntensity={brightness * 0.8}
+                    emissiveIntensity={emissiveIntensity}
                     metalness={0.9}
                     roughness={0.1}
                 />
@@ -230,7 +227,7 @@ function SolarPanel({
             </mesh>
         </group>
     );
-}
+});
 
 // ── Solar Array ──────────────────────────────────────────────
 function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solarOutputMw: number; solarAcCapacityMw: number; dcCapacityMwp: number }) {
@@ -262,10 +259,26 @@ function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solar
         return result;
     }, [cols, rows]);
 
+    // Discretize brightness into 5% buckets so the memoized Color (and the memo'd
+    // child panels) only re-create when the bucket actually changes — not every
+    // RAF frame when solarOutputMw drifts by 0.001 MW.
+    const rawBrightness = solarOutputMw / Math.max(solarAcCapacityMw, 1e-9);
+    const brightnessBucket = Math.round(Math.max(0, Math.min(1, rawBrightness)) * 20);
+    const panelColor = useMemo(
+        () => COLOR_SOLAR_OFF.clone().lerp(COLOR_SOLAR_ON, brightnessBucket / 20),
+        [brightnessBucket],
+    );
+    const emissiveIntensity = (brightnessBucket / 20) * 0.8;
+
     return (
         <group>
             {panels.map((pos, i) => (
-                <SolarPanel key={i} position={pos} solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} />
+                <SolarPanel
+                    key={i}
+                    position={pos}
+                    panelColor={panelColor}
+                    emissiveIntensity={emissiveIntensity}
+                />
             ))}
             <Text
                 position={[-6.5, 3, -4]}

@@ -111,6 +111,11 @@ interface EconomicsPanelProps {
     onCommand: (cmd: BESSCommand) => void;
 }
 
+function formatSignedEur(value: number): string {
+    const sign = value >= 0 ? '+' : '−';
+    return `${sign}€${Math.abs(value).toFixed(0)}`;
+}
+
 export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
     const {
         tariffPeriod,
@@ -118,6 +123,10 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
         currentPriceEurMwh,
         cumulativeRevenueEur,
         cumulativeBessMarginEur,
+        cumulativeSolarExportRevenueEur,
+        cumulativeBessDischargeRevenueEur,
+        cumulativeBessGridChargeCostEur,
+        cumulativeSolarOpportunityCostEur,
         batteryChargeFromSolarMw,
         batteryChargeFromGridMw,
         batteryDischargeToGridMw,
@@ -190,13 +199,35 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                     </div>
                 </div>
 
-                <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Settlement Logic</p>
+                <details className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+                    <summary className="cursor-pointer text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                        Settlement Breakdown (auditable)
+                    </summary>
                     <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
-                        `Project P&amp;L` = direct PV sales + BESS discharge revenue − grid-paid charging cost.
-                        `BESS Margin` = BESS discharge revenue − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
+                        <span className="font-semibold text-emerald-300">Project P&amp;L</span> = direct PV sales + BESS discharge revenue − grid-paid charging cost.
+                        {' '}
+                        <span className="font-semibold text-sky-300">BESS Margin</span> = BESS discharge revenue − grid-paid charging cost − <span className="italic">Solar → BESS</span> opportunity cost (delayed sale value).
                     </p>
-                </div>
+                    <div className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 font-mono text-[11px] tabular-nums">
+                        <span className="text-slate-400">Solar → Grid revenue</span>
+                        <span className="text-emerald-300">{formatSignedEur(cumulativeSolarExportRevenueEur)}</span>
+                        <span className="text-slate-400">BESS discharge revenue</span>
+                        <span className="text-amber-300">{formatSignedEur(cumulativeBessDischargeRevenueEur)}</span>
+                        <span className="text-slate-400">Grid → BESS cost</span>
+                        <span className="text-rose-300">{formatSignedEur(-cumulativeBessGridChargeCostEur)}</span>
+                        <span className="text-slate-400">Solar opportunity cost</span>
+                        <span className="text-rose-300">{formatSignedEur(-cumulativeSolarOpportunityCostEur)}</span>
+                        <span className="col-span-2 my-1 border-t border-slate-700/60" />
+                        <span className="text-slate-300">Project P&amp;L (= row 1 + 2 + 3)</span>
+                        <span className={cumulativeRevenueEur >= 0 ? 'text-emerald-200' : 'text-rose-300'}>
+                            {formatSignedEur(cumulativeRevenueEur)}
+                        </span>
+                        <span className="text-slate-300">BESS Margin (= row 2 + 3 + 4)</span>
+                        <span className={cumulativeBessMarginEur >= 0 ? 'text-sky-200' : 'text-rose-300'}>
+                            {formatSignedEur(cumulativeBessMarginEur)}
+                        </span>
+                    </div>
+                </details>
 
                 <div className="grid gap-2">
                     {(['off-peak', 'mid-peak', 'peak'] as TariffPeriod[]).map((period) => (

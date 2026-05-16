@@ -22,7 +22,7 @@ export default function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#0a0a0f]">
       {/* ── 3D Layer (@Agent-3D) ──────────────────────────── */}
-      <SimulationViewport gridState={state} />
+      <SimulationViewport gridState={state} onCommand={dispatch} />
 
       {/* ── 2D HUD Layer (@Agent-UI) ─────────────────────── */}
       <StatusHud gridState={state} />

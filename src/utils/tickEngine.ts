@@ -58,6 +58,10 @@ export function createInitialGridState(timestamp = 0): GridState {
         currentPriceEurMwh: getElectricityPriceEurMwh(SIMULATION.initialTimeOfDay, TARIFF.defaultRatesEurMwh),
         cumulativeRevenueEur: 0,
         cumulativeBessMarginEur: 0,
+        cumulativeSolarExportRevenueEur: 0,
+        cumulativeBessDischargeRevenueEur: 0,
+        cumulativeBessGridChargeCostEur: 0,
+        cumulativeSolarOpportunityCostEur: 0,
         autoArbEnabled: false,
     };
 }
@@ -222,6 +226,21 @@ function simulateTickStep(
 
     const cumulativeRevenueEur = prev.cumulativeRevenueEur + settlement.projectPnlDeltaEur;
     const cumulativeBessMarginEur = prev.cumulativeBessMarginEur + settlement.bessMarginDeltaEur;
+    const cumulativeSolarExportRevenueEur =
+        prev.cumulativeSolarExportRevenueEur + settlement.solarExportRevenueDeltaEur;
+    const cumulativeBessDischargeRevenueEur =
+        prev.cumulativeBessDischargeRevenueEur + settlement.bessDischargeRevenueDeltaEur;
+    const cumulativeBessGridChargeCostEur =
+        prev.cumulativeBessGridChargeCostEur + settlement.bessGridChargeCostDeltaEur;
+    const cumulativeSolarOpportunityCostEur =
+        prev.cumulativeSolarOpportunityCostEur + settlement.solarOpportunityCostDeltaEur;
+
+    // Settlement uses the sub-step midpoint (correct for the integral over [t, t+dt]),
+    // but the displayed period/price should reflect the clock the user actually sees
+    // (the end of the sub-step). Otherwise a tick that lands exactly on a tariff
+    // boundary (e.g. 18:00) shows "mid-peak" until the next tick fires past it.
+    const displayTariffPeriod = getTariffPeriod(timeOfDay);
+    const displayPriceEurMwh = getElectricityPriceEurMwh(timeOfDay, prev.tariffRatesEurMwh);
 
     return {
         ...prev,
@@ -239,10 +258,14 @@ function simulateTickStep(
         batteryMode,
         timeOfDay,
         timestamp: now,
-        tariffPeriod,
-        currentPriceEurMwh,
+        tariffPeriod: displayTariffPeriod,
+        currentPriceEurMwh: displayPriceEurMwh,
         cumulativeRevenueEur,
         cumulativeBessMarginEur,
+        cumulativeSolarExportRevenueEur,
+        cumulativeBessDischargeRevenueEur,
+        cumulativeBessGridChargeCostEur,
+        cumulativeSolarOpportunityCostEur,
     };
 }
 

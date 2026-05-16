@@ -42,6 +42,13 @@ export interface GridState {
     currentPriceEurMwh: number;
     cumulativeRevenueEur: number;
     cumulativeBessMarginEur: number;
+    // Auditable breakdowns:
+    //   Project P&L = solarExportRevenue + bessDischargeRevenue − bessGridChargeCost
+    //   BESS Margin = bessDischargeRevenue − bessGridChargeCost − solarOpportunityCost
+    cumulativeSolarExportRevenueEur: number;
+    cumulativeBessDischargeRevenueEur: number;
+    cumulativeBessGridChargeCostEur: number;
+    cumulativeSolarOpportunityCostEur: number;
     autoArbEnabled: boolean;
 }
 

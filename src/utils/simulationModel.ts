@@ -38,10 +38,25 @@ export interface HybridProjectSettlement {
     projectNetExportMw: number;
     projectPnlDeltaEur: number;
     bessMarginDeltaEur: number;
+    // Auditable components — Project P&L and BESS Margin are derived from these
+    // so the EconomicsPanel can show "totals reconcile to the sum of parts".
+    solarExportRevenueDeltaEur: number;
+    bessDischargeRevenueDeltaEur: number;
+    bessGridChargeCostDeltaEur: number;
+    solarOpportunityCostDeltaEur: number;
 }
 
 export function clamp(value: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, value));
+}
+
+/**
+ * Clamp with a finite-number guard: NaN/Infinity payloads fall back to a safe value
+ * rather than poisoning the state tree through subsequent arithmetic.
+ */
+export function clampFinite(value: number, min: number, max: number, fallback: number): number {
+    if (!Number.isFinite(value)) return fallback;
+    return clamp(value, min, max);
 }
 
 export function getTariffPeriod(tod: number): TariffPeriod {
@@ -212,7 +227,12 @@ export function getAutoArbPlan(
     const currentRate = tariffRatesEurMwh[tariffPeriod];
 
     if (tariffPeriod === 'peak') {
-        const peakIsProfitable = peakRate > 0 && peakRate >= offRate;
+        // Discharge only when peak revenue covers the round-trip loss of the cheapest
+        // realistic charge source (off-peak grid). Matches the symmetric pre-charge
+        // gate `peakRate > currentRate / roundTripEff` so the strategy can't release
+        // stored energy at a window it would refuse to charge for.
+        const referenceChargeRate = Math.max(offRate, 0);
+        const peakIsProfitable = peakRate > 0 && peakRate > referenceChargeRate / Math.max(roundTripEff, 1e-9);
         if (peakIsProfitable) {
             const remainingPeakHours = Math.max(0.25, AUTO_ARB.peakEndHour - timeOfDay);
             const availableDischargeMwh = Math.max(0, currentEnergyMwh - reserveEnergyMwh);
@@ -326,6 +346,11 @@ export function settleHybridProjectTick({
     const batteryDischargeToGridMwh = batteryDischargeToGridMw * dtHours;
     const solarOpportunityCostMwh = Math.max(0, baselineSolarExportMw - solarExportMw) * dtHours;
 
+    const solarExportRevenueDeltaEur = solarExportMwh * currentPriceEurMwh;
+    const bessDischargeRevenueDeltaEur = batteryDischargeToGridMwh * currentPriceEurMwh;
+    const bessGridChargeCostDeltaEur = batteryChargeFromGridMwh * currentPriceEurMwh;
+    const solarOpportunityCostDeltaEur = solarOpportunityCostMwh * currentPriceEurMwh;
+
     return {
         batteryChargeFromSolarMw,
         batteryChargeFromGridMw,
@@ -334,12 +359,12 @@ export function settleHybridProjectTick({
         solarCurtailedMw,
         projectNetExportMw,
         projectPnlDeltaEur:
-            solarExportMwh * currentPriceEurMwh +
-            batteryDischargeToGridMwh * currentPriceEurMwh -
-            batteryChargeFromGridMwh * currentPriceEurMwh,
+            solarExportRevenueDeltaEur + bessDischargeRevenueDeltaEur - bessGridChargeCostDeltaEur,
         bessMarginDeltaEur:
-            batteryDischargeToGridMwh * currentPriceEurMwh -
-            batteryChargeFromGridMwh * currentPriceEurMwh -
-            solarOpportunityCostMwh * currentPriceEurMwh,
+            bessDischargeRevenueDeltaEur - bessGridChargeCostDeltaEur - solarOpportunityCostDeltaEur,
+        solarExportRevenueDeltaEur,
+        bessDischargeRevenueDeltaEur,
+        bessGridChargeCostDeltaEur,
+        solarOpportunityCostDeltaEur,
     };
 }

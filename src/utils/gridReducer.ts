@@ -9,8 +9,10 @@ import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
 import type { BESSCommand, GridState } from '../types';
 import {
     clamp,
+    clampFinite,
     computeGridDemandMw,
     computeSolarOutputMw,
+    getBatteryTransferLimitMw,
     getElectricityPriceEurMwh,
     getTariffPeriod,
     settleHybridProjectTick,
@@ -32,6 +34,36 @@ export interface ReducerResult {
 const NO_SIDE_EFFECTS: ReducerSideEffects = {};
 const SOC_EMPTY_EPSILON = 1e-9;
 const SOC_FULL_EPSILON = 100 - 1e-9;
+
+/**
+ * Re-clamp the live battery power to the current transfer limit and refresh the
+ * instantaneous flow fields, without advancing simulation time or accumulators.
+ * Used after running-state capacity changes so UI doesn't show stale flows.
+ */
+function reconcileRunningFlows(state: GridState, now: number): GridState {
+    const transferLimitMw = getBatteryTransferLimitMw(state);
+    const clampedBatteryPowerMw = clamp(state.batteryPowerMw, -transferLimitMw, transferLimitMw);
+    const currentPriceEurMwh = getElectricityPriceEurMwh(state.timeOfDay, state.tariffRatesEurMwh);
+    const settlement = settleHybridProjectTick({
+        solarOutputMw: state.solarOutputMw,
+        gridDemandMw: state.gridDemandMw,
+        batteryPowerMw: clampedBatteryPowerMw,
+        gridPvEvacuationMw: state.gridPvEvacuationMw,
+        currentPriceEurMwh,
+        dtHours: 0,
+    });
+    return {
+        ...state,
+        batteryPowerMw: clampedBatteryPowerMw,
+        batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
+        batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
+        batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
+        solarExportMw: settlement.solarExportMw,
+        solarCurtailedMw: settlement.solarCurtailedMw,
+        projectNetExportMw: settlement.projectNetExportMw,
+        timestamp: now,
+    };
+}
 
 function reconcileStaticTelemetry(state: GridState, now: number): GridState {
     const solarOutputMw = computeSolarOutputMw(
@@ -141,7 +173,12 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             };
 
         case 'SET_DISPATCH_SCALE': {
-            const dispatchScalePercent = clamp(cmd.payload, SIMULATION.dispatchScaleMin, SIMULATION.dispatchScaleMax);
+            const dispatchScalePercent = clampFinite(
+                cmd.payload,
+                SIMULATION.dispatchScaleMin,
+                SIMULATION.dispatchScaleMax,
+                prev.dispatchScalePercent,
+            );
             const gridDemandMw = computeGridDemandMw(
                 prev.timeOfDay,
                 dispatchScalePercent / 100,
@@ -149,7 +186,7 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             );
             return {
                 next: prev.simulationStatus === 'running'
-                    ? { ...prev, dispatchScalePercent, gridDemandMw, timestamp: now }
+                    ? reconcileRunningFlows({ ...prev, dispatchScalePercent, gridDemandMw }, now)
                     : reconcileStaticTelemetry({ ...prev, dispatchScalePercent }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -159,17 +196,27 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             return {
                 next: {
                     ...prev,
-                    timeSpeed: clamp(cmd.payload, SIMULATION.minTimeSpeed, SIMULATION.maxTimeSpeed),
+                    timeSpeed: clampFinite(
+                        cmd.payload,
+                        SIMULATION.minTimeSpeed,
+                        SIMULATION.maxTimeSpeed,
+                        prev.timeSpeed,
+                    ),
                     timestamp: now,
                 },
                 sideEffects: NO_SIDE_EFFECTS,
             };
 
         case 'SET_BESS_POWER_RATING': {
-            const batteryPowerRatingMw = clamp(cmd.payload, BESS.minPowerMw, BESS.maxPowerMw);
+            const batteryPowerRatingMw = clampFinite(
+                cmd.payload,
+                BESS.minPowerMw,
+                BESS.maxPowerMw,
+                prev.batteryPowerRatingMw,
+            );
             return {
                 next: prev.simulationStatus === 'running'
-                    ? { ...prev, batteryPowerRatingMw, timestamp: now }
+                    ? reconcileRunningFlows({ ...prev, batteryPowerRatingMw }, now)
                     : reconcileStaticTelemetry({ ...prev, batteryPowerRatingMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -177,7 +224,12 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
 
         case 'SET_BESS_ENERGY_CAPACITY': {
             const prevStoredMwh = (prev.batterySocPercent / 100) * prev.batteryEnergyCapacityMwh;
-            const batteryEnergyCapacityMwh = clamp(cmd.payload, BESS.minEnergyMwh, BESS.maxEnergyMwh);
+            const batteryEnergyCapacityMwh = clampFinite(
+                cmd.payload,
+                BESS.minEnergyMwh,
+                BESS.maxEnergyMwh,
+                prev.batteryEnergyCapacityMwh,
+            );
             const batterySocPercent = clamp(
                 (prevStoredMwh / Math.max(batteryEnergyCapacityMwh, 1e-9)) * 100,
                 0,
@@ -185,14 +237,19 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             );
             return {
                 next: prev.simulationStatus === 'running'
-                    ? { ...prev, batteryEnergyCapacityMwh, batterySocPercent, timestamp: now }
+                    ? reconcileRunningFlows({ ...prev, batteryEnergyCapacityMwh, batterySocPercent }, now)
                     : reconcileStaticTelemetry({ ...prev, batteryEnergyCapacityMwh, batterySocPercent }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
 
         case 'SET_SOLAR_AC_CAPACITY': {
-            const solarAcCapacityMw = clamp(cmd.payload, SOLAR.minAcCapacityMw, SOLAR.maxAcCapacityMw);
+            const solarAcCapacityMw = clampFinite(
+                cmd.payload,
+                SOLAR.minAcCapacityMw,
+                SOLAR.maxAcCapacityMw,
+                prev.solarAcCapacityMw,
+            );
             const solarOutputMw = computeSolarOutputMw(
                 prev.timeOfDay,
                 solarAcCapacityMw,
@@ -200,14 +257,19 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             );
             return {
                 next: prev.simulationStatus === 'running'
-                    ? { ...prev, solarAcCapacityMw, solarOutputMw, timestamp: now }
+                    ? reconcileRunningFlows({ ...prev, solarAcCapacityMw, solarOutputMw }, now)
                     : reconcileStaticTelemetry({ ...prev, solarAcCapacityMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
 
         case 'SET_SOLAR_DC_CAPACITY': {
-            const solarDcCapacityMwp = clamp(cmd.payload, SOLAR.minDcCapacityMwp, SOLAR.maxDcCapacityMwp);
+            const solarDcCapacityMwp = clampFinite(
+                cmd.payload,
+                SOLAR.minDcCapacityMwp,
+                SOLAR.maxDcCapacityMwp,
+                prev.solarDcCapacityMwp,
+            );
             const solarOutputMw = computeSolarOutputMw(
                 prev.timeOfDay,
                 prev.solarAcCapacityMw,
@@ -215,14 +277,19 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             );
             return {
                 next: prev.simulationStatus === 'running'
-                    ? { ...prev, solarDcCapacityMwp, solarOutputMw, timestamp: now }
+                    ? reconcileRunningFlows({ ...prev, solarDcCapacityMwp, solarOutputMw }, now)
                     : reconcileStaticTelemetry({ ...prev, solarDcCapacityMwp }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
 
         case 'SET_GRID_PV_EVACUATION': {
-            const gridPvEvacuationMw = clamp(cmd.payload, GRID.minPvEvacuationMw, GRID.maxPvEvacuationMw);
+            const gridPvEvacuationMw = clampFinite(
+                cmd.payload,
+                GRID.minPvEvacuationMw,
+                GRID.maxPvEvacuationMw,
+                prev.gridPvEvacuationMw,
+            );
             const gridConnectionTotalMw = selectGridConnectionTotalMw({
                 gridPvEvacuationMw,
                 gridBessConnectionMw: prev.gridBessConnectionMw,
@@ -234,14 +301,19 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             );
             return {
                 next: prev.simulationStatus === 'running'
-                    ? { ...prev, gridPvEvacuationMw, gridDemandMw, timestamp: now }
+                    ? reconcileRunningFlows({ ...prev, gridPvEvacuationMw, gridDemandMw }, now)
                     : reconcileStaticTelemetry({ ...prev, gridPvEvacuationMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
         }
 
         case 'SET_GRID_BESS_CONNECTION': {
-            const gridBessConnectionMw = clamp(cmd.payload, GRID.minBessConnectionMw, GRID.maxBessConnectionMw);
+            const gridBessConnectionMw = clampFinite(
+                cmd.payload,
+                GRID.minBessConnectionMw,
+                GRID.maxBessConnectionMw,
+                prev.gridBessConnectionMw,
+            );
             const gridConnectionTotalMw = selectGridConnectionTotalMw({
                 gridPvEvacuationMw: prev.gridPvEvacuationMw,
                 gridBessConnectionMw,
@@ -253,7 +325,7 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             );
             return {
                 next: prev.simulationStatus === 'running'
-                    ? { ...prev, gridBessConnectionMw, gridDemandMw, timestamp: now }
+                    ? reconcileRunningFlows({ ...prev, gridBessConnectionMw, gridDemandMw }, now)
                     : reconcileStaticTelemetry({ ...prev, gridBessConnectionMw }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -263,7 +335,12 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             const { period, value } = cmd.payload;
             const tariffRatesEurMwh = {
                 ...prev.tariffRatesEurMwh,
-                [period]: clamp(value, TARIFF.minRateEurMwh, TARIFF.maxRateEurMwh),
+                [period]: clampFinite(
+                    value,
+                    TARIFF.minRateEurMwh,
+                    TARIFF.maxRateEurMwh,
+                    prev.tariffRatesEurMwh[period],
+                ),
             };
             return {
                 next: prev.simulationStatus === 'running'
