@@ -8,6 +8,7 @@ import type { ControlPanelProps } from '../types';
 import { PanelCard } from './ui/PanelPrimitives';
 import {
     SimulationControl,
+    ScenarioPresetsPanel,
     BessDispatchControl,
     BessCapacitySetup,
     ProjectCapacitySetup,
@@ -200,6 +201,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                     timeSpeed={gridState.timeSpeed}
                     onCommand={onCommand}
                 />
+                <ScenarioPresetsPanel onCommand={onCommand} />
                 <BessDispatchControl gridState={gridState} onCommand={onCommand} />
                 <BessCapacitySetup gridState={gridState} onCommand={onCommand} />
                 <ProjectCapacitySetup gridState={gridState} onCommand={onCommand} />

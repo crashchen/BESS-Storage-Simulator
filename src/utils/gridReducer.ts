@@ -5,7 +5,8 @@
 // uses to drive history/timer-ref resets outside the reducer.
 // ============================================================
 
-import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
+import { BESS, FREQUENCY_MODEL, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
+import { SCENARIO_PRESETS_BY_ID } from '../scenarios';
 import type { BESSCommand, GridState } from '../types';
 import {
     clamp,
@@ -92,6 +93,65 @@ function reconcileStaticTelemetry(state: GridState, now: number): GridState {
         solarOutputMw,
         gridDemandMw,
         batteryPowerMw: 0,
+        batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
+        batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
+        batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
+        solarExportMw: settlement.solarExportMw,
+        solarCurtailedMw: settlement.solarCurtailedMw,
+        projectNetExportMw: settlement.projectNetExportMw,
+        tariffPeriod,
+        currentPriceEurMwh,
+        timestamp: now,
+    };
+}
+
+function reconcileScenarioTelemetry(state: GridState, now: number): GridState {
+    const solarOutputMw = computeSolarOutputMw(
+        state.timeOfDay,
+        state.solarAcCapacityMw,
+        state.solarDcCapacityMwp,
+    );
+    const gridDemandMw = computeGridDemandMw(
+        state.timeOfDay,
+        state.dispatchScalePercent / 100,
+        selectGridConnectionTotalMw(state),
+    );
+    const transferLimitMw = getBatteryTransferLimitMw(state);
+    const requestedBatteryPowerMw = state.batterySocPercent >= SOC_FULL_EPSILON && state.batteryPowerMw > 0
+        ? 0
+        : state.batterySocPercent <= SOC_EMPTY_EPSILON && state.batteryPowerMw < 0
+            ? 0
+            : state.batteryPowerMw;
+    const batteryPowerMw = clamp(requestedBatteryPowerMw, -transferLimitMw, transferLimitMw);
+    const batteryMode = batteryPowerMw > 0
+        ? 'charging'
+        : batteryPowerMw < 0
+            ? 'discharging'
+            : state.batteryMode;
+    const tariffPeriod = getTariffPeriod(state.timeOfDay);
+    const currentPriceEurMwh = getElectricityPriceEurMwh(state.timeOfDay, state.tariffRatesEurMwh);
+    const settlement = settleHybridProjectTick({
+        solarOutputMw,
+        gridDemandMw,
+        batteryPowerMw,
+        gridPvEvacuationMw: state.gridPvEvacuationMw,
+        currentPriceEurMwh,
+        dtHours: 0,
+    });
+    const uncompensatedMw = solarOutputMw - gridDemandMw - batteryPowerMw;
+    const gridFrequencyHz = clamp(
+        GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * uncompensatedMw,
+        GRID.minFrequencyHz,
+        GRID.maxFrequencyHz,
+    );
+
+    return {
+        ...state,
+        gridFrequencyHz,
+        solarOutputMw,
+        gridDemandMw,
+        batteryPowerMw,
+        batteryMode,
         batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
         batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
         batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
@@ -377,6 +437,19 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
+
+        case 'APPLY_SCENARIO_PRESET': {
+            const preset = SCENARIO_PRESETS_BY_ID[cmd.payload];
+            const fresh = createInitialGridState(now);
+            return {
+                next: reconcileScenarioTelemetry({
+                    ...fresh,
+                    ...preset.state,
+                    timestamp: now,
+                }, now),
+                sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },
+            };
+        }
 
         default: {
             const _exhaustive: never = cmd;

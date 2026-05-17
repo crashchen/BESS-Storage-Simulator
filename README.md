@@ -21,6 +21,7 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 
 - **Real-time Simulation**: Start, pause, and stop the simulation clock with adjustable time speeds
 - **Dispatch Modes**: Manual control or automatic peak-ready dispatch optimization
+- **Demo Scenarios**: One-click presets for solar surplus, evening peak export, negative-price charging, and grid-stress lockout
 - **Configurable BESS**: Edit rated power and storage capacity from the UI
 - **Project Capacity Setup**: Edit solar AC/DC capacity, PV evacuation, and BESS interconnection live to model any project, not just the Romania baseline
 - **Price Scenarios**: Edit wholesale price windows, including negative-price scenarios
@@ -67,6 +68,7 @@ src/
   App.tsx                        App shell and overlay composition
   config.ts                      Centralized configuration constants
   types.ts                       Shared state and command contracts
+  scenarios.ts                   One-click demo scenario definitions
   hooks/
     useGridSimulation.ts         Utility-scale dispatch and simulation loop
   components/

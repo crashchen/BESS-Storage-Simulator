@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
+import { SCENARIO_PRESETS_BY_ID } from '../scenarios';
 import { makeGridState } from '../test/fixtures';
 import { applyCommand } from './gridReducer';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from './gridSelectors';
@@ -73,6 +74,48 @@ describe('gridReducer applyCommand', () => {
             resetTimerRefs: true,
             resetFrameRef: true,
         });
+    });
+
+    it('APPLY_SCENARIO_PRESET loads an auditable paused demo state and resets transient history refs', () => {
+        const preset = SCENARIO_PRESETS_BY_ID['negative-price-charge'];
+        const prev = makeGridState({
+            simulationStatus: 'running',
+            cumulativeRevenueEur: 2500,
+            cumulativeBessMarginEur: 1200,
+        });
+
+        const { next, sideEffects } = applyCommand(
+            prev,
+            { type: 'APPLY_SCENARIO_PRESET', payload: preset.id },
+            NOW,
+        );
+
+        expect(next.simulationStatus).toBe('paused');
+        expect(next.timeOfDay).toBe(preset.state.timeOfDay);
+        expect(next.currentPriceEurMwh).toBe(-45);
+        expect(next.batteryMode).toBe('charging');
+        expect(next.batteryPowerMw).toBeGreaterThan(0);
+        expect(next.batteryChargeFromGridMw).toBeGreaterThan(0);
+        expect(next.cumulativeRevenueEur).toBe(0);
+        expect(next.cumulativeBessMarginEur).toBe(0);
+        expect(sideEffects).toEqual({
+            resetHistory: true,
+            resetTimerRefs: true,
+            resetFrameRef: true,
+        });
+    });
+
+    it('APPLY_SCENARIO_PRESET computes a low-frequency grid-stress scene without starting the clock', () => {
+        const { next } = applyCommand(
+            makeGridState(),
+            { type: 'APPLY_SCENARIO_PRESET', payload: 'grid-stress-lockout' },
+            NOW,
+        );
+
+        expect(next.simulationStatus).toBe('paused');
+        expect(next.batteryMode).toBe('idle');
+        expect(next.batteryPowerMw).toBe(0);
+        expect(next.gridFrequencyHz).toBeLessThan(GRID.warningFrequencyLowHz);
     });
 
     it('CHARGE switches to charging mode and disables auto-arb', () => {

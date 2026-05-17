@@ -72,6 +72,27 @@ describe('ControlPanel', () => {
         expect(onCommand).toHaveBeenCalledWith({ type: 'SET_BESS_ENERGY_CAPACITY', payload: 800 });
     });
 
+    it('dispatches demo scenario preset changes from the controls drawer', async () => {
+        const user = userEvent.setup();
+        const onCommand = vi.fn();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={onCommand}
+            />,
+        );
+
+        await openLeftDrawer(user);
+        await user.click(screen.getByTestId('scenario-preset-evening-peak-discharge'));
+
+        expect(onCommand).toHaveBeenCalledWith({
+            type: 'APPLY_SCENARIO_PRESET',
+            payload: 'evening-peak-discharge',
+        });
+    });
+
     it('dispatches tariff rate updates for editable economics inputs', async () => {
         const user = userEvent.setup();
         const onCommand = vi.fn();

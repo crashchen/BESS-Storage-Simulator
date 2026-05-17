@@ -8,6 +8,12 @@ export type SimulationStatus = 'stopped' | 'running' | 'paused';
 
 export type BatteryMode = 'idle' | 'charging' | 'discharging';
 
+export type ScenarioPresetId =
+    | 'summer-midday-surplus'
+    | 'evening-peak-discharge'
+    | 'negative-price-charge'
+    | 'grid-stress-lockout';
+
 export interface GridState {
     projectName: string;
     projectLocation: string;
@@ -70,7 +76,8 @@ export type BESSCommand =
     | { type: 'SET_GRID_BESS_CONNECTION'; payload: number }
     | { type: 'SET_TARIFF_RATE'; payload: { period: TariffPeriod; value: number } }
     | { type: 'SET_AUTO_ARB_ENABLED'; payload: boolean }
-    | { type: 'TOGGLE_AUTO_ARB' };
+    | { type: 'TOGGLE_AUTO_ARB' }
+    | { type: 'APPLY_SCENARIO_PRESET'; payload: ScenarioPresetId };
 
 export interface GridSnapshot {
     t: number;
