@@ -2,8 +2,9 @@ import { Component, memo, useCallback, useState, type ErrorInfo, type ReactNode 
 import { Canvas } from '@react-three/fiber';
 import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import { MicrogridScene } from './MicrogridScene';
+import { SceneAssetInfoCard } from './SceneAssetInfoCard';
 import { GRID, SCENE_3D } from '../config';
-import type { BESSCommand, GridState } from '../types';
+import type { BESSCommand, GridState, SceneAssetId } from '../types';
 
 interface SimulationViewportProps {
   gridState: GridState;
@@ -94,6 +95,8 @@ function ViewportFallback({ failure, onRetry }: { failure: ViewportFailure; onRe
 export function SimulationViewport({ gridState, onCommand }: SimulationViewportProps) {
   const [failure, setFailure] = useState<ViewportFailure | null>(null);
   const [canvasKey, setCanvasKey] = useState(0);
+  const [hoveredAssetId, setHoveredAssetId] = useState<SceneAssetId | null>(null);
+  const [selectedAssetId, setSelectedAssetId] = useState<SceneAssetId | null>(null);
 
   const handleCanvasCreated = useCallback(({ gl }: { gl: { domElement: HTMLCanvasElement } }) => {
     const handler = (event: Event) => {
@@ -114,10 +117,27 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
   const handleRetry = useCallback(() => {
     setFailure(null);
     setCanvasKey(k => k + 1);
+    setHoveredAssetId(null);
+    setSelectedAssetId(null);
     // If the host provided a reset hook, also dispatch RESET so any poisoned state
     // (NaN/Infinity surviving the H1 guards, accumulated drift) gets cleared.
     onCommand?.({ type: 'RESET_SIMULATION' });
   }, [onCommand]);
+
+  const handleAssetSelect = useCallback((assetId: SceneAssetId) => {
+    setSelectedAssetId(assetId);
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedAssetId(null);
+  }, []);
+
+  const handleSceneMissed = useCallback(() => {
+    setSelectedAssetId(null);
+    setHoveredAssetId(null);
+  }, []);
+
+  const activeAssetId = selectedAssetId ?? hoveredAssetId;
 
   return (
     <div className="relative h-full w-full">
@@ -137,6 +157,7 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
             gl={{ antialias: true, alpha: false }}
             dpr={[SCENE_3D.dpr.min, SCENE_3D.dpr.max]}
             onCreated={handleCanvasCreated}
+            onPointerMissed={handleSceneMissed}
           >
             <PerformanceMonitor
               flipflops={SCENE_3D.performance.flipflops}
@@ -146,11 +167,23 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
             >
               <AdaptiveDpr pixelated />
             </PerformanceMonitor>
-            <MicrogridScene gridState={gridState} />
+            <MicrogridScene
+              gridState={gridState}
+              hoveredAssetId={hoveredAssetId}
+              selectedAssetId={selectedAssetId}
+              onAssetHover={setHoveredAssetId}
+              onAssetSelect={handleAssetSelect}
+            />
           </Canvas>
         </CanvasErrorBoundary>
       )}
       <FrequencyVignette frequencyHz={gridState.gridFrequencyHz} />
+      <SceneAssetInfoCard
+        assetId={activeAssetId}
+        gridState={gridState}
+        pinned={selectedAssetId !== null}
+        onClose={handleClearSelection}
+      />
     </div>
   );
 }

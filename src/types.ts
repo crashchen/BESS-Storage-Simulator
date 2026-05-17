@@ -8,6 +8,8 @@ export type SimulationStatus = 'stopped' | 'running' | 'paused';
 
 export type BatteryMode = 'idle' | 'charging' | 'discharging';
 
+export type SceneAssetId = 'bess' | 'pcs-mv' | 'grid-node';
+
 export type ScenarioPresetId =
     | 'summer-midday-surplus'
     | 'evening-peak-discharge'
@@ -91,6 +93,10 @@ export interface GridSnapshot {
 
 export interface MicrogridSceneProps {
     gridState: GridState;
+    selectedAssetId?: SceneAssetId | null;
+    hoveredAssetId?: SceneAssetId | null;
+    onAssetHover?: (assetId: SceneAssetId | null) => void;
+    onAssetSelect?: (assetId: SceneAssetId) => void;
 }
 
 export interface ControlPanelProps {

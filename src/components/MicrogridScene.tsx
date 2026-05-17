@@ -5,11 +5,11 @@
 // ============================================================
 
 import { memo, useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
 import { BESS, SCENE_3D, SOLAR } from '../config';
-import type { BatteryMode, MicrogridSceneProps } from '../types';
+import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
 
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
@@ -58,8 +58,71 @@ function skyColor(tod: number): Color {
     return _skyResult.copy(SKY_DAY_A).lerp(_skyTmp.copy(SKY_DAY_B), Math.abs(tod - 12) / 6);
 }
 
+// ── Interactive asset helpers ───────────────────────────────
+interface AssetInteraction {
+    isHighlighted: boolean;
+    isSelected: boolean;
+    handlers: {
+        onPointerEnter: (event: ThreeEvent<PointerEvent>) => void;
+        onPointerLeave: (event: ThreeEvent<PointerEvent>) => void;
+        onClick: (event: ThreeEvent<MouseEvent>) => void;
+    };
+}
+
+const noopHover = () => undefined;
+const noopSelect = () => undefined;
+
+function setSceneCursor(cursor: string) {
+    if (typeof document !== 'undefined') {
+        document.body.style.cursor = cursor;
+    }
+}
+
+function createAssetInteraction(
+    assetId: SceneAssetId,
+    hoveredAssetId: SceneAssetId | null | undefined,
+    selectedAssetId: SceneAssetId | null | undefined,
+    onAssetHover: ((assetId: SceneAssetId | null) => void) | undefined,
+    onAssetSelect: ((assetId: SceneAssetId) => void) | undefined,
+): AssetInteraction {
+    const hover = onAssetHover ?? noopHover;
+    const select = onAssetSelect ?? noopSelect;
+    const isSelected = selectedAssetId === assetId;
+
+    return {
+        isHighlighted: isSelected || hoveredAssetId === assetId,
+        isSelected,
+        handlers: {
+            onPointerEnter: (event) => {
+                event.stopPropagation();
+                setSceneCursor('pointer');
+                hover(assetId);
+            },
+            onPointerLeave: (event) => {
+                event.stopPropagation();
+                setSceneCursor('auto');
+                hover(null);
+            },
+            onClick: (event) => {
+                event.stopPropagation();
+                select(assetId);
+            },
+        },
+    };
+}
+
 // ── BESS Container ───────────────────────────────────────────
-function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: number; capacityScale: number }) {
+function BESSContainer({
+    mode,
+    soc,
+    capacityScale,
+    interaction,
+}: {
+    mode: BatteryMode;
+    soc: number;
+    capacityScale: number;
+    interaction: AssetInteraction;
+}) {
     const meshRef = useRef<Mesh>(null);
     const glowRef = useRef<Mesh>(null);
 
@@ -98,9 +161,26 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
         Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale),
     );
     const containerWidth = 4 * widthScale;
+    const interactionColor = interaction.isSelected ? '#67e8f9' : '#93c5fd';
 
     return (
-        <group position={[SCENE_3D.pads.bess.position[0], 1.5, SCENE_3D.pads.bess.position[2]]}>
+        <group
+            position={[SCENE_3D.pads.bess.position[0], 1.5, SCENE_3D.pads.bess.position[2]]}
+            {...interaction.handlers}
+        >
+            {interaction.isHighlighted && (
+                <mesh scale={[1.08, 1.08, 1.12]}>
+                    <boxGeometry args={[containerWidth, 3, 2]} />
+                    <meshStandardMaterial
+                        color={interactionColor}
+                        emissive={interactionColor}
+                        emissiveIntensity={0.35}
+                        transparent
+                        opacity={0.18}
+                        side={BackSide}
+                    />
+                </mesh>
+            )}
             {/* Main container body */}
             <mesh ref={meshRef} castShadow receiveShadow>
                 <boxGeometry args={[containerWidth, 3, 2]} />
@@ -173,7 +253,7 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
             <Text
                 position={[0, 2.28, -1.2]}
                 fontSize={0.28}
-                color="#e2e8f0"
+                color={interaction.isHighlighted ? interactionColor : '#e2e8f0'}
                 anchorX="center"
                 anchorY="bottom"
             >
@@ -333,12 +413,34 @@ const PowerLines = memo(function PowerLines() {
 // ── Grid Building (Load Consumer) ────────────────────────────
 const GRID_NODE_POSITION: [number, number, number] = [8.8, 0, 0.25];
 
-const LoadBuilding = memo(function LoadBuilding() {
+const LoadBuilding = memo(function LoadBuilding({ interaction }: { interaction: AssetInteraction }) {
+    const isActive = interaction.isHighlighted;
+    const highlightColor = interaction.isSelected ? '#67e8f9' : '#93c5fd';
+
     return (
-        <group position={GRID_NODE_POSITION}>
+        <group position={GRID_NODE_POSITION} {...interaction.handlers}>
+            {isActive && (
+                <mesh position={[0, 2, 0]} scale={[1.08, 1.06, 1.08]}>
+                    <boxGeometry args={[3, 4, 3]} />
+                    <meshStandardMaterial
+                        color={highlightColor}
+                        emissive={highlightColor}
+                        emissiveIntensity={0.25}
+                        transparent
+                        opacity={0.12}
+                        side={BackSide}
+                    />
+                </mesh>
+            )}
             <mesh position={[0, 2, 0]} castShadow receiveShadow>
                 <boxGeometry args={[3, 4, 3]} />
-                <meshStandardMaterial color="#334155" metalness={0.3} roughness={0.7} />
+                <meshStandardMaterial
+                    color="#334155"
+                    emissive={highlightColor}
+                    emissiveIntensity={isActive ? 0.08 : 0}
+                    metalness={0.3}
+                    roughness={0.7}
+                />
             </mesh>
             {/* Windows */}
             {[[-0.8, 2.5], [0.8, 2.5], [-0.8, 1.2], [0.8, 1.2]].map(([x, y], i) => (
@@ -356,7 +458,7 @@ const LoadBuilding = memo(function LoadBuilding() {
             <Text
                 position={[0, 4.5, 0]}
                 fontSize={0.26}
-                color="#e2e8f0"
+                color={isActive ? highlightColor : '#e2e8f0'}
                 anchorX="center"
                 anchorY="bottom"
             >
@@ -366,7 +468,13 @@ const LoadBuilding = memo(function LoadBuilding() {
     );
 });
 
-const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: number }) {
+const SitePads = memo(function SitePads({
+    capacityScale,
+    pcsInteraction,
+}: {
+    capacityScale: number;
+    pcsInteraction: AssetInteraction;
+}) {
     const bessWidthScale = Math.max(1, Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale));
     const solarPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.solar.size], []);
     const bessPadSize = useMemo<[number, number, number]>(() => [
@@ -375,6 +483,13 @@ const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: numb
         SCENE_3D.pads.bess.size[2],
     ], [bessWidthScale]);
     const substationPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.substation.size], []);
+    const substationHighlightSize = useMemo<[number, number, number]>(() => [
+        SCENE_3D.pads.substation.size[0] + 0.32,
+        SCENE_3D.pads.substation.size[1] + 0.02,
+        SCENE_3D.pads.substation.size[2] + 0.32,
+    ], []);
+    const pcsActive = pcsInteraction.isHighlighted;
+    const pcsHighlightColor = pcsInteraction.isSelected ? '#67e8f9' : SCENE_3D.pads.substation.emissiveColor;
 
     return (
         <group>
@@ -386,35 +501,50 @@ const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: numb
                 <boxGeometry args={bessPadSize} />
                 <meshStandardMaterial color={SCENE_3D.pads.bess.color} roughness={0.78} metalness={0.12} />
             </mesh>
-            <mesh position={SCENE_3D.pads.substation.position} castShadow receiveShadow>
+            {pcsActive && (
+                <mesh position={SCENE_3D.pads.substation.position}>
+                    <boxGeometry args={substationHighlightSize} />
+                    <meshStandardMaterial
+                        color={pcsHighlightColor}
+                        emissive={pcsHighlightColor}
+                        emissiveIntensity={0.5}
+                        transparent
+                        opacity={0.16}
+                    />
+                </mesh>
+            )}
+            <mesh position={SCENE_3D.pads.substation.position} castShadow receiveShadow {...pcsInteraction.handlers}>
                 <boxGeometry args={substationPadSize} />
                 <meshStandardMaterial
                     color={SCENE_3D.pads.substation.color}
                     emissive={SCENE_3D.pads.substation.emissiveColor}
-                    emissiveIntensity={0.04}
+                    emissiveIntensity={pcsActive ? 0.18 : 0.04}
                     roughness={0.5}
                     metalness={0.42}
                 />
             </mesh>
-            <group position={[SCENE_3D.pads.substation.position[0], 0.45, SCENE_3D.pads.substation.position[2]]}>
+            <group
+                position={[SCENE_3D.pads.substation.position[0], 0.45, SCENE_3D.pads.substation.position[2]]}
+                {...pcsInteraction.handlers}
+            >
                 <Line
                     points={[
                         [0, 0.28, 0],
                         [0, SCENE_3D.pads.substation.flowWaypointHeight - 0.45, 0],
                     ]}
-                    color={SCENE_3D.pads.substation.emissiveColor}
-                    lineWidth={2.5}
+                    color={pcsHighlightColor}
+                    lineWidth={pcsActive ? 4 : 2.5}
                     transparent
-                    opacity={0.75}
+                    opacity={pcsActive ? 1 : 0.75}
                 />
                 <mesh position={[0, -0.26, 0]} castShadow>
                     <boxGeometry args={[1.75, 0.05, 0.95]} />
                     <meshStandardMaterial
                         color={SCENE_3D.pads.substation.equipmentAccentColor}
                         emissive={SCENE_3D.pads.substation.emissiveColor}
-                        emissiveIntensity={SCENE_3D.pads.substation.emissiveIntensity}
+                        emissiveIntensity={pcsActive ? 0.36 : SCENE_3D.pads.substation.emissiveIntensity}
                         transparent
-                        opacity={0.35}
+                        opacity={pcsActive ? 0.5 : 0.35}
                         roughness={0.35}
                         metalness={0.25}
                     />
@@ -424,7 +554,7 @@ const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: numb
                     <meshStandardMaterial
                         color={SCENE_3D.pads.substation.equipmentColor}
                         emissive={SCENE_3D.pads.substation.emissiveColor}
-                        emissiveIntensity={SCENE_3D.pads.substation.emissiveIntensity}
+                        emissiveIntensity={pcsActive ? 0.42 : SCENE_3D.pads.substation.emissiveIntensity}
                         roughness={0.42}
                         metalness={0.62}
                     />
@@ -434,7 +564,7 @@ const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: numb
                     <meshStandardMaterial
                         color={SCENE_3D.pads.substation.equipmentAccentColor}
                         emissive={SCENE_3D.pads.substation.emissiveColor}
-                        emissiveIntensity={SCENE_3D.pads.substation.emissiveIntensity + 0.12}
+                        emissiveIntensity={pcsActive ? 0.56 : SCENE_3D.pads.substation.emissiveIntensity + 0.12}
                         roughness={0.35}
                         metalness={0.45}
                     />
@@ -442,7 +572,7 @@ const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: numb
                 <Text
                     position={[0, 0.55, 0]}
                     fontSize={0.14}
-                    color={SCENE_3D.pads.substation.labelColor}
+                    color={pcsActive ? '#ffffff' : SCENE_3D.pads.substation.labelColor}
                     anchorX="center"
                     anchorY="bottom"
                 >
@@ -491,12 +621,20 @@ const StaticTerrain = memo(function StaticTerrain() {
 // Substation + power lines + load building are visually static; only the BESS
 // pad width depends on capacityScale. Wrapping in memo means re-renders only
 // fire when the user actually edits BESS energy capacity, not every tick.
-const StaticSiteFurniture = memo(function StaticSiteFurniture({ capacityScale }: { capacityScale: number }) {
+const StaticSiteFurniture = memo(function StaticSiteFurniture({
+    capacityScale,
+    pcsInteraction,
+    gridInteraction,
+}: {
+    capacityScale: number;
+    pcsInteraction: AssetInteraction;
+    gridInteraction: AssetInteraction;
+}) {
     return (
         <>
-            <SitePads capacityScale={capacityScale} />
+            <SitePads capacityScale={capacityScale} pcsInteraction={pcsInteraction} />
             <PowerLines />
-            <LoadBuilding />
+            <LoadBuilding interaction={gridInteraction} />
         </>
     );
 });
@@ -795,7 +933,13 @@ function EnergyFlowSystem({
 }
 
 // ── Main Scene ───────────────────────────────────────────────
-export function MicrogridScene({ gridState }: MicrogridSceneProps) {
+export function MicrogridScene({
+    gridState,
+    hoveredAssetId,
+    selectedAssetId,
+    onAssetHover,
+    onAssetSelect,
+}: MicrogridSceneProps) {
     const {
         batteryMode,
         batterySocPercent,
@@ -823,6 +967,9 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
         : 0.1;
 
     const maxBessMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
+    const bessInteraction = createAssetInteraction('bess', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect);
+    const pcsInteraction = createAssetInteraction('pcs-mv', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect);
+    const gridInteraction = createAssetInteraction('grid-node', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect);
 
     const fogRef = useRef<Fog>(null);
     const ambientRef = useRef<AmbientLight>(null);
@@ -865,10 +1012,19 @@ export function MicrogridScene({ gridState }: MicrogridSceneProps) {
 
             {/* Static environment — memoized, only re-renders on capacity edits */}
             <StaticTerrain />
-            <StaticSiteFurniture capacityScale={bessCapacityScale} />
+            <StaticSiteFurniture
+                capacityScale={bessCapacityScale}
+                pcsInteraction={pcsInteraction}
+                gridInteraction={gridInteraction}
+            />
 
             {/* Dynamic scene objects */}
-            <BESSContainer mode={batteryMode} soc={batterySocPercent} capacityScale={bessCapacityScale} />
+            <BESSContainer
+                mode={batteryMode}
+                soc={batterySocPercent}
+                capacityScale={bessCapacityScale}
+                interaction={bessInteraction}
+            />
             <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} dcCapacityMwp={solarDcCapacityMwp} />
 
             {/* Energy flow animations */}

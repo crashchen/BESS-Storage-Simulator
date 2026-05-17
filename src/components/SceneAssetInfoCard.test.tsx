@@ -1,0 +1,63 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { SceneAssetInfoCard } from './SceneAssetInfoCard';
+import { getSceneAssetInfo } from '../utils/sceneAssetInfo';
+import { makeGridState } from '../test/fixtures';
+
+describe('SceneAssetInfoCard', () => {
+    it('renders live BESS values for the selected asset', () => {
+        const state = makeGridState({
+            batteryMode: 'charging',
+            batterySocPercent: 38.4,
+            batteryChargeFromSolarMw: 90,
+            batteryChargeFromGridMw: 12,
+            batteryDischargeToGridMw: 0,
+        });
+
+        render(
+            <SceneAssetInfoCard
+                assetId="bess"
+                gridState={state}
+                pinned
+                onClose={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByRole('region', { name: 'BESS Unit live information' })).toBeInTheDocument();
+        expect(screen.getByText('Charging')).toBeInTheDocument();
+        expect(screen.getByText('38.4%')).toBeInTheDocument();
+        expect(screen.getByText('-102.0 MW')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Close equipment info card' })).toBeInTheDocument();
+    });
+
+    it('exposes PCS/MV throughput as a derived routed-flow value', () => {
+        const info = getSceneAssetInfo('pcs-mv', makeGridState({
+            solarExportMw: 72,
+            batteryChargeFromSolarMw: 34,
+            batteryChargeFromGridMw: 11,
+            batteryDischargeToGridMw: 5,
+        }));
+
+        expect(info.title).toBe('PCS / MV Station');
+        expect(info.rows).toContainEqual({ label: 'Gross routed flow', value: '122.0 MW' });
+    });
+
+    it('calls onClose when the pinned card close button is clicked', async () => {
+        const user = userEvent.setup();
+        const onClose = vi.fn();
+
+        render(
+            <SceneAssetInfoCard
+                assetId="grid-node"
+                gridState={makeGridState()}
+                pinned
+                onClose={onClose}
+            />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Close equipment info card' }));
+
+        expect(onClose).toHaveBeenCalledTimes(1);
+    });
+});
