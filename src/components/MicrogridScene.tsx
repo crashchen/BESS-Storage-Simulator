@@ -82,13 +82,13 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
         if (meshRef.current) {
             const mat = meshRef.current.material as MeshStandardMaterial;
             mat.emissive.copy(currentColor.current);
-            mat.emissiveIntensity = 0.3 + (soc / 100) * 0.7;
+            mat.emissiveIntensity = 0.12 + (soc / 100) * 0.32;
         }
         if (glowRef.current) {
             const mat = glowRef.current.material as MeshStandardMaterial;
             mat.emissive.copy(currentColor.current);
-            mat.emissiveIntensity = 0.1 + (soc / 100) * 0.5;
-            mat.opacity = 0.15 + (soc / 100) * 0.2;
+            mat.emissiveIntensity = 0.08 + (soc / 100) * 0.25;
+            mat.opacity = 0.08 + (soc / 100) * 0.14;
         }
     });
 
@@ -100,7 +100,7 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
     const containerWidth = 4 * widthScale;
 
     return (
-        <group position={[0, 1.5, 0]}>
+        <group position={[SCENE_3D.pads.bess.position[0], 1.5, SCENE_3D.pads.bess.position[2]]}>
             {/* Main container body */}
             <mesh ref={meshRef} castShadow receiveShadow>
                 <boxGeometry args={[containerWidth, 3, 2]} />
@@ -171,8 +171,8 @@ function BESSContainer({ mode, soc, capacityScale }: { mode: BatteryMode; soc: n
 
             {/* Label */}
             <Text
-                position={[0, 2.2, 0]}
-                fontSize={0.4}
+                position={[0, 2.28, -1.2]}
+                fontSize={0.28}
                 color="#e2e8f0"
                 anchorX="center"
                 anchorY="bottom"
@@ -206,12 +206,12 @@ const SolarPanel = memo(function SolarPanel({
         <group position={position} rotation={[-0.35, 0, 0]}>
             {/* Panel frame */}
             <mesh castShadow receiveShadow>
-                <boxGeometry args={[1.8, 0.06, 1.2]} />
+                <boxGeometry args={[1.65, 0.06, 1.08]} />
                 <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.4} />
             </mesh>
             {/* Active surface */}
             <mesh position={[0, 0.035, 0]}>
-                <planeGeometry args={[1.6, 1.0]} />
+                <planeGeometry args={[1.45, 0.88]} />
                 <meshStandardMaterial
                     color={panelColor}
                     emissive={COLOR_SOLAR_ON}
@@ -281,8 +281,8 @@ function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solar
                 />
             ))}
             <Text
-                position={[-6.5, 3, -4]}
-                fontSize={0.35}
+                position={[-9.2, 2.65, -6.95]}
+                fontSize={0.26}
                 color="#e2e8f0"
                 anchorX="center"
                 anchorY="bottom"
@@ -294,20 +294,26 @@ function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solar
 }
 
 // ── Power Lines (using Drei Line) ────────────────────────────
-const PowerLines = memo(function PowerLines() {
-    const wirePoints = useMemo<[number, number, number][]>(() => [
-        [-6, 3, 0],
-        [-3, 4, 0],
-        [0, 4, 0],
-        [3, 3.5, 0],
-        [7, 4, 2],
-    ], []);
+const POWER_LINE_POINTS: [number, number, number][] = [
+    [-12.6, 3.1, -7.2],
+    [-7.0, 3.9, -7.0],
+    [-1.0, 4.0, -5.2],
+    [4.6, 3.6, -3.0],
+    [8.7, 3.7, -1.0],
+];
 
+const POWER_PYLONS: [number, number, number][] = [
+    [-12.6, 0, -7.2],
+    [-1.0, 0, -5.2],
+    [8.7, 0, -1.0],
+];
+
+const PowerLines = memo(function PowerLines() {
     return (
         <group>
             {/* Pylons */}
-            {[-6, 0, 7].map((x, i) => (
-                <group key={i} position={[x, 0, i === 2 ? 2 : 0]}>
+            {POWER_PYLONS.map((position, i) => (
+                <group key={i} position={position}>
                     <mesh position={[0, 2, 0]}>
                         <cylinderGeometry args={[0.06, 0.08, 4]} />
                         <meshStandardMaterial color="#6b7280" metalness={0.7} roughness={0.4} />
@@ -319,15 +325,17 @@ const PowerLines = memo(function PowerLines() {
                 </group>
             ))}
             {/* Wire using Drei Line */}
-            <Line points={wirePoints} color="#94a3b8" lineWidth={1.5} />
+            <Line points={POWER_LINE_POINTS} color="#94a3b8" lineWidth={1.5} />
         </group>
     );
 });
 
 // ── Grid Building (Load Consumer) ────────────────────────────
+const GRID_NODE_POSITION: [number, number, number] = [8.8, 0, 0.25];
+
 const LoadBuilding = memo(function LoadBuilding() {
     return (
-        <group position={[8, 0, 0]}>
+        <group position={GRID_NODE_POSITION}>
             <mesh position={[0, 2, 0]} castShadow receiveShadow>
                 <boxGeometry args={[3, 4, 3]} />
                 <meshStandardMaterial color="#334155" metalness={0.3} roughness={0.7} />
@@ -347,7 +355,7 @@ const LoadBuilding = memo(function LoadBuilding() {
             ))}
             <Text
                 position={[0, 4.5, 0]}
-                fontSize={0.3}
+                fontSize={0.26}
                 color="#e2e8f0"
                 anchorX="center"
                 anchorY="bottom"
@@ -389,6 +397,16 @@ const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: numb
                 />
             </mesh>
             <group position={[SCENE_3D.pads.substation.position[0], 0.45, SCENE_3D.pads.substation.position[2]]}>
+                <Line
+                    points={[
+                        [0, 0.28, 0],
+                        [0, SCENE_3D.pads.substation.flowWaypointHeight - 0.45, 0],
+                    ]}
+                    color={SCENE_3D.pads.substation.emissiveColor}
+                    lineWidth={2.5}
+                    transparent
+                    opacity={0.75}
+                />
                 <mesh position={[0, -0.26, 0]} castShadow>
                     <boxGeometry args={[1.75, 0.05, 0.95]} />
                     <meshStandardMaterial
@@ -542,49 +560,86 @@ function CurtailmentEffect({ curtailedMw, maxSolarMw }: { curtailedMw: number; m
 
 // ── Energy Flow Paths ────────────────────────────────────────
 // Define curved paths for energy particles
+const SOLAR_FLOW_POINT = new Vector3(
+    SCENE_3D.pads.solar.position[0],
+    2.8,
+    SCENE_3D.pads.solar.position[2] - 1.0,
+);
+const REAR_BUS_POINT_A = new Vector3(-5.8, 3.45, -6.4);
+const REAR_BUS_POINT_B = new Vector3(-1.0, 3.55, -4.8);
 const PCS_MV_FLOW_POINT = new Vector3(
     SCENE_3D.pads.substation.position[0],
     SCENE_3D.pads.substation.flowWaypointHeight,
     SCENE_3D.pads.substation.position[2],
 );
+const BESS_FLOW_PORT = new Vector3(
+    SCENE_3D.pads.bess.position[0] + 2.6,
+    2.55,
+    SCENE_3D.pads.bess.position[2] - 1.25,
+);
+const GRID_FLOW_PORT = new Vector3(
+    GRID_NODE_POSITION[0] - 1.35,
+    3.05,
+    GRID_NODE_POSITION[2] - 0.9,
+);
+const GRID_FLOW_POINT = new Vector3(
+    GRID_NODE_POSITION[0],
+    3.0,
+    GRID_NODE_POSITION[2],
+);
 
-function pcsMvFlowPoint() {
-    return PCS_MV_FLOW_POINT.clone();
+function flowPoint(point: Vector3) {
+    return point.clone();
 }
 
 const FLOW_PATHS = {
     // Solar array center → PCS/MV → BESS
-    solarToBess: new CatmullRomCurve3([
-        new Vector3(-6.5, 2.5, -2),
-        new Vector3(-3.5, 3.3, -0.8),
-        pcsMvFlowPoint(),
-        new Vector3(2.0, 2.7, 0.8),
-        new Vector3(0, 2, 0),
-    ]),
+    solarToBess: new CatmullRomCurve3(
+        [
+            flowPoint(SOLAR_FLOW_POINT),
+            flowPoint(REAR_BUS_POINT_A),
+            flowPoint(REAR_BUS_POINT_B),
+            flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(BESS_FLOW_PORT),
+        ],
+        false,
+        'centripetal',
+    ),
     // Solar array center → PCS/MV → Grid
-    solarToGrid: new CatmullRomCurve3([
-        new Vector3(-6.5, 2.5, -2),
-        new Vector3(-2.5, 3.6, -0.3),
-        pcsMvFlowPoint(),
-        new Vector3(6.4, 3.4, 1.1),
-        new Vector3(8, 3, 0),
-    ]),
+    solarToGrid: new CatmullRomCurve3(
+        [
+            flowPoint(SOLAR_FLOW_POINT),
+            flowPoint(REAR_BUS_POINT_A),
+            flowPoint(REAR_BUS_POINT_B),
+            flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(GRID_FLOW_PORT),
+            flowPoint(GRID_FLOW_POINT),
+        ],
+        false,
+        'centripetal',
+    ),
     // BESS → PCS/MV → Grid
-    bessToGrid: new CatmullRomCurve3([
-        new Vector3(0, 2, 0),
-        new Vector3(2.1, 2.7, 0.7),
-        pcsMvFlowPoint(),
-        new Vector3(6.4, 3.4, 1.1),
-        new Vector3(8, 3, 0),
-    ]),
+    bessToGrid: new CatmullRomCurve3(
+        [
+            flowPoint(BESS_FLOW_PORT),
+            flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(GRID_FLOW_PORT),
+            flowPoint(GRID_FLOW_POINT),
+        ],
+        false,
+        'centripetal',
+    ),
     // Grid → PCS/MV → BESS (charging from grid)
-    gridToBess: new CatmullRomCurve3([
-        new Vector3(8, 3, 0),
-        new Vector3(6.4, 3.4, 1.1),
-        pcsMvFlowPoint(),
-        new Vector3(2.1, 2.7, 0.7),
-        new Vector3(0, 2, 0),
-    ]),
+    gridToBess: new CatmullRomCurve3(
+        [
+            flowPoint(GRID_FLOW_POINT),
+            flowPoint(GRID_FLOW_PORT),
+            flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(BESS_FLOW_PORT),
+        ],
+        false,
+        'centripetal',
+    ),
 };
 
 // ── Energy Particle ──────────────────────────────────────────

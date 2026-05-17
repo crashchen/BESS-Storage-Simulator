@@ -211,7 +211,7 @@ export const SCENE_3D = {
         minDistance: 8,
         maxDistance: 50,
         maxPolarAngleDivisor: 2.1,
-        target: [0, 1.5, 0] as const,
+        target: [0.3, 1.4, -1.2] as const,
     },
     ground: {
         size: 200,
@@ -241,8 +241,8 @@ export const SCENE_3D = {
         maxRows: 5,
         spacingX: 2.2,
         spacingZ: 1.8,
-        baseStartX: -10,
-        baseStartZ: -4,
+        baseStartX: -12.5,
+        baseStartZ: -6.1,
     },
     particles: {
         maxEnergy: 12,
@@ -251,17 +251,17 @@ export const SCENE_3D = {
     },
     pads: {
         bess: {
-            position: [0, 0.01, 0] as const,
+            position: [-0.8, 0.01, 0.2] as const,
             size: [6.5, 0.04, 3.6] as const,
             color: '#1f2937',
         },
         solar: {
-            position: [-6.5, 0, -2] as const,
-            size: [12.5, 0.02, 8.5] as const,
+            position: [-9.2, 0, -4.3] as const,
+            size: [10.2, 0.02, 6.8] as const,
             color: '#172033',
         },
         substation: {
-            position: [4.7, 0.08, 1.9] as const,
+            position: [4.8, 0.08, -1.65] as const,
             size: [2.2, 0.16, 1.4] as const,
             color: '#4b5f7a',
             equipmentColor: '#7c8da8',
@@ -269,7 +269,7 @@ export const SCENE_3D = {
             labelColor: '#e0f2fe',
             emissiveColor: '#38bdf8',
             emissiveIntensity: 0.18,
-            flowWaypointHeight: 2.65,
+            flowWaypointHeight: 1.65,
         },
     },
 } as const;
