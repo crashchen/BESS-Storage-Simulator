@@ -380,21 +380,51 @@ const SitePads = memo(function SitePads({ capacityScale }: { capacityScale: numb
             </mesh>
             <mesh position={SCENE_3D.pads.substation.position} castShadow receiveShadow>
                 <boxGeometry args={substationPadSize} />
-                <meshStandardMaterial color={SCENE_3D.pads.substation.color} roughness={0.55} metalness={0.35} />
+                <meshStandardMaterial
+                    color={SCENE_3D.pads.substation.color}
+                    emissive={SCENE_3D.pads.substation.emissiveColor}
+                    emissiveIntensity={0.04}
+                    roughness={0.5}
+                    metalness={0.42}
+                />
             </mesh>
             <group position={[SCENE_3D.pads.substation.position[0], 0.45, SCENE_3D.pads.substation.position[2]]}>
+                <mesh position={[0, -0.26, 0]} castShadow>
+                    <boxGeometry args={[1.75, 0.05, 0.95]} />
+                    <meshStandardMaterial
+                        color={SCENE_3D.pads.substation.equipmentAccentColor}
+                        emissive={SCENE_3D.pads.substation.emissiveColor}
+                        emissiveIntensity={SCENE_3D.pads.substation.emissiveIntensity}
+                        transparent
+                        opacity={0.35}
+                        roughness={0.35}
+                        metalness={0.25}
+                    />
+                </mesh>
                 <mesh castShadow>
                     <boxGeometry args={[0.55, 0.55, 0.42]} />
-                    <meshStandardMaterial color="#475569" roughness={0.45} metalness={0.6} />
+                    <meshStandardMaterial
+                        color={SCENE_3D.pads.substation.equipmentColor}
+                        emissive={SCENE_3D.pads.substation.emissiveColor}
+                        emissiveIntensity={SCENE_3D.pads.substation.emissiveIntensity}
+                        roughness={0.42}
+                        metalness={0.62}
+                    />
                 </mesh>
                 <mesh position={[0.48, 0, 0]} castShadow>
                     <boxGeometry args={[0.32, 0.4, 0.34]} />
-                    <meshStandardMaterial color="#334155" roughness={0.5} metalness={0.5} />
+                    <meshStandardMaterial
+                        color={SCENE_3D.pads.substation.equipmentAccentColor}
+                        emissive={SCENE_3D.pads.substation.emissiveColor}
+                        emissiveIntensity={SCENE_3D.pads.substation.emissiveIntensity + 0.12}
+                        roughness={0.35}
+                        metalness={0.45}
+                    />
                 </mesh>
                 <Text
                     position={[0, 0.55, 0]}
                     fontSize={0.14}
-                    color="#cbd5e1"
+                    color={SCENE_3D.pads.substation.labelColor}
                     anchorX="center"
                     anchorY="bottom"
                 >
@@ -512,34 +542,47 @@ function CurtailmentEffect({ curtailedMw, maxSolarMw }: { curtailedMw: number; m
 
 // ── Energy Flow Paths ────────────────────────────────────────
 // Define curved paths for energy particles
+const PCS_MV_FLOW_POINT = new Vector3(
+    SCENE_3D.pads.substation.position[0],
+    SCENE_3D.pads.substation.flowWaypointHeight,
+    SCENE_3D.pads.substation.position[2],
+);
+
+function pcsMvFlowPoint() {
+    return PCS_MV_FLOW_POINT.clone();
+}
+
 const FLOW_PATHS = {
-    // Solar array center → BESS
+    // Solar array center → PCS/MV → BESS
     solarToBess: new CatmullRomCurve3([
         new Vector3(-6.5, 2.5, -2),
-        new Vector3(-4, 3.5, -1),
-        new Vector3(-2, 3, 0),
+        new Vector3(-3.5, 3.3, -0.8),
+        pcsMvFlowPoint(),
+        new Vector3(2.0, 2.7, 0.8),
         new Vector3(0, 2, 0),
     ]),
-    // Solar array center → Grid
+    // Solar array center → PCS/MV → Grid
     solarToGrid: new CatmullRomCurve3([
         new Vector3(-6.5, 2.5, -2),
-        new Vector3(-3, 4, 0),
-        new Vector3(2, 4.5, 0),
-        new Vector3(6, 3.5, 1),
+        new Vector3(-2.5, 3.6, -0.3),
+        pcsMvFlowPoint(),
+        new Vector3(6.4, 3.4, 1.1),
         new Vector3(8, 3, 0),
     ]),
-    // BESS → Grid
+    // BESS → PCS/MV → Grid
     bessToGrid: new CatmullRomCurve3([
         new Vector3(0, 2, 0),
-        new Vector3(2, 3, 0),
-        new Vector3(5, 3.5, 0.5),
+        new Vector3(2.1, 2.7, 0.7),
+        pcsMvFlowPoint(),
+        new Vector3(6.4, 3.4, 1.1),
         new Vector3(8, 3, 0),
     ]),
-    // Grid → BESS (charging from grid)
+    // Grid → PCS/MV → BESS (charging from grid)
     gridToBess: new CatmullRomCurve3([
         new Vector3(8, 3, 0),
-        new Vector3(5, 3.5, 0.5),
-        new Vector3(2, 3, 0),
+        new Vector3(6.4, 3.4, 1.1),
+        pcsMvFlowPoint(),
+        new Vector3(2.1, 2.7, 0.7),
         new Vector3(0, 2, 0),
     ]),
 };

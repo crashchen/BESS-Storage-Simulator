@@ -263,7 +263,13 @@ export const SCENE_3D = {
         substation: {
             position: [4.7, 0.08, 1.9] as const,
             size: [2.2, 0.16, 1.4] as const,
-            color: '#263244',
+            color: '#4b5f7a',
+            equipmentColor: '#7c8da8',
+            equipmentAccentColor: '#38bdf8',
+            labelColor: '#e0f2fe',
+            emissiveColor: '#38bdf8',
+            emissiveIntensity: 0.18,
+            flowWaypointHeight: 2.65,
         },
     },
 } as const;
