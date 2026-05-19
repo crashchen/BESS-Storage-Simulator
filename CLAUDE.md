@@ -17,7 +17,7 @@ Run a single test file or name:
 
 ```bash
 npx vitest run src/utils/simulationModel.test.ts
-npx vitest run -t "auto-arbitrage"
+npx vitest run -t "active-power"
 ```
 
 CI (`.github/workflows/ci.yml`) runs `lint → test → build` on push/PR to `main`, so `npm run build` must succeed — type errors break the pipeline, not just `lint`. Deploy workflow publishes to GitHub Pages; `vite.config.ts` reads `BASE_URL` from env for that base path.
@@ -32,13 +32,13 @@ Everything flows from `src/hooks/useGridSimulation.ts`. Key points that aren't o
 
 - **Ref-based tick, throttled React updates.** The `requestAnimationFrame` loop mutates `simRef.current` every frame but only calls `setState` every `SIMULATION.renderSyncIntervalMs` (~33 ms / 30 fps). Chart snapshots are pushed on a separate `SIMULATION.snapshotIntervalMs` cadence into `historyRef`. If you add state consumed by the UI, read it from `state` (throttled) — do not subscribe components to `simRef` directly.
 - **`dispatch(cmd)` is the only write path.** All UI interactions produce a `BESSCommand` union (`src/types.ts`) handled by `applyCommand()` in `src/utils/gridReducer.ts`. The reducer is pure — it returns a `ReducerResult` containing the next `GridState` plus a `sideEffects` manifest (reset history, reset timer refs, etc.) that the hook applies. New controls should add a command variant to the `BESSCommand` union, not mutate state ad hoc.
-- **Demo scenarios are first-class commands.** One-click presets live in `src/scenarios.ts` and are applied through `APPLY_SCENARIO_PRESET`, which resets telemetry history and loads a paused, auditable scene state. Add new presets there rather than hard-coding scenario values in panel components.
-- **`simulateTick` lives in `src/utils/tickEngine.ts`.** Given `(prev, dtReal, now)` it returns the next `GridState`. It handles tariff-boundary sub-stepping, dispatch logic (manual vs. auto-arb), SoC clamping, efficiency losses, and the frequency droop model. The *economic* settlement and forecast math is delegated to `src/utils/simulationModel.ts` so it can be unit-tested without the RAF loop — add new simulation math there, not inline in the hook.
+- **Demo scenarios are temporarily hidden from the main UI.** Presets still live in `src/scenarios.ts` and can be applied through `APPLY_SCENARIO_PRESET` for tests or future restoration. Do not re-enable the scenario panel until each preset has been revalidated against the active-power settlement model.
+- **`simulateTick` lives in `src/utils/tickEngine.ts`.** Given `(prev, dtReal, now)` it returns the next `GridState`. It handles tariff-boundary sub-stepping, dispatch logic (`auto` vs. manual charge/discharge/idle), SoC clamping, efficiency losses, and PCC import/export settlement. The settlement and P&L math is delegated to `src/utils/simulationModel.ts` so it can be unit-tested without the RAF loop — add new simulation math there, not inline in the hook.
 - **Selectors** in `src/utils/gridSelectors.ts` compute derived values (`selectBatteryDurationHours`, `selectGridConnectionTotalMw`, `getBatteryTransferLimitMw`) used by both the reducer and UI components.
 
 ### Config is the single source of truth
 
-`src/config.ts` centralises every tunable number (solar shape, BESS limits, tariff windows, auto-arb strategy, 3D scene params). `useGridSimulation` and `simulationModel` both import from it — never hard-code magic numbers in components or hooks; add them to the appropriate `as const` block in `config.ts`.
+`src/config.ts` centralises every tunable number (solar shape, BESS limits, tariff windows, active dispatch targets, 3D scene params). `useGridSimulation` and `simulationModel` both import from it — never hard-code magic numbers in components or hooks; add them to the appropriate `as const` block in `config.ts`.
 
 ### Two P&L accumulators, intentionally different
 
@@ -49,15 +49,25 @@ Everything flows from `src/hooks/useGridSimulation.ts`. Key points that aren't o
 
 This split is a product decision, not a bug. Don't "simplify" them into one number. The explanation is surfaced to users in `EconomicsPanel.tsx` and noted in the README — keep wording consistent if you touch it.
 
-### Peak-Ready auto-arbitrage
+### Active-power dispatch model
 
-`getAutoArbOutlook` / `getAutoArbPlan` in `simulationModel.ts` implement a forecast-driven dispatch strategy: integrate forward PV surplus vs. evening-peak deficit (18:00–23:00 window, configurable in `config.ts` under `AUTO_ARB`) to decide whether to pre-charge from the grid in off/mid-peak, pace discharge during peak, or idle. Manual mode (`CHARGE`/`DISCHARGE`/`IDLE`) disables auto-arb; toggling `TOGGLE_AUTO_ARB` takes over control.
+The live simulator is currently scoped to **Energy Arbitrage + Self-consumption**. It does not model FCR, frequency response, voltage control, protection trips, or AC transients. Keep frequency-related values neutral unless the product direction explicitly changes.
+
+`tickEngine.ts` uses a fixed pipeline:
+
+1. **Intent** — `dispatchMode` selects `auto`, `manual-charge`, `manual-discharge`, or `manual-idle`.
+2. **Hardware clamp** — BESS power is limited by PCS rating, BESS grid connection, SoC, energy capacity, and efficiency.
+3. **PCC settlement** — `settleHybridProjectTick` balances demand, PV, BESS, grid import/export, curtailment, and overload.
+
+`AUTO` uses a simple rule tree: discharge during peak; lock out automatic off-peak discharge; charge toward a 40% night reserve during off-peak; charge from PV surplus; discharge against local deficit outside off-peak. If PV plus BESS export would exceed the PCC limit, PV export keeps priority and BESS discharge is reduced before curtailment. Manual modes bypass economic rules but still respect physical/PCC constraints.
+
+Legacy `getAutoArbOutlook` / `getAutoArbPlan` helpers still exist in `simulationModel.ts` for historical tests and possible future strategy work, but they are not the live dispatch path. Do not wire new UI to those helpers without revalidating the product semantics.
 
 ### Rendering layers
 
 `App.tsx` composes three overlays over a fullscreen container:
 
-1. `SimulationViewport` — r3f `Canvas` wrapped in a `CanvasErrorBoundary` (graceful fallback on WebGL crashes), hosting `MicrogridScene` (3D BESS container with SoC health-color gradient, solar array, energy-flow particles, curtailment particles, time-of-day lighting). A `FrequencyVignette` CSS overlay pulses red when grid frequency deviates from the safe band. Props-only subscription to `GridState`; do not hold React state for the scene here.
+1. `SimulationViewport` — r3f `Canvas` wrapped in a `CanvasErrorBoundary` (graceful fallback on WebGL crashes), hosting `MicrogridScene` (3D BESS container with SoC health-color gradient, solar array, PCS/MV node, Grid Node, energy-flow particles, curtailment particles, overload highlighting, and time-of-day lighting). Props-only subscription to `GridState`; do not hold React state for the scene here.
 2. `StatusHud` — compact top-of-screen live metrics bar.
 3. `ControlPanel` — left/right slide-out drawers. Inside, individual panels live under `src/components/panels/` and share primitives (`Gauge`, `ActionButton`, `NumericField`, `PanelCard`) from `src/components/ui/PanelPrimitives.tsx`. `TelemetryChart` is `lazy()`-loaded to keep the initial bundle small.
 
@@ -75,4 +85,4 @@ This split is a product decision, not a bug. Don't "simplify" them into one numb
 
 ### Tests
 
-Vitest runs in `jsdom` (`vitest.config.ts`) with `src/test/setup.ts` and a `makeGridState` fixture in `src/test/fixtures.ts` for building partial `GridState` objects. The pure simulation math in `src/utils/simulationModel.ts` has dedicated unit tests; UI tests (`*.test.tsx`) use React Testing Library. `PanelPrimitives.test.tsx` covers `ActionButton` (aria-pressed) and `NumericField` (input validation, error states). When adding simulation behavior, prefer extending `simulationModel.ts` + a unit test over testing through the RAF loop.
+Vitest runs in `jsdom` (`vitest.config.ts`) with `src/test/setup.ts` and a `makeGridState` fixture in `src/test/fixtures.ts` for building partial `GridState` objects. The pure settlement math in `src/utils/simulationModel.ts`, command handling in `gridReducer.ts`, and tick behavior in `tickEngine.ts` all have dedicated tests; UI tests (`*.test.tsx`) use React Testing Library. `PanelPrimitives.test.tsx` covers `ActionButton` (aria-pressed) and `NumericField` (input validation, error states). When adding simulation behavior, prefer extending `simulationModel.ts` / `tickEngine.ts` with unit tests over testing through the RAF loop.

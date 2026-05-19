@@ -4,7 +4,7 @@
 [![Deploy](https://github.com/crashchen/BESS-Storage-Simulator/actions/workflows/deploy.yml/badge.svg)](https://crashchen.github.io/BESS-Storage-Simulator/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An interactive utility-scale solar PV + BESS simulator for a Romania project baseline. The app combines a real-time dispatch model, a Three.js 3D scene with energy flow animations, and a collapsible dashboard for testing storage dispatch, market-price response, and project cashflow behavior.
+An interactive utility-scale solar PV + BESS simulator for a Romania project baseline. The app combines an active-power-only dispatch model, a Three.js 3D scene with energy flow animations, and a collapsible dashboard for testing storage dispatch, market-price response, PCC import/export limits, and project cashflow behavior.
 
 **[🚀 Live Demo](https://crashchen.github.io/BESS-Storage-Simulator/)**
 
@@ -20,16 +20,16 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 ## Features
 
 - **Real-time Simulation**: Start, pause, and stop the simulation clock with adjustable time speeds
-- **Dispatch Modes**: Manual control or automatic peak-ready dispatch optimization
-- **Demo Scenarios**: One-click presets for solar surplus, evening peak export, negative-price charging, and grid-stress lockout
+- **Dispatch Modes**: `AUTO` active-power dispatch plus manual `CHARGE`, `IDLE`, and `DISCHARGE` overrides
+- **Active-Power Settlement**: Grid import/export, PV curtailment, BESS charge/discharge, and PCC overload are settled from one power-balance node
 - **Configurable BESS**: Edit rated power and storage capacity from the UI
 - **Project Capacity Setup**: Edit solar AC/DC capacity, PV evacuation, and BESS interconnection live to model any project, not just the Romania baseline
 - **Price Scenarios**: Edit wholesale price windows, including negative-price scenarios
-- **Live Metrics**: Track SoC, grid frequency, solar output, grid demand, and BESS power
-- **P&L Tracking**: Project P&L, BESS margin, curtailment, and energy flow analysis
-- **3D Visualization**: Interactive Three.js scene with animated energy flow particles, SoC health-color gradient, and curtailment particle effects
-- **Frequency Vignette**: Visual red-pulse overlay when grid frequency deviates from the safe band
-- **Collapsible UI**: Slide-out panels with glassmorphism design for maximum scene visibility
+- **Live Metrics**: Track SoC, solar output, grid demand, BESS power, grid import/export, and PCC overload
+- **P&L Tracking**: Project P&L, BESS margin, curtailment, import/export, and energy flow analysis
+- **3D Visualization**: Interactive Three.js scene with animated energy flow particles through PV, BESS, PCS/MV, and Grid Node assets
+- **Overload Warnings**: PCC overload is surfaced in the economics panel and highlighted in the 3D grid/load area
+- **Collapsible UI**: Desktop slide-out drawers can be opened together; narrow screens fall back to mutually exclusive drawers
 - **Error Resilience**: 3D viewport gracefully handles WebGL rendering errors with retry option
 - **Accessibility**: ARIA support for screen readers (aria-pressed, aria-valuetext), keyboard navigation, and input validation feedback
 - **Efficiency Modeling**: BESS charge/discharge efficiency losses
@@ -68,11 +68,11 @@ src/
   App.tsx                        App shell and overlay composition
   config.ts                      Centralized configuration constants
   types.ts                       Shared state and command contracts
-  scenarios.ts                   One-click demo scenario definitions
+  scenarios.ts                   Demo scenario definitions (currently hidden from the main controls)
   hooks/
     useGridSimulation.ts         Utility-scale dispatch and simulation loop
   components/
-    SimulationViewport.tsx       Canvas wrapper with error boundary and frequency vignette
+    SimulationViewport.tsx       Canvas wrapper with error boundary
     MicrogridScene.tsx           3D scene with energy flow particle animations
     ControlPanel.tsx             Collapsible drawer layout
     StatusHud.tsx                Compact live status bar
@@ -87,7 +87,7 @@ src/
   utils/
     gridReducer.ts               Pure reducer for BESSCommand handling
     tickEngine.ts                Simulation tick with tariff-boundary sub-stepping
-    simulationModel.ts           Economic settlement, solar model, auto-arb logic
+    simulationModel.ts           Active-power settlement, solar/demand models, P&L math
     gridSelectors.ts             Derived state selectors
   test/                          Test setup and fixtures
 ```
@@ -98,7 +98,10 @@ src/
 - `Project P&L` and `BESS Margin` are intentionally separated:
   - `Project P&L` = direct PV sales + BESS discharge revenue − grid-paid charging cost.
   - `BESS Margin` = BESS discharge revenue − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
-- The simulation is front-end only for now; there is no backend persistence, SCADA integration, or production-grade market optimizer yet (the built-in peak-ready dispatch is a simplified forecast-driven strategy).
+- The current dispatch model intentionally focuses on **Energy Arbitrage + Self-consumption** using active power only. It does not model FCR, frequency response, voltage control, protection trips, or AC transient dynamics.
+- Local supply/demand gaps are represented as grid import/export at the PCC. If import demand exceeds the configured PCC limit, the app surfaces `PCC Overload` instead of simulating grid-frequency collapse.
+- The built-in `AUTO` dispatch is a simplified rule tree: peak discharge, off-peak reserve charging to 40% SoC, PV-surplus charging, deficit discharge outside off-peak, and PV-priority export curtailment handling.
+- Demo scenario definitions remain in code for later restoration, but the scenario panel is currently hidden while the base model is being hardened.
 
 ## Contributing
 
