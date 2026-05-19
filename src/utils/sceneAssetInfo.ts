@@ -11,6 +11,14 @@ export interface SceneAssetInfo {
     status: string;
     accent: string;
     description: string;
+    primary: InfoRow;
+    meter: {
+        label: string;
+        value: string;
+        percent: number;
+        tone: 'green' | 'amber' | 'cyan' | 'red' | 'blue';
+    };
+    flowRows: InfoRow[];
     rows: InfoRow[];
 }
 
@@ -37,6 +45,15 @@ function batteryModeLabel(mode: GridState['batteryMode']): string {
     return 'Idle';
 }
 
+function clampPercent(value: number): number {
+    return Math.max(0, Math.min(100, value));
+}
+
+function gridFrequencyScore(frequencyHz: number): number {
+    // Map 47.5-52.5 Hz into a 0-100 display band, with 50 Hz centered.
+    return clampPercent(((frequencyHz - 47.5) / 5) * 100);
+}
+
 export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): SceneAssetInfo {
     const bessNetPower = state.batteryDischargeToGridMw - state.batteryChargeFromSolarMw - state.batteryChargeFromGridMw;
     const stationThroughput =
@@ -44,6 +61,9 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
         state.batteryChargeFromSolarMw +
         state.batteryChargeFromGridMw +
         state.batteryDischargeToGridMw;
+    const bessChargeMw = state.batteryChargeFromSolarMw + state.batteryChargeFromGridMw;
+    const gridConnectionMw = state.gridPvEvacuationMw + state.gridBessConnectionMw;
+    const stationCapacityMw = Math.max(gridConnectionMw, state.solarAcCapacityMw + state.gridBessConnectionMw, 1);
 
     if (assetId === 'bess') {
         return {
@@ -56,9 +76,22 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                     ? 'from-amber-300 to-orange-400'
                     : 'from-slate-400 to-blue-300',
             description: 'Stores surplus PV or grid energy, then exports during peak-price or support events.',
+            primary: {
+                label: 'State of charge',
+                value: formatPercent(state.batterySocPercent),
+            },
+            meter: {
+                label: 'Usable energy fill',
+                value: `${formatMwh((state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh)} stored`,
+                percent: clampPercent(state.batterySocPercent),
+                tone: state.batterySocPercent < 20 ? 'red' : state.batterySocPercent < 50 ? 'amber' : 'green',
+            },
+            flowRows: [
+                { label: 'Net power', value: formatMw(bessNetPower) },
+                { label: 'Charging input', value: formatMw(bessChargeMw) },
+                { label: 'Grid output', value: formatMw(state.batteryDischargeToGridMw) },
+            ],
             rows: [
-                { label: 'State of charge', value: formatPercent(state.batterySocPercent) },
-                { label: 'Net battery power', value: formatMw(bessNetPower) },
                 { label: 'Charge from solar', value: formatMw(state.batteryChargeFromSolarMw) },
                 { label: 'Charge from grid', value: formatMw(state.batteryChargeFromGridMw) },
                 { label: 'Discharge to grid', value: formatMw(state.batteryDischargeToGridMw) },
@@ -75,10 +108,24 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
             status: stationThroughput > 0.5 ? 'Routing power' : 'Standing by',
             accent: 'from-cyan-300 to-sky-500',
             description: 'Visualizes the site collection and step-up node where PV, BESS, and grid-side flows meet.',
+            primary: {
+                label: 'Gross routed flow',
+                value: formatMw(stationThroughput),
+            },
+            meter: {
+                label: 'Site bus loading',
+                value: `${Math.round((stationThroughput / stationCapacityMw) * 100)}% of visual station capacity`,
+                percent: clampPercent((stationThroughput / stationCapacityMw) * 100),
+                tone: 'cyan',
+            },
+            flowRows: [
+                { label: 'PV path', value: formatMw(state.solarExportMw) },
+                { label: 'BESS charge path', value: formatMw(bessChargeMw) },
+                { label: 'BESS discharge path', value: formatMw(state.batteryDischargeToGridMw) },
+            ],
             rows: [
-                { label: 'Gross routed flow', value: formatMw(stationThroughput) },
                 { label: 'PV export path', value: formatMw(state.solarExportMw) },
-                { label: 'BESS charge path', value: formatMw(state.batteryChargeFromSolarMw + state.batteryChargeFromGridMw) },
+                { label: 'BESS charge path', value: formatMw(bessChargeMw) },
                 { label: 'BESS discharge path', value: formatMw(state.batteryDischargeToGridMw) },
                 { label: 'BESS interconnect cap', value: formatMw(state.gridBessConnectionMw) },
                 { label: 'PV evacuation cap', value: formatMw(state.gridPvEvacuationMw) },
@@ -94,13 +141,27 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
             ? 'from-red-400 to-orange-300'
             : 'from-blue-300 to-emerald-300',
         description: 'Represents the grid-side connection receiving PV export and BESS discharge while setting demand pressure.',
+        primary: {
+            label: 'Grid frequency',
+            value: `${state.gridFrequencyHz.toFixed(2)} Hz`,
+        },
+        meter: {
+            label: 'Frequency band',
+            value: state.gridFrequencyHz < 49.5 || state.gridFrequencyHz > 50.5 ? 'Outside preferred band' : 'Inside preferred band',
+            percent: gridFrequencyScore(state.gridFrequencyHz),
+            tone: state.gridFrequencyHz < 49.5 || state.gridFrequencyHz > 50.5 ? 'red' : 'blue',
+        },
+        flowRows: [
+            { label: 'Demand', value: formatMw(state.gridDemandMw) },
+            { label: 'Net export', value: formatMw(state.projectNetExportMw) },
+            { label: 'Tariff', value: formatEurMwh(state.currentPriceEurMwh) },
+        ],
         rows: [
             { label: 'Grid demand', value: formatMw(state.gridDemandMw) },
             { label: 'Project net export', value: formatMw(state.projectNetExportMw) },
-            { label: 'Grid frequency', value: `${state.gridFrequencyHz.toFixed(2)} Hz` },
             { label: 'Current tariff', value: formatEurMwh(state.currentPriceEurMwh) },
             { label: 'Tariff period', value: state.tariffPeriod },
-            { label: 'Total grid connection', value: formatMw(state.gridPvEvacuationMw + state.gridBessConnectionMw) },
+            { label: 'Total grid connection', value: formatMw(gridConnectionMw) },
         ],
     };
 }

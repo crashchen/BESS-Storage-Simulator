@@ -1,4 +1,4 @@
-import { Component, memo, useCallback, useState, type ErrorInfo, type ReactNode } from 'react';
+import { Component, memo, useCallback, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import { MicrogridScene } from './MicrogridScene';
@@ -136,6 +136,20 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
     setSelectedAssetId(null);
     setHoveredAssetId(null);
   }, []);
+
+  useEffect(() => {
+    if (!selectedAssetId) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedAssetId(null);
+        setHoveredAssetId(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedAssetId]);
 
   const activeAssetId = selectedAssetId ?? hoveredAssetId;
 

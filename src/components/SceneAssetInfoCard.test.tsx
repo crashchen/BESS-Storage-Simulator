@@ -28,6 +28,7 @@ describe('SceneAssetInfoCard', () => {
         expect(screen.getByText('Charging')).toBeInTheDocument();
         expect(screen.getByText('38.4%')).toBeInTheDocument();
         expect(screen.getByText('-102.0 MW')).toBeInTheDocument();
+        expect(screen.getByText('Usable energy fill')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Close equipment info card' })).toBeInTheDocument();
     });
 
@@ -40,7 +41,8 @@ describe('SceneAssetInfoCard', () => {
         }));
 
         expect(info.title).toBe('PCS / MV Station');
-        expect(info.rows).toContainEqual({ label: 'Gross routed flow', value: '122.0 MW' });
+        expect(info.primary).toEqual({ label: 'Gross routed flow', value: '122.0 MW' });
+        expect(info.flowRows).toContainEqual({ label: 'BESS charge path', value: '45.0 MW' });
     });
 
     it('calls onClose when the pinned card close button is clicked', async () => {
