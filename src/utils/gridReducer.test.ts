@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
-import { SCENARIO_PRESETS_BY_ID } from '../scenarios';
+import { SCENARIO_PRESETS, SCENARIO_PRESETS_BY_ID } from '../scenarios';
 import { makeGridState } from '../test/fixtures';
 import { applyCommand } from './gridReducer';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from './gridSelectors';
@@ -104,6 +104,68 @@ describe('gridReducer applyCommand', () => {
             resetFrameRef: true,
         });
     });
+
+    // Table-driven structural smoke for every preset, so a new preset can't slip
+    // in with NaN telemetry, an out-of-range SoC, a power command past the
+    // transfer limit, or a mode/sign mismatch.
+    it.each(SCENARIO_PRESETS.map((p) => [p.id, p] as const))(
+        'APPLY_SCENARIO_PRESET %s yields a paused, in-bounds, sign-consistent scene',
+        (_id, preset) => {
+            const { next, sideEffects } = applyCommand(
+                makeGridState({ simulationStatus: 'running', cumulativeRevenueEur: 12345 }),
+                { type: 'APPLY_SCENARIO_PRESET', payload: preset.id },
+                NOW,
+            );
+
+            expect(next.simulationStatus).toBe('paused');
+            expect(sideEffects).toEqual({
+                resetHistory: true,
+                resetTimerRefs: true,
+                resetFrameRef: true,
+            });
+
+            // Finite telemetry on every numeric channel the UI/HUD subscribes to.
+            for (const value of [
+                next.batterySocPercent,
+                next.batteryPowerMw,
+                next.batteryChargeFromSolarMw,
+                next.batteryChargeFromGridMw,
+                next.batteryDischargeToGridMw,
+                next.solarOutputMw,
+                next.solarExportMw,
+                next.solarCurtailedMw,
+                next.gridDemandMw,
+                next.gridFrequencyHz,
+                next.currentPriceEurMwh,
+                next.projectNetExportMw,
+            ]) {
+                expect(Number.isFinite(value)).toBe(true);
+            }
+
+            // Range bounds.
+            expect(next.batterySocPercent).toBeGreaterThanOrEqual(0);
+            expect(next.batterySocPercent).toBeLessThanOrEqual(100);
+            expect(next.timeOfDay).toBeGreaterThanOrEqual(0);
+            expect(next.timeOfDay).toBeLessThan(24);
+
+            // Battery power must respect the transfer limit (min of rating and grid BESS link).
+            const transferLimitMw = Math.min(next.batteryPowerRatingMw, next.gridBessConnectionMw);
+            expect(Math.abs(next.batteryPowerMw)).toBeLessThanOrEqual(transferLimitMw + 1e-9);
+
+            // Mode/sign consistency.
+            if (next.batteryMode === 'charging') {
+                expect(next.batteryPowerMw).toBeGreaterThanOrEqual(0);
+            } else if (next.batteryMode === 'discharging') {
+                expect(next.batteryPowerMw).toBeLessThanOrEqual(0);
+            } else {
+                expect(next.batteryPowerMw).toBe(0);
+            }
+
+            // Cumulative P&L wiped on preset entry.
+            expect(next.cumulativeRevenueEur).toBe(0);
+            expect(next.cumulativeBessMarginEur).toBe(0);
+        },
+    );
 
     it('APPLY_SCENARIO_PRESET computes a low-frequency grid-stress scene without starting the clock', () => {
         const { next } = applyCommand(

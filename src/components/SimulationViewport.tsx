@@ -104,6 +104,9 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
       // without it the canvas will never fire `webglcontextrestored`.
       event.preventDefault();
       setFailure({ kind: 'context-lost' });
+      // Clear pinned/hovered card so it doesn't render over the WebGL fallback.
+      setHoveredAssetId(null);
+      setSelectedAssetId(null);
     };
     gl.domElement.addEventListener('webglcontextlost', handler);
     // Returned cleanup runs on Canvas dispose (e.g. when canvasKey changes).
@@ -112,6 +115,8 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
 
   const handleError = useCallback((error: Error) => {
     setFailure({ kind: 'render-error', error });
+    setHoveredAssetId(null);
+    setSelectedAssetId(null);
   }, []);
 
   const handleRetry = useCallback(() => {
@@ -141,10 +146,16 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
     if (!selectedAssetId) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setSelectedAssetId(null);
-        setHoveredAssetId(null);
+      if (event.key !== 'Escape') return;
+      // If a Drawer is open, let it handle Escape first — its window listener
+      // and ours are siblings on `window`, and `stopPropagation()` does not stop
+      // listeners on the same target. Without this guard, one keypress closes
+      // both the drawer and the pinned card.
+      if (typeof document !== 'undefined' && document.querySelector('[role="region"][aria-hidden="false"]')) {
+        return;
       }
+      setSelectedAssetId(null);
+      setHoveredAssetId(null);
     };
 
     window.addEventListener('keydown', handleKeyDown);

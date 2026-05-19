@@ -112,7 +112,9 @@ function createAssetInteraction(
 }
 
 // ── BESS Container ───────────────────────────────────────────
-function BESSContainer({
+// memo so static reconciles only on mode/soc/capacityScale/interaction changes
+// (interaction is itself memoized in MicrogridScene).
+const BESSContainer = memo(function BESSContainer({
     mode,
     soc,
     capacityScale,
@@ -267,7 +269,7 @@ function BESSContainer({
             </mesh>
         </group>
     );
-}
+});
 
 // ── Solar Panel ──────────────────────────────────────────────
 // Brightness/color are computed once per render in SolarArray (since every panel
@@ -310,7 +312,9 @@ const SolarPanel = memo(function SolarPanel({
 });
 
 // ── Solar Array ──────────────────────────────────────────────
-function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solarOutputMw: number; solarAcCapacityMw: number; dcCapacityMwp: number }) {
+// memo so the panel grid only reconciles when capacity changes (rows/cols) or
+// when output/brightness crosses a quantization bucket — see SolarPanel below.
+const SolarArray = memo(function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solarOutputMw: number; solarAcCapacityMw: number; dcCapacityMwp: number }) {
     // Scale panel grid: baseline 117 MWp = 3×4 grid.
     // Scale cols (3–6) and rows (2–5) with capacity ratio.
     const capacityRatio = dcCapacityMwp / SOLAR.dcCapacityMwp;
@@ -371,7 +375,7 @@ function SolarArray({ solarOutputMw, solarAcCapacityMw, dcCapacityMwp }: { solar
             </Text>
         </group>
     );
-}
+});
 
 // ── Power Lines (using Drei Line) ────────────────────────────
 const POWER_LINE_POINTS: [number, number, number][] = [
@@ -967,9 +971,20 @@ export function MicrogridScene({
         : 0.1;
 
     const maxBessMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
-    const bessInteraction = createAssetInteraction('bess', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect);
-    const pcsInteraction = createAssetInteraction('pcs-mv', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect);
-    const gridInteraction = createAssetInteraction('grid-node', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect);
+    // useMemo so memoized children (StaticSiteFurniture, LoadBuilding) keep their memo
+    // — without it, fresh objects + closures every render reconcile the static subtree.
+    const bessInteraction = useMemo(
+        () => createAssetInteraction('bess', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect),
+        [hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect],
+    );
+    const pcsInteraction = useMemo(
+        () => createAssetInteraction('pcs-mv', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect),
+        [hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect],
+    );
+    const gridInteraction = useMemo(
+        () => createAssetInteraction('grid-node', hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect),
+        [hoveredAssetId, selectedAssetId, onAssetHover, onAssetSelect],
+    );
 
     const fogRef = useRef<Fog>(null);
     const ambientRef = useRef<AmbientLight>(null);

@@ -1,4 +1,6 @@
+import { GRID } from '../config';
 import type { GridState, SceneAssetId } from '../types';
+import { selectGridConnectionTotalMw } from './gridSelectors';
 
 export interface InfoRow {
     label: string;
@@ -50,8 +52,13 @@ function clampPercent(value: number): number {
 }
 
 function gridFrequencyScore(frequencyHz: number): number {
-    // Map 47.5-52.5 Hz into a 0-100 display band, with 50 Hz centered.
-    return clampPercent(((frequencyHz - 47.5) / 5) * 100);
+    // Map [minFrequencyHz, maxFrequencyHz] into a 0-100 display band.
+    const span = GRID.maxFrequencyHz - GRID.minFrequencyHz;
+    return clampPercent(((frequencyHz - GRID.minFrequencyHz) / span) * 100);
+}
+
+function isFrequencyStressed(frequencyHz: number): boolean {
+    return frequencyHz < GRID.warningFrequencyLowHz || frequencyHz > GRID.warningFrequencyHighHz;
 }
 
 export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): SceneAssetInfo {
@@ -62,7 +69,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
         state.batteryChargeFromGridMw +
         state.batteryDischargeToGridMw;
     const bessChargeMw = state.batteryChargeFromSolarMw + state.batteryChargeFromGridMw;
-    const gridConnectionMw = state.gridPvEvacuationMw + state.gridBessConnectionMw;
+    const gridConnectionMw = selectGridConnectionTotalMw(state);
     const stationCapacityMw = Math.max(gridConnectionMw, state.solarAcCapacityMw + state.gridBessConnectionMw, 1);
 
     if (assetId === 'bess') {
@@ -133,11 +140,12 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
         };
     }
 
+    const stressed = isFrequencyStressed(state.gridFrequencyHz);
     return {
         title: 'Grid Node',
         eyebrow: 'Utility Interconnection / Load Sink',
-        status: state.gridFrequencyHz < 49.5 || state.gridFrequencyHz > 50.5 ? 'Frequency stress' : 'Stable',
-        accent: state.gridFrequencyHz < 49.5 || state.gridFrequencyHz > 50.5
+        status: stressed ? 'Frequency stress' : 'Stable',
+        accent: stressed
             ? 'from-red-400 to-orange-300'
             : 'from-blue-300 to-emerald-300',
         description: 'Represents the grid-side connection receiving PV export and BESS discharge while setting demand pressure.',
@@ -147,9 +155,9 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
         },
         meter: {
             label: 'Frequency band',
-            value: state.gridFrequencyHz < 49.5 || state.gridFrequencyHz > 50.5 ? 'Outside preferred band' : 'Inside preferred band',
+            value: stressed ? 'Outside preferred band' : 'Inside preferred band',
             percent: gridFrequencyScore(state.gridFrequencyHz),
-            tone: state.gridFrequencyHz < 49.5 || state.gridFrequencyHz > 50.5 ? 'red' : 'blue',
+            tone: stressed ? 'red' : 'blue',
         },
         flowRows: [
             { label: 'Demand', value: formatMw(state.gridDemandMw) },
