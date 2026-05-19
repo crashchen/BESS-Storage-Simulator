@@ -1,4 +1,5 @@
 import type { GridState, SceneAssetId } from '../types';
+import { getVisibleEnergyFlows } from './energyFlowTelemetry';
 import { selectGridConnectionTotalMw } from './gridSelectors';
 
 export interface InfoRow {
@@ -51,12 +52,9 @@ function clampPercent(value: number): number {
 }
 
 export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): SceneAssetInfo {
+    const visibleFlows = getVisibleEnergyFlows(state);
     const bessNetPower = state.batteryDischargeToGridMw - state.batteryChargeFromSolarMw - state.batteryChargeFromGridMw;
-    const stationThroughput =
-        state.solarExportMw +
-        state.batteryChargeFromSolarMw +
-        state.batteryChargeFromGridMw +
-        state.batteryDischargeToGridMw;
+    const stationThroughput = visibleFlows.grossRoutedMw;
     const bessChargeMw = state.batteryChargeFromSolarMw + state.batteryChargeFromGridMw;
     const gridConnectionMw = selectGridConnectionTotalMw(state);
     const stationCapacityMw = Math.max(gridConnectionMw, state.solarAcCapacityMw + state.gridBessConnectionMw, 1);
@@ -115,14 +113,17 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 tone: 'cyan',
             },
             flowRows: [
-                { label: 'PV path', value: formatMw(state.solarExportMw) },
+                { label: 'PV to site/grid', value: formatMw(visibleFlows.solarToSiteMw) },
                 { label: 'BESS charge path', value: formatMw(bessChargeMw) },
+                { label: 'Grid import to site', value: formatMw(visibleFlows.gridToSiteMw) },
                 { label: 'BESS discharge path', value: formatMw(state.batteryDischargeToGridMw) },
             ],
             rows: [
-                { label: 'PV export path', value: formatMw(state.solarExportMw) },
-                { label: 'BESS charge path', value: formatMw(bessChargeMw) },
-                { label: 'BESS discharge path', value: formatMw(state.batteryDischargeToGridMw) },
+                { label: 'PV to site/grid path', value: formatMw(visibleFlows.solarToSiteMw) },
+                { label: 'Solar to BESS path', value: formatMw(visibleFlows.solarToBessMw) },
+                { label: 'Grid to BESS path', value: formatMw(visibleFlows.gridToBessMw) },
+                { label: 'Grid import to site path', value: formatMw(visibleFlows.gridToSiteMw) },
+                { label: 'BESS discharge path', value: formatMw(visibleFlows.bessToSiteMw) },
                 { label: 'BESS interconnect cap', value: formatMw(state.gridBessConnectionMw) },
                 { label: 'PV evacuation cap', value: formatMw(state.gridPvEvacuationMw) },
             ],

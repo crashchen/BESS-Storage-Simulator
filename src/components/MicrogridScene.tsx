@@ -10,6 +10,7 @@ import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
 import { BESS, SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
+import { getVisibleEnergyFlows } from '../utils/energyFlowTelemetry';
 
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
@@ -416,6 +417,7 @@ const PowerLines = memo(function PowerLines() {
 
 // ── Grid Building (Load Consumer) ────────────────────────────
 const GRID_NODE_POSITION: [number, number, number] = [8.8, 0, 0.25];
+const SITE_LOAD_POSITION: [number, number, number] = [6.05, 0.1, 1.35];
 
 const LoadBuilding = memo(function LoadBuilding({
     interaction,
@@ -473,6 +475,52 @@ const LoadBuilding = memo(function LoadBuilding({
                 anchorY="bottom"
             >
                 GRID NODE
+            </Text>
+        </group>
+    );
+});
+
+const SiteLoadMarker = memo(function SiteLoadMarker() {
+    return (
+        <group position={SITE_LOAD_POSITION}>
+            <mesh position={[0, 0.05, 0]} receiveShadow>
+                <boxGeometry args={[1.2, 0.1, 0.82]} />
+                <meshStandardMaterial
+                    color="#1e3a5f"
+                    emissive="#2563eb"
+                    emissiveIntensity={0.12}
+                    roughness={0.55}
+                    metalness={0.25}
+                />
+            </mesh>
+            <mesh position={[0, 0.52, 0]} castShadow>
+                <boxGeometry args={[0.64, 0.84, 0.52]} />
+                <meshStandardMaterial
+                    color="#475569"
+                    emissive="#3b82f6"
+                    emissiveIntensity={0.26}
+                    roughness={0.42}
+                    metalness={0.42}
+                />
+            </mesh>
+            <mesh position={[0, 1.03, 0]} castShadow>
+                <boxGeometry args={[0.86, 0.14, 0.66]} />
+                <meshStandardMaterial
+                    color="#60a5fa"
+                    emissive="#3b82f6"
+                    emissiveIntensity={0.62}
+                    roughness={0.35}
+                    metalness={0.35}
+                />
+            </mesh>
+            <Text
+                position={[0, 1.62, 0]}
+                fontSize={0.18}
+                color="#dbeafe"
+                anchorX="center"
+                anchorY="bottom"
+            >
+                LOCAL LOAD
             </Text>
         </group>
     );
@@ -645,6 +693,7 @@ const StaticSiteFurniture = memo(function StaticSiteFurniture({
     return (
         <>
             <SitePads capacityScale={capacityScale} pcsInteraction={pcsInteraction} />
+            <SiteLoadMarker />
             <PowerLines />
             <LoadBuilding interaction={gridInteraction} overloaded={gridOverloadWarning} />
         </>
@@ -737,6 +786,11 @@ const GRID_FLOW_POINT = new Vector3(
     3.0,
     GRID_NODE_POSITION[2],
 );
+const SITE_LOAD_FLOW_POINT = new Vector3(
+    SITE_LOAD_POSITION[0],
+    1.18,
+    SITE_LOAD_POSITION[2],
+);
 
 function flowPoint(point: Vector3) {
     return point.clone();
@@ -786,6 +840,17 @@ const FLOW_PATHS = {
             flowPoint(GRID_FLOW_PORT),
             flowPoint(PCS_MV_FLOW_POINT),
             flowPoint(BESS_FLOW_PORT),
+        ],
+        false,
+        'centripetal',
+    ),
+    // Grid → PCS/MV → site load marker (import serving local demand)
+    gridToSite: new CatmullRomCurve3(
+        [
+            flowPoint(GRID_FLOW_POINT),
+            flowPoint(GRID_FLOW_PORT),
+            flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(SITE_LOAD_FLOW_POINT),
         ],
         false,
         'centripetal',
@@ -887,21 +952,25 @@ function EnergyFlow({ curve, color, powerMw, maxPowerMw, active }: EnergyFlowPro
 
 // ── Energy Flow Controller ───────────────────────────────────
 interface EnergyFlowSystemProps {
-    solarExportMw: number;
-    batteryChargeFromSolarMw: number;
-    batteryChargeFromGridMw: number;
-    batteryDischargeToGridMw: number;
+    solarToBessMw: number;
+    solarToSiteMw: number;
+    bessToSiteMw: number;
+    gridToBessMw: number;
+    gridToSiteMw: number;
     maxSolarMw: number;
     maxBessMw: number;
+    maxGridMw: number;
 }
 
 function EnergyFlowSystem({
-    solarExportMw,
-    batteryChargeFromSolarMw,
-    batteryChargeFromGridMw,
-    batteryDischargeToGridMw,
+    solarToBessMw,
+    solarToSiteMw,
+    bessToSiteMw,
+    gridToBessMw,
+    gridToSiteMw,
     maxSolarMw,
     maxBessMw,
+    maxGridMw,
 }: EnergyFlowSystemProps) {
     return (
         <group>
@@ -909,36 +978,45 @@ function EnergyFlowSystem({
             <EnergyFlow
                 curve={FLOW_PATHS.solarToBess}
                 color={COLOR_SOLAR_FLOW}
-                powerMw={batteryChargeFromSolarMw}
+                powerMw={solarToBessMw}
                 maxPowerMw={maxBessMw}
-                active={batteryChargeFromSolarMw > 0.5}
+                active={solarToBessMw > 0.5}
             />
             
-            {/* Solar → Grid (direct export) */}
+            {/* Solar → Site/Grid node (local demand + direct export) */}
             <EnergyFlow
                 curve={FLOW_PATHS.solarToGrid}
                 color={COLOR_SOLAR_FLOW}
-                powerMw={solarExportMw}
+                powerMw={solarToSiteMw}
                 maxPowerMw={maxSolarMw}
-                active={solarExportMw > 0.5}
+                active={solarToSiteMw > 0.5}
             />
             
-            {/* BESS → Grid (discharging) */}
+            {/* BESS → Site/Grid node (local support + export) */}
             <EnergyFlow
                 curve={FLOW_PATHS.bessToGrid}
                 color={COLOR_DISCHARGE}
-                powerMw={batteryDischargeToGridMw}
+                powerMw={bessToSiteMw}
                 maxPowerMw={maxBessMw}
-                active={batteryDischargeToGridMw > 0.5}
+                active={bessToSiteMw > 0.5}
             />
             
             {/* Grid → BESS (charging from grid) */}
             <EnergyFlow
                 curve={FLOW_PATHS.gridToBess}
                 color={COLOR_GRID_FLOW}
-                powerMw={batteryChargeFromGridMw}
+                powerMw={gridToBessMw}
                 maxPowerMw={maxBessMw}
-                active={batteryChargeFromGridMw > 0.5}
+                active={gridToBessMw > 0.5}
+            />
+
+            {/* Grid → Site bus (import serving local demand) */}
+            <EnergyFlow
+                curve={FLOW_PATHS.gridToSite}
+                color={COLOR_GRID_FLOW}
+                powerMw={gridToSiteMw}
+                maxPowerMw={maxGridMw}
+                active={gridToSiteMw > 0.5}
             />
         </group>
     );
@@ -958,14 +1036,11 @@ export function MicrogridScene({
         solarOutputMw,
         solarAcCapacityMw,
         timeOfDay,
-        solarExportMw,
         solarCurtailedMw,
-        batteryChargeFromSolarMw,
-        batteryChargeFromGridMw,
-        batteryDischargeToGridMw,
         batteryPowerRatingMw,
         batteryEnergyCapacityMwh,
         solarDcCapacityMwp,
+        gridPvEvacuationMw,
         gridBessConnectionMw,
         gridOverloadWarning,
     } = gridState;
@@ -980,6 +1055,8 @@ export function MicrogridScene({
         : 0.1;
 
     const maxBessMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
+    const maxGridMw = gridPvEvacuationMw + gridBessConnectionMw;
+    const visibleFlows = getVisibleEnergyFlows(gridState);
     // useMemo so memoized children (StaticSiteFurniture, LoadBuilding) keep their memo
     // — without it, fresh objects + closures every render reconcile the static subtree.
     const bessInteraction = useMemo(
@@ -1054,12 +1131,14 @@ export function MicrogridScene({
 
             {/* Energy flow animations */}
             <EnergyFlowSystem
-                solarExportMw={solarExportMw}
-                batteryChargeFromSolarMw={batteryChargeFromSolarMw}
-                batteryChargeFromGridMw={batteryChargeFromGridMw}
-                batteryDischargeToGridMw={batteryDischargeToGridMw}
+                solarToBessMw={visibleFlows.solarToBessMw}
+                solarToSiteMw={visibleFlows.solarToSiteMw}
+                bessToSiteMw={visibleFlows.bessToSiteMw}
+                gridToBessMw={visibleFlows.gridToBessMw}
+                gridToSiteMw={visibleFlows.gridToSiteMw}
                 maxSolarMw={solarAcCapacityMw}
                 maxBessMw={maxBessMw}
+                maxGridMw={maxGridMw}
             />
 
             {/* Curtailment visual */}
