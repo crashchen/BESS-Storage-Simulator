@@ -4,68 +4,53 @@
 
 import { useCallback } from 'react';
 import { AUTO_ARB, BESS, GRID, SIMULATION, SOLAR } from '../../config';
-import type { BESSCommand, GridState, TariffPeriod } from '../../types';
+import type { BESSCommand, GridState } from '../../types';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
-import type { AutoArbPlan } from '../../utils/simulationModel';
-import { getAutoArbOutlook, getAutoArbPlan, getBatteryTransferLimitMw } from '../../utils/simulationModel';
+import { getBatteryTransferLimitMw } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
-
-function formatTargetHour(hour: number): string {
-    return `${Math.trunc(hour).toString().padStart(2, '0')}:00`;
-}
-
-function getDispatchPhaseText(
-    tariffPeriod: TariffPeriod,
-    timeOfDay: number,
-    batterySocPercent: number,
-    autoArbPlan: AutoArbPlan,
-): string {
-    if (tariffPeriod === 'peak') {
-        if (batterySocPercent <= 0) return 'Battery depleted — holding idle through peak.';
-        if (autoArbPlan.mode === 'discharging' && autoArbPlan.targetPowerMw < 0) {
-            return 'Pacing discharge across the evening peak window.';
-        }
-        return 'Peak window — holding idle (uneconomic to discharge).';
-    }
-    if (timeOfDay < AUTO_ARB.peakStartHour) {
-        if (batterySocPercent >= autoArbPlan.targetSocPercent) return 'Target SoC reached — holding charge until peak.';
-        if (autoArbPlan.mode === 'charging' && autoArbPlan.targetPowerMw > 0) {
-            if (autoArbPlan.shouldGridTopUp) return 'Solar forecast insufficient — topping up from grid.';
-            return 'Absorbing solar surplus toward peak-ready target.';
-        }
-        return 'Peak-ready idle — awaiting solar surplus or economical grid top-up.';
-    }
-    // Post-peak (off-peak night)
-    if (autoArbPlan.mode === 'charging' && autoArbPlan.targetPowerMw > 0) return "Off-peak grid top-up for tomorrow's peak.";
-    return 'Post-peak idle — awaiting next solar cycle.';
-}
 
 interface BessControlProps {
     gridState: GridState;
     onCommand: (cmd: BESSCommand) => void;
 }
 
+function getAutoDispatchText(gridState: GridState): string {
+    const solarSurplusMw = Math.max(0, gridState.solarOutputMw - gridState.gridDemandMw);
+    const loadDeficitMw = Math.max(0, gridState.gridDemandMw - gridState.solarOutputMw);
+
+    if (gridState.dispatchMode !== 'auto') {
+        return 'Manual override is active; AUTO returns control to the active-power dispatch rule tree.';
+    }
+    if (gridState.tariffPeriod === 'peak') {
+        return 'Peak price window: BESS discharges first, with PV export kept ahead of battery export when the PCC is congested.';
+    }
+    if (gridState.tariffPeriod === 'off-peak') {
+        if (gridState.batterySocPercent < AUTO_ARB.nightTargetSocPercent) {
+            return `Off-peak reserve: grid/PV charging toward ${AUTO_ARB.nightTargetSocPercent.toFixed(0)}% SoC; auto discharge is locked out.`;
+        }
+        return 'Off-peak: auto discharge is locked out; PV surplus may still charge the battery.';
+    }
+    if (solarSurplusMw > 0) return 'Self-consumption: PV surplus is routed into BESS before curtailment.';
+    if (loadDeficitMw > 0) return 'Self-consumption: BESS discharges to reduce grid import while energy is available.';
+    return 'Balanced node: BESS is holding idle.';
+}
+
 export function BessDispatchControl({ gridState, onCommand }: BessControlProps) {
     const {
-        batteryMode,
         batterySocPercent,
-        gridFrequencyHz,
         solarOutputMw,
         gridDemandMw,
         batteryPowerMw,
-        autoArbEnabled,
         solarAcCapacityMw,
-        timeOfDay,
-        tariffPeriod,
-        tariffRatesEurMwh,
+        gridImportMw,
+        gridExportMw,
+        gridOverloadWarning,
+        gridOverloadMw,
+        dispatchMode,
     } = gridState;
     const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
 
-    const freqWarn = gridFrequencyHz < GRID.warningFrequencyLowHz || gridFrequencyHz > GRID.warningFrequencyHighHz;
     const batteryTransferLimitMw = getBatteryTransferLimitMw(gridState);
-    const autoArbOutlook = getAutoArbOutlook(gridState, timeOfDay);
-    const autoArbPlan = getAutoArbPlan(gridState, timeOfDay, solarOutputMw, gridDemandMw, tariffPeriod, tariffRatesEurMwh);
-    const peakReadyTargetHour = `${formatTargetHour(AUTO_ARB.peakStartHour)}${timeOfDay >= AUTO_ARB.peakEndHour ? ' (next day)' : ''}`;
 
     const handleMode = useCallback(
         (type: 'CHARGE' | 'DISCHARGE' | 'IDLE') => onCommand({ type }),
@@ -74,55 +59,47 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
 
     return (
         <PanelCard title="⚡ BESS Dispatch Control">
-            <div className="grid grid-cols-4 gap-2">
-                <ActionButton label="Charge" active={!autoArbEnabled && batteryMode === 'charging'} color="#22c55e" onClick={() => handleMode('CHARGE')} disabled={batterySocPercent >= 100} />
-                <ActionButton label="Idle" active={!autoArbEnabled && batteryMode === 'idle'} color="#64748b" onClick={() => handleMode('IDLE')} />
-                <ActionButton label="Discharge" active={!autoArbEnabled && batteryMode === 'discharging'} color="#f59e0b" onClick={() => handleMode('DISCHARGE')} disabled={batterySocPercent <= 0} />
-                <ActionButton label="Peak Ready" active={autoArbEnabled} color="#8b5cf6" onClick={() => onCommand({ type: 'TOGGLE_AUTO_ARB' })} />
+            <div className="grid grid-cols-2 gap-2">
+                <ActionButton label="Auto" active={dispatchMode === 'auto'} color="#0ea5e9" onClick={() => onCommand({ type: 'SET_AUTO_ARB_ENABLED', payload: true })} />
+                <ActionButton label="Charge" active={dispatchMode === 'manual-charge'} color="#22c55e" onClick={() => handleMode('CHARGE')} disabled={batterySocPercent >= 100} />
+                <ActionButton label="Idle" active={dispatchMode === 'manual-idle'} color="#64748b" onClick={() => handleMode('IDLE')} />
+                <ActionButton label="Discharge" active={dispatchMode === 'manual-discharge'} color="#f59e0b" onClick={() => handleMode('DISCHARGE')} disabled={batterySocPercent <= 0} />
             </div>
 
-            <div className="mt-4 rounded-lg border border-violet-900/40 bg-violet-950/20 p-3">
+            <div className="mt-4 rounded-lg border border-sky-900/40 bg-sky-950/20 p-3">
                 <div className="flex items-center justify-between gap-3">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-300">Peak-Ready Dispatch</p>
-                    <span className="font-mono text-xs font-bold text-violet-200">
-                        Target {autoArbOutlook.targetSocPercent.toFixed(0)}% by {peakReadyTargetHour}
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-300">Auto Dispatch</p>
+                    <span className="font-mono text-xs font-bold text-sky-200">
+                        Night reserve {AUTO_ARB.nightTargetSocPercent.toFixed(0)}%
                     </span>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                    {getDispatchPhaseText(
-                        tariffPeriod,
-                        timeOfDay,
-                        batterySocPercent,
-                        autoArbPlan,
-                    )}
+                    {getAutoDispatchText(gridState)}
                 </p>
                 <div className="mt-2 grid gap-1 text-[11px] text-slate-400">
                     <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-                        <span className="whitespace-nowrap">Forecast solar recharge</span>
+                        <span className="whitespace-nowrap">Grid import</span>
                         <span className="font-mono tabular-nums text-slate-300">
-                            {autoArbOutlook.forecastSolarChargeMwh.toFixed(0)} MWh
+                            {gridImportMw.toFixed(0)} MW
                         </span>
                     </div>
                     <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-                        <span className="whitespace-nowrap">Peak discharge need</span>
+                        <span className="whitespace-nowrap">Grid export</span>
                         <span className="font-mono tabular-nums text-slate-300">
-                            {autoArbOutlook.forecastPeakDemandMwh.toFixed(0)} MWh
+                            {gridExportMw.toFixed(0)} MW
                         </span>
                     </div>
+                    {gridOverloadWarning ? (
+                        <div className="grid grid-cols-[1fr_auto] items-center gap-3 text-rose-300">
+                            <span className="whitespace-nowrap">PCC overload</span>
+                            <span className="font-mono tabular-nums">{gridOverloadMw.toFixed(0)} MW</span>
+                        </div>
+                    ) : null}
                 </div>
             </div>
 
             <div className="mt-4 flex flex-col gap-3">
                 <Gauge label="Battery SoC" value={batterySocPercent} unit="%" min={0} max={100} color="#3b82f6" />
-                <Gauge
-                    label="Grid Frequency"
-                    value={gridFrequencyHz}
-                    unit="Hz"
-                    min={GRID.minFrequencyHz}
-                    max={GRID.maxFrequencyHz}
-                    color={freqWarn ? '#ef4444' : '#22c55e'}
-                    warn={freqWarn}
-                />
                 <Gauge label="Solar Output" value={solarOutputMw} unit="MW" min={0} max={solarAcCapacityMw} color="#facc15" />
                 <Gauge label="Grid Demand" value={gridDemandMw} unit="MW" min={0} max={gridConnectionTotalMw} color="#f97316" />
                 <Gauge label="Battery Power" value={Math.abs(batteryPowerMw)} unit="MW" min={0} max={batteryTransferLimitMw} color={batteryPowerMw >= 0 ? '#22c55e' : '#f59e0b'} />

@@ -46,6 +46,8 @@ export function TelemetryChart({ history }: TelemetryChartProps) {
                     <Line type="monotone" dataKey="solarMw" name="Solar" stroke="#facc15" strokeWidth={2} dot={false} isAnimationActive={false} />
                     <Line type="monotone" dataKey="demandMw" name="Demand" stroke="#f97316" strokeWidth={2} dot={false} isAnimationActive={false} />
                     <Line type="monotone" dataKey="batteryMw" name="Battery" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} />
+                    <Line type="monotone" dataKey="gridImportMw" name="Import" stroke="#06b6d4" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                    <Line type="monotone" dataKey="gridExportMw" name="Export" stroke="#22c55e" strokeWidth={1.5} dot={false} isAnimationActive={false} />
                 </LineChart>
             </ResponsiveContainer>
         </div>

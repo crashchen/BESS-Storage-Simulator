@@ -92,6 +92,7 @@ describe('gridReducer applyCommand', () => {
 
         expect(next.simulationStatus).toBe('paused');
         expect(next.timeOfDay).toBe(preset.state.timeOfDay);
+        expect(next.dispatchMode).toBe('manual-charge');
         expect(next.currentPriceEurMwh).toBe(-45);
         expect(next.batteryMode).toBe('charging');
         expect(next.batteryPowerMw).toBeGreaterThan(0);
@@ -136,6 +137,9 @@ describe('gridReducer applyCommand', () => {
                 next.solarCurtailedMw,
                 next.gridDemandMw,
                 next.gridFrequencyHz,
+                next.gridImportMw,
+                next.gridExportMw,
+                next.gridOverloadMw,
                 next.currentPriceEurMwh,
                 next.projectNetExportMw,
             ]) {
@@ -167,7 +171,47 @@ describe('gridReducer applyCommand', () => {
         },
     );
 
-    it('APPLY_SCENARIO_PRESET computes a low-frequency grid-stress scene without starting the clock', () => {
+    it('APPLY_SCENARIO_PRESET scenarios match their intended demo stories', () => {
+        const applyPreset = (id: keyof typeof SCENARIO_PRESETS_BY_ID) => applyCommand(
+            makeGridState(),
+            { type: 'APPLY_SCENARIO_PRESET', payload: id },
+            NOW,
+        ).next;
+
+        const solarSurplus = applyPreset('summer-midday-surplus');
+        expect(solarSurplus.solarOutputMw).toBeGreaterThan(solarSurplus.gridDemandMw);
+        expect(solarSurplus.solarOutputMw).toBeGreaterThan(solarSurplus.gridPvEvacuationMw);
+        expect(solarSurplus.batteryMode).toBe('charging');
+        expect(solarSurplus.batteryChargeFromSolarMw).toBeGreaterThan(0);
+        expect(solarSurplus.batteryChargeFromGridMw).toBe(0);
+        expect(solarSurplus.solarCurtailedMw).toBe(0);
+
+        const peakExport = applyPreset('evening-peak-discharge');
+        expect(peakExport.tariffPeriod).toBe('peak');
+        expect(peakExport.currentPriceEurMwh).toBe(TARIFF.defaultRatesEurMwh.peak);
+        expect(peakExport.batteryMode).toBe('discharging');
+        expect(peakExport.batteryDischargeToGridMw).toBeGreaterThan(0);
+        expect(peakExport.gridImportMw).toBeLessThan(peakExport.gridDemandMw);
+        expect(peakExport.projectNetExportMw).toBe(peakExport.gridExportMw - peakExport.gridImportMw);
+
+        const negativePrice = applyPreset('negative-price-charge');
+        expect(negativePrice.tariffPeriod).toBe('off-peak');
+        expect(negativePrice.currentPriceEurMwh).toBeLessThan(0);
+        expect(negativePrice.solarOutputMw).toBe(0);
+        expect(negativePrice.batteryMode).toBe('charging');
+        expect(negativePrice.batteryChargeFromGridMw).toBeGreaterThan(0);
+        expect(negativePrice.projectNetExportMw).toBeLessThan(0);
+
+        const gridStress = applyPreset('grid-stress-lockout');
+        expect(gridStress.gridDemandMw).toBeGreaterThan(gridStress.solarOutputMw);
+        expect(gridStress.batteryMode).toBe('idle');
+        expect(gridStress.batteryPowerMw).toBe(0);
+        expect(gridStress.batteryChargeFromGridMw).toBe(0);
+        expect(gridStress.gridOverloadWarning).toBe(true);
+        expect(gridStress.gridOverloadMw).toBeGreaterThan(0);
+    });
+
+    it('APPLY_SCENARIO_PRESET computes a PCC overload scene without starting the clock', () => {
         const { next } = applyCommand(
             makeGridState(),
             { type: 'APPLY_SCENARIO_PRESET', payload: 'grid-stress-lockout' },
@@ -177,14 +221,21 @@ describe('gridReducer applyCommand', () => {
         expect(next.simulationStatus).toBe('paused');
         expect(next.batteryMode).toBe('idle');
         expect(next.batteryPowerMw).toBe(0);
-        expect(next.gridFrequencyHz).toBeLessThan(GRID.warningFrequencyLowHz);
+        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
+        expect(next.gridImportMw).toBe(selectGridConnectionTotalMw(next));
+        expect(next.gridOverloadWarning).toBe(true);
     });
 
     it('CHARGE switches to charging mode and disables auto-arb', () => {
-        const prev = makeGridState({ batteryMode: 'idle', autoArbEnabled: true });
+        const prev = makeGridState({
+            batteryMode: 'idle',
+            autoArbEnabled: true,
+            dispatchMode: 'auto',
+        });
         const { next, sideEffects } = applyCommand(prev, { type: 'CHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('charging');
+        expect(next.dispatchMode).toBe('manual-charge');
         expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
@@ -198,6 +249,7 @@ describe('gridReducer applyCommand', () => {
         const { next, sideEffects } = applyCommand(prev, { type: 'CHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('idle');
+        expect(next.dispatchMode).toBe('manual-charge');
         expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
@@ -207,6 +259,7 @@ describe('gridReducer applyCommand', () => {
         const { next, sideEffects } = applyCommand(prev, { type: 'DISCHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('discharging');
+        expect(next.dispatchMode).toBe('manual-discharge');
         expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
@@ -220,6 +273,7 @@ describe('gridReducer applyCommand', () => {
         const { next, sideEffects } = applyCommand(prev, { type: 'DISCHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('idle');
+        expect(next.dispatchMode).toBe('manual-discharge');
         expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
@@ -229,6 +283,7 @@ describe('gridReducer applyCommand', () => {
         const { next, sideEffects } = applyCommand(prev, { type: 'IDLE' }, NOW);
 
         expect(next.batteryMode).toBe('idle');
+        expect(next.dispatchMode).toBe('manual-idle');
         expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
@@ -452,6 +507,7 @@ describe('gridReducer applyCommand', () => {
         const prev = makeGridState({
             simulationStatus: 'paused',
             autoArbEnabled: false,
+            dispatchMode: 'manual-idle',
             batteryMode: 'discharging',
             batteryPowerMw: -150,
             batteryChargeFromSolarMw: 20,
@@ -461,6 +517,7 @@ describe('gridReducer applyCommand', () => {
         const { next } = applyCommand(prev, { type: 'TOGGLE_AUTO_ARB' }, NOW);
 
         expect(next.autoArbEnabled).toBe(true);
+        expect(next.dispatchMode).toBe('auto');
         expect(next.batteryMode).toBe('idle');
         expect(next.batteryPowerMw).toBe(0);
         expect(next.batteryChargeFromSolarMw).toBe(0);
@@ -469,14 +526,21 @@ describe('gridReducer applyCommand', () => {
     });
 
     it('SET_AUTO_ARB_ENABLED sets the flag exactly to the payload idempotently', () => {
-        const prev = makeGridState({ autoArbEnabled: false, batteryMode: 'charging', batteryPowerMw: 80 });
+        const prev = makeGridState({
+            autoArbEnabled: false,
+            dispatchMode: 'manual-charge',
+            batteryMode: 'charging',
+            batteryPowerMw: 80,
+        });
         const first = applyCommand(prev, { type: 'SET_AUTO_ARB_ENABLED', payload: true }, NOW);
         const second = applyCommand(first.next, { type: 'SET_AUTO_ARB_ENABLED', payload: true }, NOW);
 
         expect(first.next.autoArbEnabled).toBe(true);
+        expect(first.next.dispatchMode).toBe('auto');
         expect(first.next.batteryMode).toBe('idle');
         expect(first.next.batteryPowerMw).toBe(0);
         expect(second.next.autoArbEnabled).toBe(true);
+        expect(second.next.dispatchMode).toBe('auto');
         expect(second.next.batteryMode).toBe('idle');
         expect(second.next.batteryPowerMw).toBe(0);
     });

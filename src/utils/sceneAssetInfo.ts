@@ -1,4 +1,3 @@
-import { GRID } from '../config';
 import type { GridState, SceneAssetId } from '../types';
 import { selectGridConnectionTotalMw } from './gridSelectors';
 
@@ -49,16 +48,6 @@ function batteryModeLabel(mode: GridState['batteryMode']): string {
 
 function clampPercent(value: number): number {
     return Math.max(0, Math.min(100, value));
-}
-
-function gridFrequencyScore(frequencyHz: number): number {
-    // Map [minFrequencyHz, maxFrequencyHz] into a 0-100 display band.
-    const span = GRID.maxFrequencyHz - GRID.minFrequencyHz;
-    return clampPercent(((frequencyHz - GRID.minFrequencyHz) / span) * 100);
-}
-
-function isFrequencyStressed(frequencyHz: number): boolean {
-    return frequencyHz < GRID.warningFrequencyLowHz || frequencyHz > GRID.warningFrequencyHighHz;
 }
 
 export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): SceneAssetInfo {
@@ -140,32 +129,36 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
         };
     }
 
-    const stressed = isFrequencyStressed(state.gridFrequencyHz);
+    const overloaded = state.gridOverloadWarning;
     return {
         title: 'Grid Node',
         eyebrow: 'Utility Interconnection / Load Sink',
-        status: stressed ? 'Frequency stress' : 'Stable',
-        accent: stressed
+        status: overloaded ? 'Import overload' : 'Balanced',
+        accent: overloaded
             ? 'from-red-400 to-orange-300'
             : 'from-blue-300 to-emerald-300',
-        description: 'Represents the grid-side connection receiving PV export and BESS discharge while setting demand pressure.',
+        description: 'Represents the PCC import/export boundary for the active-power-only site model.',
         primary: {
-            label: 'Grid frequency',
-            value: `${state.gridFrequencyHz.toFixed(2)} Hz`,
+            label: overloaded ? 'Unserved overload' : 'Net grid exchange',
+            value: overloaded ? formatMw(state.gridOverloadMw) : formatMw(state.projectNetExportMw),
         },
         meter: {
-            label: 'Frequency band',
-            value: stressed ? 'Outside preferred band' : 'Inside preferred band',
-            percent: gridFrequencyScore(state.gridFrequencyHz),
-            tone: stressed ? 'red' : 'blue',
+            label: 'PCC loading',
+            value: `${Math.round((Math.max(state.gridImportMw, state.gridExportMw) / Math.max(gridConnectionMw, 1)) * 100)}% of limit`,
+            percent: clampPercent((Math.max(state.gridImportMw, state.gridExportMw) / Math.max(gridConnectionMw, 1)) * 100),
+            tone: overloaded ? 'red' : 'blue',
         },
         flowRows: [
             { label: 'Demand', value: formatMw(state.gridDemandMw) },
+            { label: 'Import', value: formatMw(state.gridImportMw) },
+            { label: 'Export', value: formatMw(state.gridExportMw) },
             { label: 'Net export', value: formatMw(state.projectNetExportMw) },
-            { label: 'Tariff', value: formatEurMwh(state.currentPriceEurMwh) },
         ],
         rows: [
             { label: 'Grid demand', value: formatMw(state.gridDemandMw) },
+            { label: 'Grid import', value: formatMw(state.gridImportMw) },
+            { label: 'Grid export', value: formatMw(state.gridExportMw) },
+            { label: 'Overload', value: formatMw(state.gridOverloadMw) },
             { label: 'Project net export', value: formatMw(state.projectNetExportMw) },
             { label: 'Current tariff', value: formatEurMwh(state.currentPriceEurMwh) },
             { label: 'Tariff period', value: state.tariffPeriod },

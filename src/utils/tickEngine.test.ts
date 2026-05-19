@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FREQUENCY_MODEL, GRID, SIMULATION } from '../config';
-import { computeGridDemandMw, computeSolarOutputMw, getAutoArbPlan, getTariffPeriod } from './simulationModel';
+import { AUTO_ARB, GRID, SIMULATION } from '../config';
+import { computeGridDemandMw, computeSolarOutputMw } from './simulationModel';
 import { selectGridConnectionTotalMw } from './gridSelectors';
 import { createInitialGridState, simulateTick } from './tickEngine';
 
@@ -23,6 +23,7 @@ describe('tickEngine', () => {
             simulationStatus: 'running' as const,
             batterySocPercent: 0,
             batteryMode: 'discharging' as const,
+            dispatchMode: 'manual-discharge' as const,
         };
 
         const next = simulateTick(initial, 1, 1, () => 0.5);
@@ -37,6 +38,7 @@ describe('tickEngine', () => {
             simulationStatus: 'running' as const,
             batterySocPercent: 100,
             batteryMode: 'charging' as const,
+            dispatchMode: 'manual-charge' as const,
         };
 
         const next = simulateTick(initial, 1, 1, () => 0.5);
@@ -51,6 +53,7 @@ describe('tickEngine', () => {
             simulationStatus: 'running',
             batterySocPercent: 99,
             batteryMode: 'charging',
+            dispatchMode: 'manual-charge',
             timeSpeed: SIMULATION.maxTimeSpeed,
         }, 1, 1, () => 0.5);
         const overdischarge = simulateTick({
@@ -58,6 +61,7 @@ describe('tickEngine', () => {
             simulationStatus: 'running',
             batterySocPercent: 1,
             batteryMode: 'discharging',
+            dispatchMode: 'manual-discharge',
             timeSpeed: SIMULATION.maxTimeSpeed,
         }, 1, 1, () => 0.5);
 
@@ -65,12 +69,13 @@ describe('tickEngine', () => {
         expect(overdischarge.batterySocPercent).toBeGreaterThanOrEqual(0);
     });
 
-    it('settles the terminal charge tick before switching the returned mode to idle', () => {
+    it('settles the terminal charge tick before the next tick clamps to idle', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
             batterySocPercent: 99,
             batteryMode: 'charging' as const,
+            dispatchMode: 'manual-charge' as const,
             timeOfDay: 12,
             timeSpeed: SIMULATION.maxTimeSpeed,
             dispatchScalePercent: 50,
@@ -80,18 +85,23 @@ describe('tickEngine', () => {
         const next = simulateTick(initial, 1, 1, () => 0.5);
 
         expect(next.batterySocPercent).toBe(100);
-        expect(next.batteryMode).toBe('idle');
+        expect(next.batteryMode).toBe('charging');
         expect(next.batteryPowerMw).toBeGreaterThan(0);
         expect(next.batteryChargeFromSolarMw + next.batteryChargeFromGridMw).toBeGreaterThan(0);
         expect(next.cumulativeRevenueEur).not.toBe(initial.cumulativeRevenueEur);
+
+        const afterClamp = simulateTick(next, 1, 2, () => 0.5);
+        expect(afterClamp.batteryMode).toBe('idle');
+        expect(afterClamp.batteryPowerMw).toBe(0);
     });
 
-    it('settles the terminal discharge tick before switching the returned mode to idle', () => {
+    it('settles the terminal discharge tick before the next tick clamps to idle', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
             batterySocPercent: 1,
             batteryMode: 'discharging' as const,
+            dispatchMode: 'manual-discharge' as const,
             timeOfDay: 19,
             timeSpeed: SIMULATION.maxTimeSpeed,
             cumulativeRevenueEur: 1000,
@@ -100,41 +110,67 @@ describe('tickEngine', () => {
         const next = simulateTick(initial, 1, 1, () => 0.5);
 
         expect(next.batterySocPercent).toBeCloseTo(0, 10);
-        expect(next.batteryMode).toBe('idle');
+        expect(next.batteryMode).toBe('discharging');
         expect(next.batteryPowerMw).toBeLessThan(0);
         expect(next.batteryDischargeToGridMw).toBeGreaterThan(0);
         expect(next.cumulativeRevenueEur).not.toBe(initial.cumulativeRevenueEur);
+
+        const afterClamp = simulateTick(next, 1, 2, () => 0.5);
+        expect(afterClamp.batteryMode).toBe('idle');
+        expect(afterClamp.batteryPowerMw).toBe(0);
     });
 
-    it('locks out auto grid-charging when the projected frequency would dip below the threshold', () => {
+    it('auto off-peak charges toward the configured night reserve instead of discharging', () => {
         const initial = createInitialGridState(0);
-        const heavyDeficitState = {
+        const lowSocNightState = {
             ...initial,
             simulationStatus: 'running' as const,
             autoArbEnabled: true,
-            timeOfDay: 5,
-            dispatchScalePercent: 150,
-            batterySocPercent: 30,
-            solarOutputMw: 0,
-            gridDemandMw: 220,
-            gridFrequencyHz: GRID.nominalFrequencyHz,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 2,
+            dispatchScalePercent: 100,
+            batterySocPercent: AUTO_ARB.nightTargetSocPercent - 10,
             batteryMode: 'idle' as const,
             batteryPowerMw: 0,
         };
 
-        const next = simulateTick(heavyDeficitState, 1, 1, () => 0.5);
+        const next = simulateTick(lowSocNightState, 1, 1, () => 0.5);
 
-        expect(next.batteryChargeFromGridMw).toBe(0);
-        expect(next.batteryMode).toBe('idle');
+        expect(next.tariffPeriod).toBe('off-peak');
+        expect(next.batteryMode).toBe('charging');
+        expect(next.batteryChargeFromGridMw).toBeGreaterThan(0);
+        expect(next.batteryPowerMw).toBeGreaterThan(0);
+        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
     });
 
-    it('locks out manual charging when the projected frequency would dip below the threshold', () => {
+    it('auto off-peak does not discharge even when local demand exceeds the PCC import limit', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            autoArbEnabled: true,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 2,
+            dispatchScalePercent: 800,
+            batterySocPercent: 80,
+            batteryMode: 'idle' as const,
+        };
+
+        const next = simulateTick(initial, 1, 1, () => 0.5);
+
+        expect(next.batteryPowerMw).toBe(0);
+        expect(next.batteryMode).toBe('idle');
+        expect(next.gridOverloadWarning).toBe(true);
+        expect(next.gridOverloadMw).toBeGreaterThan(0);
+    });
+
+    it('allows manual charging regardless of tariff period while respecting active-power limits', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
             autoArbEnabled: false,
+            dispatchMode: 'manual-charge' as const,
             timeOfDay: 19,
-            dispatchScalePercent: 150,
+            dispatchScalePercent: 50,
             batterySocPercent: 30,
             batteryMode: 'charging' as const,
             batteryPowerMw: 0,
@@ -142,16 +178,18 @@ describe('tickEngine', () => {
 
         const next = simulateTick(initial, 1, 1, () => 0.5);
 
-        expect(next.batteryPowerMw).toBe(0);
-        expect(next.batteryChargeFromGridMw).toBe(0);
-        expect(next.batteryMode).toBe('idle');
+        expect(next.batteryPowerMw).toBeGreaterThan(0);
+        expect(next.batteryChargeFromGridMw + next.batteryChargeFromSolarMw).toBeGreaterThan(0);
+        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
+        expect(next.batteryMode).toBe('charging');
     });
 
-    it('allows manual charging when solar surplus keeps projected frequency above the threshold', () => {
+    it('allows manual charging from solar surplus when it is available', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
             autoArbEnabled: false,
+            dispatchMode: 'manual-charge' as const,
             timeOfDay: 12,
             dispatchScalePercent: 50,
             batterySocPercent: 30,
@@ -167,53 +205,30 @@ describe('tickEngine', () => {
 
         expect(next.batteryPowerMw).toBeGreaterThan(0);
         expect(next.batteryChargeFromSolarMw).toBeGreaterThan(0);
-        expect(next.gridFrequencyHz).toBeGreaterThanOrEqual(FREQUENCY_MODEL.chargeLockoutHz);
+        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
         expect(next.batteryMode).toBe('charging');
     });
 
-    it('does not bypass the frequency lockout when a small solar surplus still requires substantial grid charging', () => {
+    it('auto mid-peak stores PV surplus in the battery before exporting residual power', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
             autoArbEnabled: true,
+            dispatchMode: 'auto' as const,
             batterySocPercent: 20,
             batteryMode: 'idle' as const,
-            timeOfDay: 10,
+            timeOfDay: 12,
             timeSpeed: 60,
-            dispatchScalePercent: 80,
+            dispatchScalePercent: 50,
+            solarAcCapacityMw: 180,
+            solarDcCapacityMwp: 220,
         };
-        const dtHours = initial.timeSpeed / 3600;
-        const sampledTimeOfDay = initial.timeOfDay + dtHours / 2;
-        const solarOutputMw = computeSolarOutputMw(
-            sampledTimeOfDay,
-            initial.solarAcCapacityMw,
-            initial.solarDcCapacityMwp,
-        );
-        const gridDemandMw = computeGridDemandMw(
-            sampledTimeOfDay,
-            initial.dispatchScalePercent / 100,
-            selectGridConnectionTotalMw(initial),
-        );
-        const tariffPeriod = getTariffPeriod(sampledTimeOfDay);
-        const plan = getAutoArbPlan(
-            initial,
-            sampledTimeOfDay,
-            solarOutputMw,
-            gridDemandMw,
-            tariffPeriod,
-            initial.tariffRatesEurMwh,
-        );
-        const projectedFrequencyHz = GRID.nominalFrequencyHz +
-            FREQUENCY_MODEL.droopK * (solarOutputMw - gridDemandMw - plan.targetPowerMw);
-
-        expect(plan.mode).toBe('charging');
-        expect(plan.targetPowerMw).toBeGreaterThan(Math.max(0, solarOutputMw - gridDemandMw));
-        expect(projectedFrequencyHz).toBeLessThan(FREQUENCY_MODEL.chargeLockoutHz);
 
         const next = simulateTick(initial, 1, 1, () => 0.5);
 
-        expect(next.batteryChargeFromGridMw).toBe(0);
-        expect(next.batteryMode).toBe('idle');
+        expect(next.solarOutputMw).toBeGreaterThan(next.gridDemandMw);
+        expect(next.batteryMode).toBe('charging');
+        expect(next.batteryChargeFromSolarMw).toBeGreaterThan(0);
     });
 
     it('samples solar and demand at the tick midpoint when no tariff boundary is crossed', () => {
@@ -255,10 +270,12 @@ describe('tickEngine', () => {
             timeOfDay: 17.99,
             timeSpeed: SIMULATION.maxTimeSpeed,
             batteryMode: 'discharging' as const,
+            dispatchMode: 'manual-discharge' as const,
             solarAcCapacityMw: 0,
             solarOutputMw: 0,
             gridDemandMw: 0,
             gridPvEvacuationMw: 0,
+            dispatchScalePercent: 0,
             cumulativeRevenueEur: 0,
         };
         const dischargeMw = Math.min(initial.batteryPowerRatingMw, initial.gridBessConnectionMw);

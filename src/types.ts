@@ -8,6 +8,8 @@ export type SimulationStatus = 'stopped' | 'running' | 'paused';
 
 export type BatteryMode = 'idle' | 'charging' | 'discharging';
 
+export type DispatchMode = 'auto' | 'manual-charge' | 'manual-discharge' | 'manual-idle';
+
 export type SceneAssetId = 'bess' | 'pcs-mv' | 'grid-node';
 
 export type ScenarioPresetId =
@@ -39,8 +41,13 @@ export interface GridState {
     batteryDischargeToGridMw: number;
     solarExportMw: number;
     solarCurtailedMw: number;
+    gridImportMw: number;
+    gridExportMw: number;
+    gridOverloadMw: number;
+    gridOverloadWarning: boolean;
     projectNetExportMw: number;
     batteryMode: BatteryMode;
+    dispatchMode: DispatchMode;
     timeOfDay: number;
     timeSpeed: number;
     timestamp: number;
@@ -87,7 +94,8 @@ export interface GridSnapshot {
     demandMw: number;
     batteryMw: number;
     socPercent: number;
-    frequencyHz: number;
+    gridImportMw: number;
+    gridExportMw: number;
     priceEurMwh: number;
 }
 

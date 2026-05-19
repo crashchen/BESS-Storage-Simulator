@@ -8,7 +8,6 @@ import type { ControlPanelProps } from '../types';
 import { PanelCard } from './ui/PanelPrimitives';
 import {
     SimulationControl,
-    ScenarioPresetsPanel,
     BessDispatchControl,
     BessCapacitySetup,
     ProjectCapacitySetup,
@@ -21,6 +20,12 @@ const TelemetryChart = lazy(async () => {
     const module = await import('./TelemetryChart');
     return { default: module.TelemetryChart };
 });
+
+function shouldUseMutualDrawers(): boolean {
+    return typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(max-width: 1023px)').matches;
+}
 
 // Collapsed sidebar trigger button
 function DrawerTrigger({
@@ -80,6 +85,7 @@ function Drawer({
     id,
     label,
     isOpen,
+    escapeEnabled,
     onClose,
     position,
     triggerRef,
@@ -88,6 +94,7 @@ function Drawer({
     id: string;
     label: string;
     isOpen: boolean;
+    escapeEnabled: boolean;
     onClose: () => void;
     position: 'left' | 'right';
     triggerRef: RefObject<HTMLButtonElement | null>;
@@ -119,10 +126,11 @@ function Drawer({
     };
 
     // Window-level Escape: works even when focus has moved to the Canvas or
-    // anywhere else on the page. Only the open drawer subscribes, so multiple
-    // drawer instances do not race.
+    // anywhere else on the page. When both desktop drawers are open, only the
+    // most recently opened drawer owns Escape so a single keypress closes one
+    // layer instead of collapsing the entire workspace.
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen || !escapeEnabled) return;
         const handler = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 event.stopPropagation();
@@ -133,7 +141,7 @@ function Drawer({
         return () => window.removeEventListener('keydown', handler);
         // handleClose intentionally not in deps — capturing isOpen close above is sufficient
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen]);
+    }, [isOpen, escapeEnabled]);
 
     return (
         <div
@@ -182,8 +190,17 @@ function Drawer({
 export function ControlPanel({ gridState, history, onCommand }: ControlPanelProps) {
     const [leftOpen, setLeftOpen] = useState(false);
     const [rightOpen, setRightOpen] = useState(false);
+    const [escapeOwner, setEscapeOwner] = useState<'left' | 'right' | null>(null);
     const leftTriggerRef = useRef<HTMLButtonElement>(null);
     const rightTriggerRef = useRef<HTMLButtonElement>(null);
+    const closeLeftDrawer = () => {
+        setLeftOpen(false);
+        setEscapeOwner(rightOpen ? 'right' : null);
+    };
+    const closeRightDrawer = () => {
+        setRightOpen(false);
+        setEscapeOwner(leftOpen ? 'left' : null);
+    };
 
     return (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[3.5rem] z-10 select-none sm:top-[4.75rem]">
@@ -192,7 +209,8 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                 id="drawer-controls"
                 label="Controls"
                 isOpen={leftOpen}
-                onClose={() => setLeftOpen(false)}
+                escapeEnabled={escapeOwner === 'left'}
+                onClose={closeLeftDrawer}
                 position="left"
                 triggerRef={leftTriggerRef}
             >
@@ -201,7 +219,6 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                     timeSpeed={gridState.timeSpeed}
                     onCommand={onCommand}
                 />
-                <ScenarioPresetsPanel onCommand={onCommand} />
                 <BessDispatchControl gridState={gridState} onCommand={onCommand} />
                 <BessCapacitySetup gridState={gridState} onCommand={onCommand} />
                 <ProjectCapacitySetup gridState={gridState} onCommand={onCommand} />
@@ -213,7 +230,8 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                 id="drawer-metrics"
                 label="Metrics & Economics"
                 isOpen={rightOpen}
-                onClose={() => setRightOpen(false)}
+                escapeEnabled={escapeOwner === 'right'}
+                onClose={closeRightDrawer}
                 position="right"
                 triggerRef={rightTriggerRef}
             >
@@ -236,7 +254,11 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                         icon="⚡"
                         label="Controls"
                         isOpen={leftOpen}
-                        onClick={() => { setLeftOpen(true); setRightOpen(false); }}
+                        onClick={() => {
+                            setLeftOpen(true);
+                            if (shouldUseMutualDrawers()) setRightOpen(false);
+                            setEscapeOwner('left');
+                        }}
                         position="left"
                         controlsId="drawer-controls"
                         triggerRef={leftTriggerRef}
@@ -250,7 +272,11 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                         icon="📊"
                         label="Metrics"
                         isOpen={rightOpen}
-                        onClick={() => { setRightOpen(true); setLeftOpen(false); }}
+                        onClick={() => {
+                            setRightOpen(true);
+                            if (shouldUseMutualDrawers()) setLeftOpen(false);
+                            setEscapeOwner('right');
+                        }}
                         position="right"
                         controlsId="drawer-metrics"
                         triggerRef={rightTriggerRef}

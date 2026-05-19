@@ -64,7 +64,7 @@ export function ActionButton({
             disabled={disabled}
             aria-pressed={active}
             className={`
-                relative rounded-lg border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200
+                relative min-w-0 rounded-lg border px-2 py-2 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.08em] transition-all duration-200 sm:text-[10px]
                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400
                 ${disabled
                     ? 'cursor-not-allowed border-slate-800 bg-slate-900/50 text-slate-600'
@@ -74,7 +74,7 @@ export function ActionButton({
             `}
             style={active && !disabled ? { backgroundColor: color, borderColor: color, boxShadow: `0 0 18px ${color}55` } : undefined}
         >
-            {label}
+            <span className="block min-w-0">{label}</span>
         </button>
     );
 }

@@ -1,9 +1,9 @@
-import { Component, memo, useCallback, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import { MicrogridScene } from './MicrogridScene';
 import { SceneAssetInfoCard } from './SceneAssetInfoCard';
-import { GRID, SCENE_3D } from '../config';
+import { SCENE_3D } from '../config';
 import type { BESSCommand, GridState, SceneAssetId } from '../types';
 
 interface SimulationViewportProps {
@@ -42,27 +42,6 @@ class CanvasErrorBoundary extends Component<CanvasErrorBoundaryProps, { hasError
     return this.props.children;
   }
 }
-
-const FrequencyVignette = memo(function FrequencyVignette({ frequencyHz }: { frequencyHz: number }) {
-  const deviation = Math.max(
-    GRID.warningFrequencyLowHz - frequencyHz,
-    frequencyHz - GRID.warningFrequencyHighHz,
-    0,
-  );
-  if (deviation <= 0) return null;
-
-  // Max deviation is ~2.5 Hz (from 49.5 to 47.5 or 50.5 to 52.0)
-  const intensity = Math.min(deviation / 1.5, 1);
-
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 z-10 animate-pulse"
-      style={{
-        boxShadow: `inset 0 0 ${60 + intensity * 100}px ${20 + intensity * 40}px rgba(239, 68, 68, ${0.15 + intensity * 0.35})`,
-      }}
-    />
-  );
-});
 
 function ViewportFallback({ failure, onRetry }: { failure: ViewportFailure; onRetry: () => void }) {
   const isContextLost = failure.kind === 'context-lost';
@@ -202,7 +181,6 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
           </Canvas>
         </CanvasErrorBoundary>
       )}
-      <FrequencyVignette frequencyHz={gridState.gridFrequencyHz} />
       <SceneAssetInfoCard
         assetId={activeAssetId}
         gridState={gridState}

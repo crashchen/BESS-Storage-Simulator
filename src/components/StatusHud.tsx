@@ -1,4 +1,3 @@
-import { GRID } from '../config';
 import { formatTime } from '../utils/formatTime';
 import type { SimulationStatus, StatusHudProps, TariffPeriod } from '../types';
 
@@ -24,19 +23,17 @@ export function StatusHud({ gridState }: StatusHudProps) {
     const {
         timeOfDay,
         batteryMode,
-        gridFrequencyHz,
         batterySocPercent,
         solarOutputMw,
         tariffPeriod,
         currentPriceEurMwh,
         cumulativeRevenueEur,
-        autoArbEnabled,
+        dispatchMode,
         simulationStatus,
     } = gridState;
 
     const mode = modeBadge[batteryMode];
     const sim = simulationBadge[simulationStatus];
-    const freqOk = gridFrequencyHz >= GRID.warningFrequencyLowHz && gridFrequencyHz <= GRID.warningFrequencyHighHz;
     const tariff = tariffBadge[tariffPeriod];
 
     return (
@@ -58,7 +55,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
                 <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
                 <div className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white sm:px-2.5 sm:text-[10px] ${mode.bg} ${mode.glow} transition-all duration-300`}>
-                    {autoArbEnabled ? 'PEAK READY' : mode.label}
+                    {dispatchMode === 'auto' ? 'AUTO' : mode.label}
                 </div>
 
                 <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
@@ -78,17 +75,6 @@ export function StatusHud({ gridState }: StatusHudProps) {
                         {solarOutputMw.toFixed(0)}<span className="hidden sm:inline"> MW</span>
                     </span>
                 </div>
-
-                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
-
-                <div className="flex items-center gap-1">
-                    <span className={`h-1.5 w-1.5 rounded-full sm:h-2 sm:w-2 ${freqOk ? 'bg-green-500' : 'animate-pulse bg-red-500'}`} />
-                    <span className={`font-mono text-xs font-bold tabular-nums sm:text-sm ${freqOk ? 'text-green-400' : 'text-red-400'}`}>
-                        {gridFrequencyHz.toFixed(2)}<span className="hidden sm:inline"> Hz</span>
-                    </span>
-                </div>
-
-                <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
                 <span className="font-mono text-xs font-bold tabular-nums sm:text-sm" style={{ color: tariff.color }}>
                     €{currentPriceEurMwh.toFixed(0)}<span className="hidden sm:inline">/MWh</span>

@@ -226,8 +226,8 @@ describe('simulationModel auto-arbitrage', () => {
 
         expect(settlement.batteryChargeFromSolarMw).toBe(20);
         expect(settlement.batteryChargeFromGridMw).toBe(0);
-        expect(settlement.solarExportMw).toBe(60);
-        expect(settlement.projectPnlDeltaEur).toBe(6000);
+        expect(settlement.solarExportMw).toBe(20);
+        expect(settlement.projectPnlDeltaEur).toBe(2000);
         expect(settlement.bessMarginDeltaEur).toBe(-2000);
     });
 
@@ -252,6 +252,7 @@ describe('simulationModel auto-arbitrage', () => {
             gridDemandMw: 120,
             batteryPowerMw: 30,
             gridPvEvacuationMw: 102,
+            gridConnectionLimitMw: 288,
             currentPriceEurMwh: -25,
             dtHours: 1,
         });
@@ -259,6 +260,55 @@ describe('simulationModel auto-arbitrage', () => {
         expect(settlement.batteryChargeFromGridMw).toBe(30);
         expect(settlement.projectPnlDeltaEur).toBe(750);
         expect(settlement.bessMarginDeltaEur).toBe(750);
+    });
+
+    it('keeps PV export ahead of BESS export when the PCC export limit is congested', () => {
+        const settlement = settleHybridProjectTick({
+            solarOutputMw: 150,
+            gridDemandMw: 20,
+            batteryPowerMw: -80,
+            gridPvEvacuationMw: 140,
+            gridConnectionLimitMw: 130,
+            currentPriceEurMwh: 300,
+            dtHours: 1,
+        });
+
+        expect(settlement.solarExportMw).toBe(130);
+        expect(settlement.batteryDischargeToGridMw).toBe(0);
+        expect(settlement.batteryPowerMw).toBe(0);
+        expect(settlement.solarCurtailedMw).toBe(0);
+        expect(settlement.gridExportMw).toBe(130);
+    });
+
+    it('cuts grid charging before surfacing a PCC import overload warning', () => {
+        const settlement = settleHybridProjectTick({
+            solarOutputMw: 0,
+            gridDemandMw: 120,
+            batteryPowerMw: 50,
+            gridPvEvacuationMw: 200,
+            gridConnectionLimitMw: 140,
+            currentPriceEurMwh: 80,
+            dtHours: 1,
+        });
+
+        expect(settlement.batteryChargeFromGridMw).toBe(20);
+        expect(settlement.gridImportMw).toBe(140);
+        expect(settlement.gridOverloadWarning).toBe(false);
+
+        const overloaded = settleHybridProjectTick({
+            solarOutputMw: 0,
+            gridDemandMw: 160,
+            batteryPowerMw: 50,
+            gridPvEvacuationMw: 200,
+            gridConnectionLimitMw: 140,
+            currentPriceEurMwh: 80,
+            dtHours: 1,
+        });
+
+        expect(overloaded.batteryChargeFromGridMw).toBe(0);
+        expect(overloaded.gridImportMw).toBe(140);
+        expect(overloaded.gridOverloadWarning).toBe(true);
+        expect(overloaded.gridOverloadMw).toBe(20);
     });
 
     it('accounts for discharge efficiency when sizing peak discharge', () => {

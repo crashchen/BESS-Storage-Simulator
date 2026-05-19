@@ -1,10 +1,9 @@
-import { AUTO_ARB, BESS, FREQUENCY_MODEL, GRID, PROJECT, SIMULATION, SOLAR, TARIFF } from '../config';
-import type { GridState } from '../types';
+import { AUTO_ARB, BESS, GRID, PROJECT, SIMULATION, SOLAR, TARIFF } from '../config';
+import type { BatteryMode, GridState } from '../types';
 import {
     clamp,
     computeGridDemandMw,
     computeSolarOutputMw,
-    getAutoArbPlan,
     getBatteryTransferLimitMw,
     getElectricityPriceEurMwh,
     getTariffPeriod,
@@ -25,6 +24,16 @@ export function createInitialGridState(timestamp = 0): GridState {
         SOLAR.acCapacityMw,
         SOLAR.dcCapacityMwp,
     );
+    const gridDemandMw = computeGridDemandMw(SIMULATION.initialTimeOfDay, 1.0, gridConnectionTotalMw);
+    const initialSettlement = settleHybridProjectTick({
+        solarOutputMw,
+        gridDemandMw,
+        batteryPowerMw: 0,
+        gridPvEvacuationMw: GRID.pvEvacuationMw,
+        gridConnectionLimitMw: gridConnectionTotalMw,
+        currentPriceEurMwh: getElectricityPriceEurMwh(SIMULATION.initialTimeOfDay, TARIFF.defaultRatesEurMwh),
+        dtHours: 0,
+    });
 
     return {
         projectName: PROJECT.name,
@@ -39,17 +48,22 @@ export function createInitialGridState(timestamp = 0): GridState {
         simulationStatus: 'stopped',
         gridFrequencyHz: GRID.nominalFrequencyHz,
         solarOutputMw,
-        gridDemandMw: computeGridDemandMw(SIMULATION.initialTimeOfDay, 1.0, gridConnectionTotalMw),
+        gridDemandMw,
         dispatchScalePercent: 100,
         batterySocPercent: BESS.initialSocPercent,
         batteryPowerMw: 0,
-        batteryChargeFromSolarMw: 0,
-        batteryChargeFromGridMw: 0,
-        batteryDischargeToGridMw: 0,
-        solarExportMw: solarOutputMw,
-        solarCurtailedMw: 0,
-        projectNetExportMw: solarOutputMw,
+        batteryChargeFromSolarMw: initialSettlement.batteryChargeFromSolarMw,
+        batteryChargeFromGridMw: initialSettlement.batteryChargeFromGridMw,
+        batteryDischargeToGridMw: initialSettlement.batteryDischargeToGridMw,
+        solarExportMw: initialSettlement.solarExportMw,
+        solarCurtailedMw: initialSettlement.solarCurtailedMw,
+        gridImportMw: initialSettlement.gridImportMw,
+        gridExportMw: initialSettlement.gridExportMw,
+        gridOverloadMw: initialSettlement.gridOverloadMw,
+        gridOverloadWarning: initialSettlement.gridOverloadWarning,
+        projectNetExportMw: initialSettlement.projectNetExportMw,
         batteryMode: 'idle',
+        dispatchMode: 'auto',
         timeOfDay: SIMULATION.initialTimeOfDay,
         timeSpeed: SIMULATION.defaultTimeSpeed,
         timestamp,
@@ -62,7 +76,7 @@ export function createInitialGridState(timestamp = 0): GridState {
         cumulativeBessDischargeRevenueEur: 0,
         cumulativeBessGridChargeCostEur: 0,
         cumulativeSolarOpportunityCostEur: 0,
-        autoArbEnabled: false,
+        autoArbEnabled: true,
     };
 }
 
@@ -103,11 +117,96 @@ function getNextBoundaryDeltaHours(timeOfDay: number, remainingHours: number, bo
     return nextBoundaryDeltaHours;
 }
 
+function getBatteryModeFromPower(powerMw: number): BatteryMode {
+    if (powerMw > 0.01) return 'charging';
+    if (powerMw < -0.01) return 'discharging';
+    return 'idle';
+}
+
+function clampBatteryPowerToEnergy(state: GridState, desiredPowerMw: number, dtHours: number): number {
+    const transferLimitMw = getBatteryTransferLimitMw(state);
+    let batteryPowerMw = clamp(desiredPowerMw, -transferLimitMw, transferLimitMw);
+
+    if (batteryPowerMw > 0) {
+        const remainingEnergyMwh = ((100 - state.batterySocPercent) / 100) * state.batteryEnergyCapacityMwh;
+        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
+        batteryPowerMw = Math.min(batteryPowerMw, maxChargeMw);
+    } else if (batteryPowerMw < 0) {
+        const availableEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
+        const maxDischargeMw = (availableEnergyMwh * BESS.dischargeEfficiency) / Math.max(dtHours, 1e-9);
+        batteryPowerMw = Math.max(batteryPowerMw, -maxDischargeMw);
+    }
+
+    return batteryPowerMw;
+}
+
+function getAutoDesiredBatteryPowerMw(
+    state: GridState,
+    solarOutputMw: number,
+    gridDemandMw: number,
+    tariffPeriod: GridState['tariffPeriod'],
+    dtHours: number,
+): number {
+    const transferLimitMw = getBatteryTransferLimitMw(state);
+    const solarSurplusMw = Math.max(0, solarOutputMw - gridDemandMw);
+    const loadDeficitMw = Math.max(0, gridDemandMw - solarOutputMw);
+    const currentEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
+    const nightTargetEnergyMwh = (AUTO_ARB.nightTargetSocPercent / 100) * state.batteryEnergyCapacityMwh;
+
+    if (tariffPeriod === 'peak') {
+        return currentEnergyMwh > 0 ? -transferLimitMw : 0;
+    }
+
+    if (tariffPeriod === 'off-peak') {
+        if (state.batterySocPercent >= 100) return 0;
+        if (currentEnergyMwh < nightTargetEnergyMwh) {
+            const reserveGapMwh = nightTargetEnergyMwh - currentEnergyMwh;
+            const reserveChargeMw = reserveGapMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
+            return Math.min(transferLimitMw, Math.max(solarSurplusMw, reserveChargeMw));
+        }
+        return solarSurplusMw > 0 ? Math.min(solarSurplusMw, transferLimitMw) : 0;
+    }
+
+    if (solarSurplusMw > 0) {
+        return Math.min(solarSurplusMw, transferLimitMw);
+    }
+
+    if (loadDeficitMw > 0 && currentEnergyMwh > 0) {
+        return -Math.min(loadDeficitMw, transferLimitMw);
+    }
+
+    return 0;
+}
+
+function getDesiredBatteryPowerMw(
+    state: GridState,
+    solarOutputMw: number,
+    gridDemandMw: number,
+    tariffPeriod: GridState['tariffPeriod'],
+    dtHours: number,
+): number {
+    const transferLimitMw = getBatteryTransferLimitMw(state);
+
+    switch (state.dispatchMode) {
+        case 'auto':
+            return getAutoDesiredBatteryPowerMw(state, solarOutputMw, gridDemandMw, tariffPeriod, dtHours);
+        case 'manual-charge':
+            return transferLimitMw;
+        case 'manual-discharge':
+            return -transferLimitMw;
+        case 'manual-idle':
+            return 0;
+        default: {
+            const _exhaustive: never = state.dispatchMode;
+            return _exhaustive;
+        }
+    }
+}
+
 function simulateTickStep(
     prev: GridState,
     dtHours: number,
     now: number,
-    random: () => number,
     operationalTimeOfDay: number,
     nextTimeOfDay: number,
 ): GridState {
@@ -125,104 +224,29 @@ function simulateTickStep(
     );
     const tariffPeriod = getTariffPeriod(operationalTimeOfDay);
     const currentPriceEurMwh = getElectricityPriceEurMwh(operationalTimeOfDay, prev.tariffRatesEurMwh);
+    const desiredBatteryPowerMw = getDesiredBatteryPowerMw(prev, solarOutputMw, gridDemandMw, tariffPeriod, dtHours);
+    const requestedBatteryPowerMw = clampBatteryPowerToEnergy(prev, desiredBatteryPowerMw, dtHours);
 
-    let requestedMode = prev.batteryMode;
-    let autoArbPowerMw = 0;
+    const settlement = settleHybridProjectTick({
+        solarOutputMw,
+        gridDemandMw,
+        batteryPowerMw: requestedBatteryPowerMw,
+        gridPvEvacuationMw: prev.gridPvEvacuationMw,
+        gridConnectionLimitMw: selectGridConnectionTotalMw(prev),
+        currentPriceEurMwh,
+        dtHours,
+    });
+    const settledBatteryPowerMw = settlement.batteryPowerMw;
 
-    if (prev.autoArbEnabled) {
-        const autoArbPlan = getAutoArbPlan(
-            prev,
-            operationalTimeOfDay,
-            solarOutputMw,
-            gridDemandMw,
-            tariffPeriod,
-            prev.tariffRatesEurMwh,
-        );
-        requestedMode = autoArbPlan.mode;
-        autoArbPowerMw = autoArbPlan.targetPowerMw;
-    }
-
-    if (prev.batterySocPercent >= 100 && requestedMode === 'charging') {
-        requestedMode = 'idle';
-    }
-    if (prev.batterySocPercent <= 0 && requestedMode === 'discharging') {
-        requestedMode = 'idle';
-    }
-
-    const transferLimitMw = getBatteryTransferLimitMw(prev);
-    const powerMismatchMw = solarOutputMw - gridDemandMw;
-    if (requestedMode === 'charging') {
-        const requestedChargeMw = prev.autoArbEnabled
-            ? clamp(autoArbPowerMw, 0, transferLimitMw)
-            : transferLimitMw;
-        const remainingEnergyMwh = ((100 - prev.batterySocPercent) / 100) * prev.batteryEnergyCapacityMwh;
-        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
-        const clampedChargeMw = Math.min(requestedChargeMw, maxChargeMw);
-        const projectedUncompensatedMw = powerMismatchMw - clampedChargeMw;
-        const projectedFrequencyHz = GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * projectedUncompensatedMw;
-        if (projectedFrequencyHz < FREQUENCY_MODEL.chargeLockoutHz) {
-            requestedMode = 'idle';
-        }
-    }
-
-    let batteryPowerMw = 0;
-
-    if (requestedMode === 'charging') {
-        if (prev.autoArbEnabled) {
-            batteryPowerMw = clamp(autoArbPowerMw, 0, transferLimitMw);
-        } else {
-            batteryPowerMw = transferLimitMw;
-        }
-    } else if (requestedMode === 'discharging') {
-        if (prev.autoArbEnabled) {
-            batteryPowerMw = clamp(autoArbPowerMw, -transferLimitMw, 0);
-        } else {
-            batteryPowerMw = -transferLimitMw;
-        }
-    }
-
-    if (batteryPowerMw > 0) {
-        const remainingEnergyMwh = ((100 - prev.batterySocPercent) / 100) * prev.batteryEnergyCapacityMwh;
-        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
-        batteryPowerMw = Math.min(batteryPowerMw, maxChargeMw);
-    } else if (batteryPowerMw < 0) {
-        const availableEnergyMwh = (prev.batterySocPercent / 100) * prev.batteryEnergyCapacityMwh;
-        const maxDischargeMw = (availableEnergyMwh * BESS.dischargeEfficiency) / Math.max(dtHours, 1e-9);
-        batteryPowerMw = Math.max(batteryPowerMw, -maxDischargeMw);
-    }
-
-    const storedEnergyDeltaMwh = batteryPowerMw >= 0
-        ? batteryPowerMw * dtHours * BESS.chargeEfficiency
-        : (batteryPowerMw * dtHours) / BESS.dischargeEfficiency;
+    const storedEnergyDeltaMwh = settledBatteryPowerMw >= 0
+        ? settledBatteryPowerMw * dtHours * BESS.chargeEfficiency
+        : (settledBatteryPowerMw * dtHours) / BESS.dischargeEfficiency;
     let batterySocPercent = prev.batterySocPercent + (storedEnergyDeltaMwh / prev.batteryEnergyCapacityMwh) * 100;
     batterySocPercent = clamp(batterySocPercent, 0, 100);
     if (batterySocPercent <= 1e-9) batterySocPercent = 0;
     if (batterySocPercent >= 100 - 1e-9) batterySocPercent = 100;
 
-    const settledBatteryPowerMw = batteryPowerMw;
-    let batteryMode = requestedMode;
-    if (batterySocPercent >= 100 && batteryMode === 'charging') {
-        batteryMode = 'idle';
-    }
-    if (batterySocPercent <= 0 && batteryMode === 'discharging') {
-        batteryMode = 'idle';
-    }
-
-    const settlement = settleHybridProjectTick({
-        solarOutputMw,
-        gridDemandMw,
-        batteryPowerMw: settledBatteryPowerMw,
-        gridPvEvacuationMw: prev.gridPvEvacuationMw,
-        currentPriceEurMwh,
-        dtHours,
-    });
-
-    const uncompensatedMw = powerMismatchMw - settledBatteryPowerMw;
-    const gridFrequencyHz = clamp(
-        GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * uncompensatedMw + gaussianNoise(FREQUENCY_MODEL.noiseSigma, random),
-        GRID.minFrequencyHz,
-        GRID.maxFrequencyHz,
-    );
+    const batteryMode = getBatteryModeFromPower(settledBatteryPowerMw);
 
     const cumulativeRevenueEur = prev.cumulativeRevenueEur + settlement.projectPnlDeltaEur;
     const cumulativeBessMarginEur = prev.cumulativeBessMarginEur + settlement.bessMarginDeltaEur;
@@ -244,7 +268,7 @@ function simulateTickStep(
 
     return {
         ...prev,
-        gridFrequencyHz,
+        gridFrequencyHz: GRID.nominalFrequencyHz,
         solarOutputMw,
         gridDemandMw,
         batterySocPercent,
@@ -254,6 +278,10 @@ function simulateTickStep(
         batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
         solarExportMw: settlement.solarExportMw,
         solarCurtailedMw: settlement.solarCurtailedMw,
+        gridImportMw: settlement.gridImportMw,
+        gridExportMw: settlement.gridExportMw,
+        gridOverloadMw: settlement.gridOverloadMw,
+        gridOverloadWarning: settlement.gridOverloadWarning,
         projectNetExportMw: settlement.projectNetExportMw,
         batteryMode,
         timeOfDay,
@@ -266,6 +294,7 @@ function simulateTickStep(
         cumulativeBessDischargeRevenueEur,
         cumulativeBessGridChargeCostEur,
         cumulativeSolarOpportunityCostEur,
+        autoArbEnabled: prev.dispatchMode === 'auto',
     };
 }
 
@@ -273,8 +302,9 @@ export function simulateTick(
     prev: GridState,
     dtReal: number,
     now: number,
-    random: () => number = Math.random,
+    _random: () => number = Math.random,
 ): GridState {
+    void _random;
     const dtSim = dtReal * prev.timeSpeed;
     const dtHours = dtSim / 3600;
     const endTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours);
@@ -282,7 +312,7 @@ export function simulateTick(
     const boundaryHours = getTickBoundaryHours();
 
     if (getNextBoundaryDeltaHours(prev.timeOfDay, dtHours, boundaryHours) === null) {
-        return simulateTickStep(prev, dtHours, now, random, sampleTimeOfDay, endTimeOfDay);
+        return simulateTickStep(prev, dtHours, now, sampleTimeOfDay, endTimeOfDay);
     }
 
     let state = prev;
@@ -295,7 +325,7 @@ export function simulateTick(
         const stepEndTimeOfDay = normalizeTimeOfDay(currentTimeOfDay + stepHours);
         const stepSampleTimeOfDay = normalizeTimeOfDay(currentTimeOfDay + stepHours / 2);
 
-        state = simulateTickStep(state, stepHours, now, random, stepSampleTimeOfDay, stepEndTimeOfDay);
+        state = simulateTickStep(state, stepHours, now, stepSampleTimeOfDay, stepEndTimeOfDay);
         remainingHours -= stepHours;
         currentTimeOfDay = stepEndTimeOfDay;
     }

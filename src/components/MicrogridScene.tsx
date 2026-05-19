@@ -417,21 +417,27 @@ const PowerLines = memo(function PowerLines() {
 // ── Grid Building (Load Consumer) ────────────────────────────
 const GRID_NODE_POSITION: [number, number, number] = [8.8, 0, 0.25];
 
-const LoadBuilding = memo(function LoadBuilding({ interaction }: { interaction: AssetInteraction }) {
+const LoadBuilding = memo(function LoadBuilding({
+    interaction,
+    overloaded,
+}: {
+    interaction: AssetInteraction;
+    overloaded: boolean;
+}) {
     const isActive = interaction.isHighlighted;
-    const highlightColor = interaction.isSelected ? '#67e8f9' : '#93c5fd';
+    const highlightColor = overloaded ? '#fb7185' : interaction.isSelected ? '#67e8f9' : '#93c5fd';
 
     return (
         <group position={GRID_NODE_POSITION} {...interaction.handlers}>
-            {isActive && (
+            {(isActive || overloaded) && (
                 <mesh position={[0, 2, 0]} scale={[1.08, 1.06, 1.08]}>
                     <boxGeometry args={[3, 4, 3]} />
                     <meshStandardMaterial
                         color={highlightColor}
                         emissive={highlightColor}
-                        emissiveIntensity={0.25}
+                        emissiveIntensity={overloaded ? 0.55 : 0.25}
                         transparent
-                        opacity={0.12}
+                        opacity={overloaded ? 0.2 : 0.12}
                         side={BackSide}
                     />
                 </mesh>
@@ -441,7 +447,7 @@ const LoadBuilding = memo(function LoadBuilding({ interaction }: { interaction: 
                 <meshStandardMaterial
                     color="#334155"
                     emissive={highlightColor}
-                    emissiveIntensity={isActive ? 0.08 : 0}
+                    emissiveIntensity={overloaded ? 0.32 : isActive ? 0.08 : 0}
                     metalness={0.3}
                     roughness={0.7}
                 />
@@ -462,7 +468,7 @@ const LoadBuilding = memo(function LoadBuilding({ interaction }: { interaction: 
             <Text
                 position={[0, 4.5, 0]}
                 fontSize={0.26}
-                color={isActive ? highlightColor : '#e2e8f0'}
+                color={isActive || overloaded ? highlightColor : '#e2e8f0'}
                 anchorX="center"
                 anchorY="bottom"
             >
@@ -629,16 +635,18 @@ const StaticSiteFurniture = memo(function StaticSiteFurniture({
     capacityScale,
     pcsInteraction,
     gridInteraction,
+    gridOverloadWarning,
 }: {
     capacityScale: number;
     pcsInteraction: AssetInteraction;
     gridInteraction: AssetInteraction;
+    gridOverloadWarning: boolean;
 }) {
     return (
         <>
             <SitePads capacityScale={capacityScale} pcsInteraction={pcsInteraction} />
             <PowerLines />
-            <LoadBuilding interaction={gridInteraction} />
+            <LoadBuilding interaction={gridInteraction} overloaded={gridOverloadWarning} />
         </>
     );
 });
@@ -959,6 +967,7 @@ export function MicrogridScene({
         batteryEnergyCapacityMwh,
         solarDcCapacityMwp,
         gridBessConnectionMw,
+        gridOverloadWarning,
     } = gridState;
 
     const bessCapacityScale = batteryEnergyCapacityMwh / BESS.defaultEnergyCapacityMwh;
@@ -1031,6 +1040,7 @@ export function MicrogridScene({
                 capacityScale={bessCapacityScale}
                 pcsInteraction={pcsInteraction}
                 gridInteraction={gridInteraction}
+                gridOverloadWarning={gridOverloadWarning}
             />
 
             {/* Dynamic scene objects */}

@@ -5,7 +5,7 @@
 // uses to drive history/timer-ref resets outside the reducer.
 // ============================================================
 
-import { BESS, FREQUENCY_MODEL, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
+import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
 import { SCENARIO_PRESETS_BY_ID } from '../scenarios';
 import type { BESSCommand, GridState } from '../types';
 import {
@@ -50,17 +50,22 @@ function reconcileRunningFlows(state: GridState, now: number): GridState {
         gridDemandMw: state.gridDemandMw,
         batteryPowerMw: clampedBatteryPowerMw,
         gridPvEvacuationMw: state.gridPvEvacuationMw,
+        gridConnectionLimitMw: selectGridConnectionTotalMw(state),
         currentPriceEurMwh,
         dtHours: 0,
     });
     return {
         ...state,
-        batteryPowerMw: clampedBatteryPowerMw,
+        batteryPowerMw: settlement.batteryPowerMw,
         batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
         batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
         batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
         solarExportMw: settlement.solarExportMw,
         solarCurtailedMw: settlement.solarCurtailedMw,
+        gridImportMw: settlement.gridImportMw,
+        gridExportMw: settlement.gridExportMw,
+        gridOverloadMw: settlement.gridOverloadMw,
+        gridOverloadWarning: settlement.gridOverloadWarning,
         projectNetExportMw: settlement.projectNetExportMw,
         timestamp: now,
     };
@@ -84,6 +89,7 @@ function reconcileStaticTelemetry(state: GridState, now: number): GridState {
         gridDemandMw,
         batteryPowerMw: 0,
         gridPvEvacuationMw: state.gridPvEvacuationMw,
+        gridConnectionLimitMw: selectGridConnectionTotalMw(state),
         currentPriceEurMwh,
         dtHours: 0,
     });
@@ -98,6 +104,10 @@ function reconcileStaticTelemetry(state: GridState, now: number): GridState {
         batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
         solarExportMw: settlement.solarExportMw,
         solarCurtailedMw: settlement.solarCurtailedMw,
+        gridImportMw: settlement.gridImportMw,
+        gridExportMw: settlement.gridExportMw,
+        gridOverloadMw: settlement.gridOverloadMw,
+        gridOverloadWarning: settlement.gridOverloadWarning,
         projectNetExportMw: settlement.projectNetExportMw,
         tariffPeriod,
         currentPriceEurMwh,
@@ -135,28 +145,27 @@ function reconcileScenarioTelemetry(state: GridState, now: number): GridState {
         gridDemandMw,
         batteryPowerMw,
         gridPvEvacuationMw: state.gridPvEvacuationMw,
+        gridConnectionLimitMw: selectGridConnectionTotalMw(state),
         currentPriceEurMwh,
         dtHours: 0,
     });
-    const uncompensatedMw = solarOutputMw - gridDemandMw - batteryPowerMw;
-    const gridFrequencyHz = clamp(
-        GRID.nominalFrequencyHz + FREQUENCY_MODEL.droopK * uncompensatedMw,
-        GRID.minFrequencyHz,
-        GRID.maxFrequencyHz,
-    );
 
     return {
         ...state,
-        gridFrequencyHz,
+        gridFrequencyHz: GRID.nominalFrequencyHz,
         solarOutputMw,
         gridDemandMw,
-        batteryPowerMw,
+        batteryPowerMw: settlement.batteryPowerMw,
         batteryMode,
         batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
         batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
         batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
         solarExportMw: settlement.solarExportMw,
         solarCurtailedMw: settlement.solarCurtailedMw,
+        gridImportMw: settlement.gridImportMw,
+        gridExportMw: settlement.gridExportMw,
+        gridOverloadMw: settlement.gridOverloadMw,
+        gridOverloadWarning: settlement.gridOverloadWarning,
         projectNetExportMw: settlement.projectNetExportMw,
         tariffPeriod,
         currentPriceEurMwh,
@@ -192,6 +201,8 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                     siteYieldKwhPerKwYear: prev.siteYieldKwhPerKwYear,
                     tariffRatesEurMwh: prev.tariffRatesEurMwh,
                     dispatchScalePercent: prev.dispatchScalePercent,
+                    dispatchMode: prev.dispatchMode,
+                    autoArbEnabled: prev.dispatchMode === 'auto',
                     timeSpeed: prev.timeSpeed,
                 }, now),
                 sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },
@@ -209,6 +220,7 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 next: reconcileStaticTelemetry({
                     ...prev,
                     batteryMode: prev.batterySocPercent >= SOC_FULL_EPSILON ? 'idle' : 'charging',
+                    dispatchMode: 'manual-charge',
                     autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
@@ -219,6 +231,7 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 next: reconcileStaticTelemetry({
                     ...prev,
                     batteryMode: prev.batterySocPercent <= SOC_EMPTY_EPSILON ? 'idle' : 'discharging',
+                    dispatchMode: 'manual-discharge',
                     autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
@@ -227,7 +240,10 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
         case 'IDLE':
             return {
                 next: reconcileStaticTelemetry({
-                    ...prev, batteryMode: 'idle', autoArbEnabled: false,
+                    ...prev,
+                    batteryMode: 'idle',
+                    dispatchMode: 'manual-idle',
+                    autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -422,7 +438,8 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             return {
                 next: reconcileStaticTelemetry({
                     ...prev,
-                    autoArbEnabled: !prev.autoArbEnabled,
+                    dispatchMode: prev.dispatchMode === 'auto' ? 'manual-idle' : 'auto',
+                    autoArbEnabled: prev.dispatchMode !== 'auto',
                     batteryMode: 'idle',
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
@@ -432,6 +449,7 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             return {
                 next: reconcileStaticTelemetry({
                     ...prev,
+                    dispatchMode: cmd.payload ? 'auto' : 'manual-idle',
                     autoArbEnabled: cmd.payload,
                     batteryMode: 'idle',
                 }, now),
@@ -445,6 +463,13 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                 next: reconcileScenarioTelemetry({
                     ...fresh,
                     ...preset.state,
+                    dispatchMode: preset.state.autoArbEnabled
+                        ? 'auto'
+                        : preset.state.batteryMode === 'charging'
+                            ? 'manual-charge'
+                            : preset.state.batteryMode === 'discharging'
+                                ? 'manual-discharge'
+                                : 'manual-idle',
                     timestamp: now,
                 }, now),
                 sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },

@@ -76,7 +76,8 @@ export function useGridSimulation() {
                     demandMw: parseFloat(s.gridDemandMw.toFixed(1)),
                     batteryMw: parseFloat(s.batteryPowerMw.toFixed(1)),
                     socPercent: parseFloat(s.batterySocPercent.toFixed(1)),
-                    frequencyHz: parseFloat(s.gridFrequencyHz.toFixed(2)),
+                    gridImportMw: parseFloat(s.gridImportMw.toFixed(1)),
+                    gridExportMw: parseFloat(s.gridExportMw.toFixed(1)),
                     priceEurMwh: s.currentPriceEurMwh,
                 };
 

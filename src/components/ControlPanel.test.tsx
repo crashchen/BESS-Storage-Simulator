@@ -13,22 +13,22 @@ async function openRightDrawer(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('ControlPanel', () => {
-    it('dispatches peak-ready toggle from the control button', async () => {
+    it('dispatches auto mode from the control button', async () => {
         const user = userEvent.setup();
         const onCommand = vi.fn();
 
         render(
             <ControlPanel
-                gridState={makeGridState()}
+                gridState={makeGridState({ dispatchMode: 'manual-idle', autoArbEnabled: false })}
                 history={[]}
                 onCommand={onCommand}
             />,
         );
 
         await openLeftDrawer(user);
-        await user.click(screen.getByRole('button', { name: /peak ready/i }));
+        await user.click(screen.getByRole('button', { name: /^auto$/i }));
 
-        expect(onCommand).toHaveBeenCalledWith({ type: 'TOGGLE_AUTO_ARB' });
+        expect(onCommand).toHaveBeenCalledWith({ type: 'SET_AUTO_ARB_ENABLED', payload: true });
     });
 
     it('dispatches manual charge mode from the dispatch controls', async () => {
@@ -72,7 +72,7 @@ describe('ControlPanel', () => {
         expect(onCommand).toHaveBeenCalledWith({ type: 'SET_BESS_ENERGY_CAPACITY', payload: 800 });
     });
 
-    it('dispatches demo scenario preset changes from the controls drawer', async () => {
+    it('keeps demo scenario presets hidden while the base model is being hardened', async () => {
         const user = userEvent.setup();
         const onCommand = vi.fn();
 
@@ -85,12 +85,10 @@ describe('ControlPanel', () => {
         );
 
         await openLeftDrawer(user);
-        await user.click(screen.getByTestId('scenario-preset-evening-peak-discharge'));
 
-        expect(onCommand).toHaveBeenCalledWith({
-            type: 'APPLY_SCENARIO_PRESET',
-            payload: 'evening-peak-discharge',
-        });
+        expect(screen.queryByText('Demo Scenarios')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('scenario-preset-evening-peak-discharge')).not.toBeInTheDocument();
+        expect(onCommand).not.toHaveBeenCalled();
     });
 
     it('dispatches tariff rate updates for editable economics inputs', async () => {
@@ -114,6 +112,46 @@ describe('ControlPanel', () => {
             type: 'SET_TARIFF_RATE',
             payload: { period: 'peak', value: 420 },
         });
+    });
+
+    it('allows both desktop drawers to stay open at the same time', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={vi.fn()}
+            />,
+        );
+
+        await openLeftDrawer(user);
+        await openRightDrawer(user);
+
+        expect(screen.getByRole('region', { name: 'Controls' })).toHaveAttribute('aria-hidden', 'false');
+        expect(screen.getByRole('region', { name: 'Metrics & Economics' })).toHaveAttribute('aria-hidden', 'false');
+    });
+
+    it('closes only the most recently opened drawer when both desktop drawers are open', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <ControlPanel
+                gridState={makeGridState()}
+                history={[]}
+                onCommand={vi.fn()}
+            />,
+        );
+
+        await openLeftDrawer(user);
+        await openRightDrawer(user);
+        await user.keyboard('{Escape}');
+
+        expect(screen.getByRole('region', { name: 'Controls' })).toHaveAttribute('aria-hidden', 'false');
+        expect(screen.queryByRole('region', { name: 'Metrics & Economics' })).not.toBeInTheDocument();
+
+        await user.keyboard('{Escape}');
+        expect(screen.queryByRole('region', { name: 'Controls' })).not.toBeInTheDocument();
     });
 
     it('moves focus to the close button when opening a drawer', async () => {

@@ -132,6 +132,10 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
         batteryDischargeToGridMw,
         solarExportMw,
         solarCurtailedMw,
+        gridImportMw,
+        gridExportMw,
+        gridOverloadMw,
+        gridOverloadWarning,
         projectNetExportMw,
     } = gridState;
 
@@ -186,6 +190,26 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                         <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS → Grid</p>
                         <p className="mt-1 font-mono text-base font-bold text-amber-300">{batteryDischargeToGridMw.toFixed(0)} MW</p>
+                    </div>
+                    <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Grid Import</p>
+                        <p className="mt-1 font-mono text-base font-bold text-cyan-300">{gridImportMw.toFixed(0)} MW</p>
+                    </div>
+                    <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Grid Export</p>
+                        <p className="mt-1 font-mono text-base font-bold text-emerald-300">{gridExportMw.toFixed(0)} MW</p>
+                    </div>
+                    <div className={`
+                        rounded-lg border p-3
+                        ${gridOverloadWarning
+                    ? 'border-rose-500/50 bg-rose-950/30'
+                    : 'border-slate-800 bg-slate-950/50'}
+                    `}
+                    >
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">PCC Overload</p>
+                        <p className={`mt-1 font-mono text-base font-bold ${gridOverloadWarning ? 'text-rose-300' : 'text-slate-500'}`}>
+                            {gridOverloadMw.toFixed(0)} MW
+                        </p>
                     </div>
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                         <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Net Export</p>

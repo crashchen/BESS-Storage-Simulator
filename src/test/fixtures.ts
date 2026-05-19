@@ -23,8 +23,13 @@ export function makeGridState(overrides: Partial<GridState> = {}): GridState {
         batteryDischargeToGridMw: 0,
         solarExportMw: 45,
         solarCurtailedMw: 0,
-        projectNetExportMw: 45,
+        gridImportMw: 107,
+        gridExportMw: 0,
+        gridOverloadMw: 0,
+        gridOverloadWarning: false,
+        projectNetExportMw: -107,
         batteryMode: 'idle',
+        dispatchMode: 'auto',
         timeOfDay: 8.5,
         timeSpeed: 240,
         timestamp: 0,
@@ -41,7 +46,7 @@ export function makeGridState(overrides: Partial<GridState> = {}): GridState {
         cumulativeBessDischargeRevenueEur: 0,
         cumulativeBessGridChargeCostEur: 0,
         cumulativeSolarOpportunityCostEur: 0,
-        autoArbEnabled: false,
+        autoArbEnabled: true,
         ...overrides,
     };
 }

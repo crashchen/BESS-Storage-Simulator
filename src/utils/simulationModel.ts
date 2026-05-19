@@ -30,11 +30,16 @@ export interface AutoArbPlan extends AutoArbOutlook {
 }
 
 export interface HybridProjectSettlement {
+    batteryPowerMw: number;
     batteryChargeFromSolarMw: number;
     batteryChargeFromGridMw: number;
     batteryDischargeToGridMw: number;
     solarExportMw: number;
     solarCurtailedMw: number;
+    gridImportMw: number;
+    gridExportMw: number;
+    gridOverloadMw: number;
+    gridOverloadWarning: boolean;
     projectNetExportMw: number;
     projectPnlDeltaEur: number;
     bessMarginDeltaEur: number;
@@ -48,6 +53,10 @@ export interface HybridProjectSettlement {
 
 export function clamp(value: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, value));
+}
+
+function normalizeZero(value: number): number {
+    return Math.abs(value) < 1e-9 ? 0 : value;
 }
 
 /**
@@ -110,7 +119,7 @@ export function computeGridDemandMw(timeOfDay: number, scaleFactor: number, grid
         Math.exp(-Math.pow(timeOfDay - DEMAND_MODEL.middayTroughHour, 2) / (2 * 2.3 * 2.3));
 
     const rawDemand = (baseMw + morningHump + eveningHump - middayTrough) * scaleFactor;
-    return clamp(rawDemand, 0, gridConnectionTotalMw);
+    return Math.max(0, rawDemand);
 }
 
 export function integrateWindowEnergy(fromHour: number, toHour: number, samplePowerMw: (timeOfDay: number) => number): number {
@@ -314,6 +323,7 @@ export function settleHybridProjectTick({
     gridDemandMw,
     batteryPowerMw,
     gridPvEvacuationMw,
+    gridConnectionLimitMw = gridPvEvacuationMw,
     currentPriceEurMwh,
     dtHours,
 }: {
@@ -321,25 +331,67 @@ export function settleHybridProjectTick({
     gridDemandMw: number;
     batteryPowerMw: number;
     gridPvEvacuationMw: number;
+    gridConnectionLimitMw?: number;
     currentPriceEurMwh: number;
     dtHours: number;
 }): HybridProjectSettlement {
-    const solarSurplusMw = Math.max(solarOutputMw - gridDemandMw, 0);
-    const batteryChargeFromSolarMw = batteryPowerMw > 0
-        ? Math.min(batteryPowerMw, solarSurplusMw)
-        : 0;
-    const batteryChargeFromGridMw = batteryPowerMw > 0
-        ? Math.max(0, batteryPowerMw - batteryChargeFromSolarMw)
-        : 0;
-    const batteryDischargeToGridMw = batteryPowerMw < 0 ? Math.abs(batteryPowerMw) : 0;
-    const solarExportMw = clamp(
-        Math.max(0, solarOutputMw - batteryChargeFromSolarMw),
-        0,
-        gridPvEvacuationMw,
-    );
-    const solarCurtailedMw = Math.max(0, solarOutputMw - batteryChargeFromSolarMw - solarExportMw);
-    const projectNetExportMw = solarExportMw + batteryDischargeToGridMw - batteryChargeFromGridMw;
-    const baselineSolarExportMw = Math.min(solarOutputMw, gridPvEvacuationMw);
+    const pccLimitMw = Math.max(0, gridConnectionLimitMw);
+    const pvExportLimitMw = Math.max(0, Math.min(gridPvEvacuationMw, pccLimitMw));
+    const pvToDemandMw = Math.min(solarOutputMw, gridDemandMw);
+    const unmetDemandAfterPvMw = Math.max(0, gridDemandMw - pvToDemandMw);
+    const pvSurplusAfterDemandMw = Math.max(0, solarOutputMw - pvToDemandMw);
+
+    let effectiveBatteryPowerMw = batteryPowerMw;
+    let batteryChargeFromSolarMw = 0;
+    let batteryChargeFromGridMw = 0;
+    let batteryDischargeToGridMw = 0;
+    let solarExportMw = 0;
+    let solarCurtailedMw = 0;
+    let gridImportMw = 0;
+    let gridExportMw = 0;
+    let gridOverloadMw = 0;
+
+    if (batteryPowerMw > 0) {
+        batteryChargeFromSolarMw = Math.min(batteryPowerMw, pvSurplusAfterDemandMw);
+        const requestedGridChargeMw = Math.max(0, batteryPowerMw - batteryChargeFromSolarMw);
+        const baseGridImportMw = unmetDemandAfterPvMw;
+        const importHeadroomMw = Math.max(0, pccLimitMw - baseGridImportMw);
+        batteryChargeFromGridMw = Math.min(requestedGridChargeMw, importHeadroomMw);
+        effectiveBatteryPowerMw = batteryChargeFromSolarMw + batteryChargeFromGridMw;
+        gridImportMw = Math.min(pccLimitMw, baseGridImportMw + batteryChargeFromGridMw);
+        gridOverloadMw = Math.max(0, baseGridImportMw - pccLimitMw);
+
+        const solarExportCandidateMw = Math.max(0, pvSurplusAfterDemandMw - batteryChargeFromSolarMw);
+        solarExportMw = Math.min(solarExportCandidateMw, pvExportLimitMw);
+        solarCurtailedMw = Math.max(0, solarExportCandidateMw - solarExportMw);
+        gridExportMw = solarExportMw;
+    } else if (batteryPowerMw < 0) {
+        const requestedDischargeMw = Math.abs(batteryPowerMw);
+        const batteryToDemandMw = Math.min(requestedDischargeMw, unmetDemandAfterPvMw);
+        const remainingDischargeMw = requestedDischargeMw - batteryToDemandMw;
+
+        // PV keeps priority on export because its marginal cost is effectively zero.
+        solarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
+        solarCurtailedMw = Math.max(0, pvSurplusAfterDemandMw - solarExportMw);
+        const bessExportHeadroomMw = Math.max(0, pccLimitMw - solarExportMw);
+        const batteryExportMw = Math.min(remainingDischargeMw, bessExportHeadroomMw);
+
+        batteryDischargeToGridMw = batteryToDemandMw + batteryExportMw;
+        effectiveBatteryPowerMw = -batteryDischargeToGridMw;
+        gridImportMw = Math.min(pccLimitMw, Math.max(0, unmetDemandAfterPvMw - batteryToDemandMw));
+        gridExportMw = solarExportMw + batteryExportMw;
+        gridOverloadMw = Math.max(0, unmetDemandAfterPvMw - batteryToDemandMw - pccLimitMw);
+    } else {
+        solarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
+        solarCurtailedMw = Math.max(0, pvSurplusAfterDemandMw - solarExportMw);
+        gridImportMw = Math.min(pccLimitMw, unmetDemandAfterPvMw);
+        gridExportMw = solarExportMw;
+        gridOverloadMw = Math.max(0, unmetDemandAfterPvMw - pccLimitMw);
+    }
+
+    const gridOverloadWarning = gridOverloadMw > 1e-9;
+    const projectNetExportMw = gridExportMw - gridImportMw;
+    const baselineSolarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
 
     const solarExportMwh = solarExportMw * dtHours;
     const batteryChargeFromGridMwh = batteryChargeFromGridMw * dtHours;
@@ -352,12 +404,17 @@ export function settleHybridProjectTick({
     const solarOpportunityCostDeltaEur = solarOpportunityCostMwh * currentPriceEurMwh;
 
     return {
-        batteryChargeFromSolarMw,
-        batteryChargeFromGridMw,
-        batteryDischargeToGridMw,
-        solarExportMw,
-        solarCurtailedMw,
-        projectNetExportMw,
+        batteryPowerMw: normalizeZero(effectiveBatteryPowerMw),
+        batteryChargeFromSolarMw: normalizeZero(batteryChargeFromSolarMw),
+        batteryChargeFromGridMw: normalizeZero(batteryChargeFromGridMw),
+        batteryDischargeToGridMw: normalizeZero(batteryDischargeToGridMw),
+        solarExportMw: normalizeZero(solarExportMw),
+        solarCurtailedMw: normalizeZero(solarCurtailedMw),
+        gridImportMw: normalizeZero(gridImportMw),
+        gridExportMw: normalizeZero(gridExportMw),
+        gridOverloadMw: normalizeZero(gridOverloadMw),
+        gridOverloadWarning,
+        projectNetExportMw: normalizeZero(projectNetExportMw),
         projectPnlDeltaEur:
             solarExportRevenueDeltaEur + bessDischargeRevenueDeltaEur - bessGridChargeCostDeltaEur,
         bessMarginDeltaEur:

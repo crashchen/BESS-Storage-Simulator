@@ -7,6 +7,7 @@ export interface ScenarioPreset {
     shortLabel: string;
     accentClass: string;
     description: string;
+    expectedFlow: string;
     operatorCue: string;
     state: {
         simulationStatus: SimulationStatus;
@@ -34,6 +35,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
         shortLabel: 'Solar Surplus',
         accentClass: 'border-yellow-400/40 bg-yellow-950/20 hover:bg-yellow-900/25',
         description: 'Bright midday PV exceeds local demand, so BESS absorbs solar surplus instead of curtailing it.',
+        expectedFlow: 'PV surplus → BESS, residual PV → Grid, no curtailment.',
         operatorCue: 'Use this to explain solar-to-storage flow and curtailment avoidance.',
         state: {
             simulationStatus: 'paused',
@@ -57,6 +59,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
         shortLabel: 'Peak Export',
         accentClass: 'border-red-400/40 bg-red-950/20 hover:bg-red-900/25',
         description: 'Demand and tariff both peak after sunset, so the charged battery supports the grid.',
+        expectedFlow: 'BESS → Grid during the €350/MWh peak window.',
         operatorCue: 'Use this to show BESS discharge pacing and high-price project revenue.',
         state: {
             simulationStatus: 'paused',
@@ -78,6 +81,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
         shortLabel: 'Negative Price',
         accentClass: 'border-emerald-400/40 bg-emerald-950/20 hover:bg-emerald-900/25',
         description: 'Overnight prices turn negative, making grid charging economically attractive.',
+        expectedFlow: 'Grid → BESS while the off-peak tariff is negative.',
         operatorCue: 'Use this to explain why charging can create value when market prices go below zero.',
         state: {
             simulationStatus: 'paused',
@@ -96,11 +100,12 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
     },
     {
         id: 'grid-stress-lockout',
-        title: 'Grid Stress Lockout',
-        shortLabel: 'Grid Stress',
+        title: 'PCC Import Overload',
+        shortLabel: 'Import Limit',
         accentClass: 'border-orange-400/40 bg-orange-950/20 hover:bg-orange-900/25',
-        description: 'A heavy evening deficit pushes frequency below the warning band, so charging should stay locked out.',
-        operatorCue: 'Use this to demonstrate the frequency vignette and why manual charging is unsafe under stress.',
+        description: 'A heavy evening deficit exceeds the shared PCC import limit in the active-power-only model.',
+        expectedFlow: 'Grid import clamps at the PCC limit and the Grid Node surfaces an overload warning.',
+        operatorCue: 'Use this to explain that local deficits become grid import, not simulated frequency collapse.',
         state: {
             simulationStatus: 'paused',
             timeOfDay: 19.4,
