@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AUTO_ARB, GRID, SIMULATION } from '../config';
+import { AUTO_ARB, BESS, GRID, SIMULATION } from '../config';
 import { computeGridDemandMw, computeSolarOutputMw } from './simulationModel';
 import { selectGridConnectionTotalMw } from './gridSelectors';
 import { createInitialGridState, simulateTick } from './tickEngine';
@@ -163,10 +163,11 @@ describe('tickEngine', () => {
         expect(next.gridOverloadMw).toBeGreaterThan(0);
     });
 
-    // AUTO peak pacing: with multiple hours of peak left, BESS should NOT dump
-    // full transferLimit; it should pace so the usable energy lasts ~the remaining
-    // peak window. With ~5 hours left and a full BESS, paced power is well below
-    // the rated transfer limit.
+    // AUTO peak pacing: at peak entry with multi-hour window remaining, the
+    // dispatched power should equal (usable energy × η_d) / remaining hours.
+    // We compute the expected value from config so the assertion catches any
+    // regression that drops η_d, forgets the reserve subtraction, or breaks
+    // the pacing formula — not just the old "full transfer limit" behaviour.
     it('auto peak dispatch paces discharge over the remaining peak window', () => {
         const initial = {
             ...createInitialGridState(0),
@@ -179,18 +180,18 @@ describe('tickEngine', () => {
             dispatchScalePercent: 100,
         };
         const transferLimitMw = Math.min(initial.batteryPowerRatingMw, initial.gridBessConnectionMw);
+        const usableEnergyMwh =
+            ((initial.batterySocPercent - AUTO_ARB.peakReserveSocPercent) / 100) *
+            initial.batteryEnergyCapacityMwh;
+        const peakRemainingHours = AUTO_ARB.peakEndHour - initial.timeOfDay;
+        const expectedPacedMw = (usableEnergyMwh * BESS.dischargeEfficiency) / peakRemainingHours;
 
         const next = simulateTick(initial, 0.001, 1, () => 0.5);
 
-        // Discharging (negative power), but not full-bore.
         expect(next.batteryPowerMw).toBeLessThan(0);
         expect(Math.abs(next.batteryPowerMw)).toBeLessThan(transferLimitMw);
-
-        // Sanity: usable energy ≈ (90% - reserveSoc) × capacity, spread across
-        // ~5 peak hours, scaled by discharge efficiency.
-        // Expect roughly (energy × η_d / 5h) to be in the [40, 100] MW range
-        // for the default 744 MWh / 188 MW BESS.
-        expect(Math.abs(next.batteryPowerMw)).toBeGreaterThan(20);
+        // Tight expected value: ~111 MW for default 744 MWh / 0.96 η_d / 5h.
+        expect(Math.abs(next.batteryPowerMw)).toBeCloseTo(expectedPacedMw, 0);
     });
 
     // Near the end of the peak window with energy still available, the same

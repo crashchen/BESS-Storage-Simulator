@@ -239,7 +239,13 @@ function simulateTickStep(
     );
     const tariffPeriod = getTariffPeriod(operationalTimeOfDay);
     const currentPriceEurMwh = getElectricityPriceEurMwh(operationalTimeOfDay, prev.tariffRatesEurMwh);
-    const desiredBatteryPowerMw = getDesiredBatteryPowerMw(prev, solarOutputMw, gridDemandMw, tariffPeriod, dtHours, operationalTimeOfDay);
+    // Reference time for the pacing law is `prev.timeOfDay` because the energy
+    // state we're spreading (`prev.batterySocPercent`) is also at that snapshot.
+    // Other quantities (solar/demand/tariff) use `operationalTimeOfDay` because
+    // they're step-averaged continuous integrals; pacing is a control intent
+    // evaluated against the start-of-step state, so the two references
+    // diverge intentionally.
+    const desiredBatteryPowerMw = getDesiredBatteryPowerMw(prev, solarOutputMw, gridDemandMw, tariffPeriod, dtHours, prev.timeOfDay);
     const requestedBatteryPowerMw = clampBatteryPowerToEnergy(prev, desiredBatteryPowerMw, dtHours);
 
     const settlement = settleHybridProjectTick({

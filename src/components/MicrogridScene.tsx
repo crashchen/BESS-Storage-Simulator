@@ -15,6 +15,9 @@ import { getVisibleEnergyFlows } from '../utils/energyFlowTelemetry';
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
 const COLOR_DISCHARGE = new Color('#f59e0b');
+// Lighter amber for the BESS → local-load leg; both BESS legs share the same
+// upstream waypoints and would visually collide as identical amber streams.
+const COLOR_DISCHARGE_LOAD = new Color('#fcd34d');
 const COLOR_IDLE = new Color('#64748b');
 const COLOR_SOLAR_ON = new Color('#facc15');
 const COLOR_SOLAR_OFF = new Color('#1e293b');
@@ -1027,10 +1030,11 @@ function EnergyFlowSystem({
                 active={solarToExportMw > 0.5}
             />
 
-            {/* BESS → local load (avoided-import discharge) */}
+            {/* BESS → local load (avoided-import discharge) — lighter amber
+                so it stays distinct from the export leg when both are active. */}
             <EnergyFlow
                 curve={FLOW_PATHS.bessToLoad}
-                color={COLOR_DISCHARGE}
+                color={COLOR_DISCHARGE_LOAD}
                 powerMw={bessToLoadMw}
                 maxPowerMw={maxBessMw}
                 active={bessToLoadMw > 0.5}
