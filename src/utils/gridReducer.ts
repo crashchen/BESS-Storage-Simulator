@@ -59,7 +59,8 @@ function reconcileRunningFlows(state: GridState, now: number): GridState {
         batteryPowerMw: settlement.batteryPowerMw,
         batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
         batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
-        batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
+        batteryDischargeToLoadMw: settlement.batteryDischargeToLoadMw,
+        batteryDischargeToExportMw: settlement.batteryDischargeToExportMw,
         solarExportMw: settlement.solarExportMw,
         solarCurtailedMw: settlement.solarCurtailedMw,
         gridImportMw: settlement.gridImportMw,
@@ -101,7 +102,8 @@ function reconcileStaticTelemetry(state: GridState, now: number): GridState {
         batteryPowerMw: 0,
         batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
         batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
-        batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
+        batteryDischargeToLoadMw: settlement.batteryDischargeToLoadMw,
+        batteryDischargeToExportMw: settlement.batteryDischargeToExportMw,
         solarExportMw: settlement.solarExportMw,
         solarCurtailedMw: settlement.solarCurtailedMw,
         gridImportMw: settlement.gridImportMw,
@@ -159,7 +161,8 @@ function reconcileScenarioTelemetry(state: GridState, now: number): GridState {
         batteryMode,
         batteryChargeFromSolarMw: settlement.batteryChargeFromSolarMw,
         batteryChargeFromGridMw: settlement.batteryChargeFromGridMw,
-        batteryDischargeToGridMw: settlement.batteryDischargeToGridMw,
+        batteryDischargeToLoadMw: settlement.batteryDischargeToLoadMw,
+        batteryDischargeToExportMw: settlement.batteryDischargeToExportMw,
         solarExportMw: settlement.solarExportMw,
         solarCurtailedMw: settlement.solarCurtailedMw,
         gridImportMw: settlement.gridImportMw,
@@ -459,17 +462,14 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
         case 'APPLY_SCENARIO_PRESET': {
             const preset = SCENARIO_PRESETS_BY_ID[cmd.payload];
             const fresh = createInitialGridState(now);
+            // `preset.state.dispatchMode` is the single source of truth; keep
+            // the legacy `autoArbEnabled` flag in sync for any consumer still
+            // reading it (UI / tests). The reducer no longer derives.
             return {
                 next: reconcileScenarioTelemetry({
                     ...fresh,
                     ...preset.state,
-                    dispatchMode: preset.state.autoArbEnabled
-                        ? 'auto'
-                        : preset.state.batteryMode === 'charging'
-                            ? 'manual-charge'
-                            : preset.state.batteryMode === 'discharging'
-                                ? 'manual-discharge'
-                                : 'manual-idle',
+                    autoArbEnabled: preset.state.dispatchMode === 'auto',
                     timestamp: now,
                 }, now),
                 sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },

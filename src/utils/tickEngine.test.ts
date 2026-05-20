@@ -112,7 +112,7 @@ describe('tickEngine', () => {
         expect(next.batterySocPercent).toBeCloseTo(0, 10);
         expect(next.batteryMode).toBe('discharging');
         expect(next.batteryPowerMw).toBeLessThan(0);
-        expect(next.batteryDischargeToGridMw).toBeGreaterThan(0);
+        expect(next.batteryDischargeToLoadMw + next.batteryDischargeToExportMw).toBeGreaterThan(0);
         expect(next.cumulativeRevenueEur).not.toBe(initial.cumulativeRevenueEur);
 
         const afterClamp = simulateTick(next, 1, 2, () => 0.5);
@@ -288,5 +288,37 @@ describe('tickEngine', () => {
 
         expect(next.cumulativeRevenueEur).toBeCloseTo(expectedRevenueEur, 6);
         expect(next.cumulativeRevenueEur).not.toBeCloseTo(wrongPeakOnlyRevenueEur, 6);
+    });
+
+    // PCC overload is observable; this test drives demand high → low and pins
+    // that `gridOverloadWarning` correctly flips on then back off, so a future
+    // refactor of the settlement branches can't silently mask the signal.
+    it('gridOverloadWarning lights and clears as demand crosses the PCC limit', () => {
+        const overloadInitial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            timeOfDay: 19,
+            timeSpeed: 0,
+            dispatchScalePercent: 200,
+            batterySocPercent: 0,
+            dispatchMode: 'manual-idle' as const,
+            batteryMode: 'idle' as const,
+            gridPvEvacuationMw: 102,
+            gridBessConnectionMw: 50,
+        };
+
+        const overloaded = simulateTick(overloadInitial, 1, 1, () => 0.5);
+        expect(overloaded.gridOverloadWarning).toBe(true);
+        expect(overloaded.gridOverloadMw).toBeGreaterThan(0);
+
+        // Drop demand back into normal range — overload signal must clear.
+        const relaxed = simulateTick(
+            { ...overloaded, dispatchScalePercent: 40 },
+            1,
+            2,
+            () => 0.5,
+        );
+        expect(relaxed.gridOverloadWarning).toBe(false);
+        expect(relaxed.gridOverloadMw).toBe(0);
     });
 });

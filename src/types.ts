@@ -30,6 +30,9 @@ export interface GridState {
     siteYieldKwhPerKwYear: number;
 
     simulationStatus: SimulationStatus;
+    /** @deprecated Pinned to `GRID.nominalFrequencyHz` every tick; the
+     * active-power-only model no longer simulates frequency. Field is kept
+     * to avoid churning historical state shapes; do not drive UI from it. */
     gridFrequencyHz: number;
     solarOutputMw: number;
     gridDemandMw: number;
@@ -38,7 +41,11 @@ export interface GridState {
     batteryPowerMw: number;
     batteryChargeFromSolarMw: number;
     batteryChargeFromGridMw: number;
-    batteryDischargeToGridMw: number;
+    /** BESS energy serving local site demand. Combined with
+     * `batteryDischargeToExportMw` it equals total discharge. */
+    batteryDischargeToLoadMw: number;
+    /** BESS energy flowing through the PCC out to the grid. */
+    batteryDischargeToExportMw: number;
     solarExportMw: number;
     solarCurtailedMw: number;
     gridImportMw: number;

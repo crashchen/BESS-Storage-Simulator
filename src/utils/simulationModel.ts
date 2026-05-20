@@ -33,7 +33,10 @@ export interface HybridProjectSettlement {
     batteryPowerMw: number;
     batteryChargeFromSolarMw: number;
     batteryChargeFromGridMw: number;
-    batteryDischargeToGridMw: number;
+    /** BESS energy serving local site demand (offsets grid import). */
+    batteryDischargeToLoadMw: number;
+    /** BESS energy flowing through the PCC out to the grid (counts as revenue). */
+    batteryDischargeToExportMw: number;
     solarExportMw: number;
     solarCurtailedMw: number;
     gridImportMw: number;
@@ -354,7 +357,8 @@ export function settleHybridProjectTick({
     let effectiveBatteryPowerMw = batteryPowerMw;
     let batteryChargeFromSolarMw = 0;
     let batteryChargeFromGridMw = 0;
-    let batteryDischargeToGridMw = 0;
+    let batteryDischargeToLoadMw = 0;
+    let batteryDischargeToExportMw = 0;
     let solarExportMw = 0;
     let solarCurtailedMw = 0;
     let gridImportMw = 0;
@@ -379,20 +383,19 @@ export function settleHybridProjectTick({
         gridExportMw = solarExportMw;
     } else if (batteryPowerMw < 0) {
         const requestedDischargeMw = Math.abs(batteryPowerMw);
-        const batteryToDemandMw = Math.min(requestedDischargeMw, unmetDemandAfterPvMw);
-        const remainingDischargeMw = requestedDischargeMw - batteryToDemandMw;
+        batteryDischargeToLoadMw = Math.min(requestedDischargeMw, unmetDemandAfterPvMw);
+        const remainingDischargeMw = requestedDischargeMw - batteryDischargeToLoadMw;
 
         // PV keeps priority on export because its marginal cost is effectively zero.
         solarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
         solarCurtailedMw = Math.max(0, pvSurplusAfterDemandMw - solarExportMw);
         const bessExportHeadroomMw = Math.max(0, pccLimitMw - solarExportMw);
-        const batteryExportMw = Math.min(remainingDischargeMw, bessExportHeadroomMw);
+        batteryDischargeToExportMw = Math.min(remainingDischargeMw, bessExportHeadroomMw);
 
-        batteryDischargeToGridMw = batteryToDemandMw + batteryExportMw;
-        effectiveBatteryPowerMw = -batteryDischargeToGridMw;
-        gridImportMw = Math.min(pccLimitMw, Math.max(0, unmetDemandAfterPvMw - batteryToDemandMw));
-        gridExportMw = solarExportMw + batteryExportMw;
-        gridOverloadMw = Math.max(0, unmetDemandAfterPvMw - batteryToDemandMw - pccLimitMw);
+        effectiveBatteryPowerMw = -(batteryDischargeToLoadMw + batteryDischargeToExportMw);
+        gridImportMw = Math.min(pccLimitMw, Math.max(0, unmetDemandAfterPvMw - batteryDischargeToLoadMw));
+        gridExportMw = solarExportMw + batteryDischargeToExportMw;
+        gridOverloadMw = Math.max(0, unmetDemandAfterPvMw - batteryDischargeToLoadMw - pccLimitMw);
     } else {
         solarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
         solarCurtailedMw = Math.max(0, pvSurplusAfterDemandMw - solarExportMw);
@@ -405,13 +408,18 @@ export function settleHybridProjectTick({
     const projectNetExportMw = gridExportMw - gridImportMw;
     const baselineSolarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
 
+    // BESS revenue continues to value ALL discharge at the current tariff —
+    // serving local load is valued the same as exporting, since it offsets
+    // an avoided import cost at the same price. The two new fields are for
+    // visualization + audit; the economic formula sums them.
+    const batteryDischargeTotalMw = batteryDischargeToLoadMw + batteryDischargeToExportMw;
     const solarExportMwh = solarExportMw * dtHours;
     const batteryChargeFromGridMwh = batteryChargeFromGridMw * dtHours;
-    const batteryDischargeToGridMwh = batteryDischargeToGridMw * dtHours;
+    const batteryDischargeTotalMwh = batteryDischargeTotalMw * dtHours;
     const solarOpportunityCostMwh = Math.max(0, baselineSolarExportMw - solarExportMw) * dtHours;
 
     const solarExportRevenueDeltaEur = solarExportMwh * currentPriceEurMwh;
-    const bessDischargeRevenueDeltaEur = batteryDischargeToGridMwh * currentPriceEurMwh;
+    const bessDischargeRevenueDeltaEur = batteryDischargeTotalMwh * currentPriceEurMwh;
     const bessGridChargeCostDeltaEur = batteryChargeFromGridMwh * currentPriceEurMwh;
     const solarOpportunityCostDeltaEur = solarOpportunityCostMwh * currentPriceEurMwh;
 
@@ -419,7 +427,8 @@ export function settleHybridProjectTick({
         batteryPowerMw: normalizeZero(effectiveBatteryPowerMw),
         batteryChargeFromSolarMw: normalizeZero(batteryChargeFromSolarMw),
         batteryChargeFromGridMw: normalizeZero(batteryChargeFromGridMw),
-        batteryDischargeToGridMw: normalizeZero(batteryDischargeToGridMw),
+        batteryDischargeToLoadMw: normalizeZero(batteryDischargeToLoadMw),
+        batteryDischargeToExportMw: normalizeZero(batteryDischargeToExportMw),
         solarExportMw: normalizeZero(solarExportMw),
         solarCurtailedMw: normalizeZero(solarCurtailedMw),
         gridImportMw: normalizeZero(gridImportMw),

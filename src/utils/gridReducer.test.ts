@@ -131,7 +131,8 @@ describe('gridReducer applyCommand', () => {
                 next.batteryPowerMw,
                 next.batteryChargeFromSolarMw,
                 next.batteryChargeFromGridMw,
-                next.batteryDischargeToGridMw,
+                next.batteryDischargeToLoadMw,
+                next.batteryDischargeToExportMw,
                 next.solarOutputMw,
                 next.solarExportMw,
                 next.solarCurtailedMw,
@@ -190,7 +191,7 @@ describe('gridReducer applyCommand', () => {
         expect(peakExport.tariffPeriod).toBe('peak');
         expect(peakExport.currentPriceEurMwh).toBe(TARIFF.defaultRatesEurMwh.peak);
         expect(peakExport.batteryMode).toBe('discharging');
-        expect(peakExport.batteryDischargeToGridMw).toBeGreaterThan(0);
+        expect(peakExport.batteryDischargeToLoadMw + peakExport.batteryDischargeToExportMw).toBeGreaterThan(0);
         expect(peakExport.gridImportMw).toBeLessThan(peakExport.gridDemandMw);
         expect(peakExport.projectNetExportMw).toBe(peakExport.gridExportMw - peakExport.gridImportMw);
 
@@ -391,7 +392,8 @@ describe('gridReducer applyCommand', () => {
             batteryPowerMw: -150,
             batteryChargeFromSolarMw: 12,
             batteryChargeFromGridMw: 8,
-            batteryDischargeToGridMw: 150,
+            batteryDischargeToLoadMw: 90,
+            batteryDischargeToExportMw: 60,
             solarExportMw: 77,
             solarCurtailedMw: 9,
             projectNetExportMw: -4,
@@ -425,7 +427,8 @@ describe('gridReducer applyCommand', () => {
         expect(next.batteryPowerMw).toBe(0);
         expect(next.batteryChargeFromSolarMw).toBe(expectedSettlement.batteryChargeFromSolarMw);
         expect(next.batteryChargeFromGridMw).toBe(expectedSettlement.batteryChargeFromGridMw);
-        expect(next.batteryDischargeToGridMw).toBe(expectedSettlement.batteryDischargeToGridMw);
+        expect(next.batteryDischargeToLoadMw).toBe(expectedSettlement.batteryDischargeToLoadMw);
+        expect(next.batteryDischargeToExportMw).toBe(expectedSettlement.batteryDischargeToExportMw);
         expect(next.solarExportMw).toBe(expectedSettlement.solarExportMw);
         expect(next.solarCurtailedMw).toBe(expectedSettlement.solarCurtailedMw);
         expect(next.projectNetExportMw).toBe(expectedSettlement.projectNetExportMw);
@@ -512,7 +515,8 @@ describe('gridReducer applyCommand', () => {
             batteryPowerMw: -150,
             batteryChargeFromSolarMw: 20,
             batteryChargeFromGridMw: 5,
-            batteryDischargeToGridMw: 150,
+            batteryDischargeToLoadMw: 90,
+            batteryDischargeToExportMw: 60,
         });
         const { next } = applyCommand(prev, { type: 'TOGGLE_AUTO_ARB' }, NOW);
 
@@ -522,7 +526,8 @@ describe('gridReducer applyCommand', () => {
         expect(next.batteryPowerMw).toBe(0);
         expect(next.batteryChargeFromSolarMw).toBe(0);
         expect(next.batteryChargeFromGridMw).toBe(0);
-        expect(next.batteryDischargeToGridMw).toBe(0);
+        expect(next.batteryDischargeToLoadMw).toBe(0);
+        expect(next.batteryDischargeToExportMw).toBe(0);
     });
 
     it('SET_AUTO_ARB_ENABLED sets the flag exactly to the payload idempotently', () => {
@@ -543,5 +548,25 @@ describe('gridReducer applyCommand', () => {
         expect(second.next.dispatchMode).toBe('auto');
         expect(second.next.batteryMode).toBe('idle');
         expect(second.next.batteryPowerMw).toBe(0);
+    });
+
+    // dispatchMode is the new single source of truth; this round-trip pins
+    // that going auto → manual → auto cleanly restores `'auto'` semantics
+    // (autoArbEnabled flag, dispatchMode, idle-on-takeover).
+    it('auto → manual-charge → auto round-trips back to a clean auto state', () => {
+        const start = makeGridState({ dispatchMode: 'auto', autoArbEnabled: true, batteryMode: 'idle' });
+
+        const toManual = applyCommand(start, { type: 'CHARGE' }, NOW).next;
+        expect(toManual.dispatchMode).toBe('manual-charge');
+        expect(toManual.autoArbEnabled).toBe(false);
+        expect(toManual.batteryMode).toBe('charging');
+
+        const backToAuto = applyCommand(toManual, { type: 'TOGGLE_AUTO_ARB' }, NOW).next;
+        expect(backToAuto.dispatchMode).toBe('auto');
+        expect(backToAuto.autoArbEnabled).toBe(true);
+        // Taking over from manual resets to idle until the next tick computes
+        // the auto policy power.
+        expect(backToAuto.batteryMode).toBe('idle');
+        expect(backToAuto.batteryPowerMw).toBe(0);
     });
 });

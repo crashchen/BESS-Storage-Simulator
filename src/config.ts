@@ -71,15 +71,20 @@ export const GRID = {
     minBessConnectionMw: 5,
     /** Maximum configurable BESS grid connection (MW) */
     maxBessConnectionMw: 500,
-    /** Nominal grid frequency (Hz) */
+    /** Nominal grid frequency (Hz). Still actively used: the simulator pins
+     * `gridFrequencyHz` to this value every tick since the active-power-only
+     * model no longer simulates frequency response. */
     nominalFrequencyHz: 50.0,
-    /** Minimum allowed frequency (Hz) */
+    /** @deprecated Frequency band bound retained from the legacy droop model.
+     * Active-power dispatch ignores frequency; kept only to avoid churning
+     * historical reviewFixes test references. */
     minFrequencyHz: 47.5,
-    /** Maximum allowed frequency (Hz) */
+    /** @deprecated See `minFrequencyHz`. */
     maxFrequencyHz: 52.0,
-    /** Frequency warning threshold - low (Hz) */
+    /** @deprecated Frequency warning band from the legacy droop model. Active-
+     * power dispatch reports overload via `gridOverloadWarning` instead. */
     warningFrequencyLowHz: 49.5,
-    /** Frequency warning threshold - high (Hz) */
+    /** @deprecated See `warningFrequencyLowHz`. */
     warningFrequencyHighHz: 50.5,
 } as const;
 
@@ -101,7 +106,13 @@ export const DEMAND_MODEL = {
     middayTroughHour: 13.0,
 } as const;
 
-// ── Frequency Response Model ─────────────────────────────────
+/**
+ * @deprecated Frequency-droop response model from the legacy simulator. The
+ * active-power-only dispatch pipeline (`tickEngine.simulateTick`) ignores
+ * frequency entirely; this constant is retained only for historical reference
+ * and is referenced by no production code. Delete in a future cleanup pass
+ * once the residual `gridFrequencyHz` pinning is removed too.
+ */
 export const FREQUENCY_MODEL = {
     /** Droop coefficient (Hz per MW imbalance) */
     droopK: 0.0035,

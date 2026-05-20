@@ -8,7 +8,8 @@ type FlowSource = Pick<
     | 'solarCurtailedMw'
     | 'batteryChargeFromSolarMw'
     | 'batteryChargeFromGridMw'
-    | 'batteryDischargeToGridMw'
+    | 'batteryDischargeToLoadMw'
+    | 'batteryDischargeToExportMw'
     | 'gridImportMw'
 >;
 
@@ -16,6 +17,10 @@ export interface VisibleEnergyFlows {
     solarToBessMw: number;
     solarToLoadMw: number;
     solarToExportMw: number;
+    bessToLoadMw: number;
+    bessToExportMw: number;
+    /** Convenience sum kept for the gross-routed metric and any consumer
+     * still wanting a single "BESS to site" indicator. */
     bessToSiteMw: number;
     gridToBessMw: number;
     gridToSiteMw: number;
@@ -29,7 +34,9 @@ function positive(value: number): number {
 export function getVisibleEnergyFlows(state: FlowSource): VisibleEnergyFlows {
     const solarToBessMw = positive(state.batteryChargeFromSolarMw);
     const gridToBessMw = positive(state.batteryChargeFromGridMw);
-    const bessToSiteMw = positive(state.batteryDischargeToGridMw);
+    const bessToLoadMw = positive(state.batteryDischargeToLoadMw);
+    const bessToExportMw = positive(state.batteryDischargeToExportMw);
+    const bessToSiteMw = bessToLoadMw + bessToExportMw;
 
     // Keep local PV consumption and grid export visually separate: they share
     // the PV source, but tell different stories in the 3D scene.
@@ -45,6 +52,8 @@ export function getVisibleEnergyFlows(state: FlowSource): VisibleEnergyFlows {
         solarToBessMw,
         solarToLoadMw,
         solarToExportMw,
+        bessToLoadMw,
+        bessToExportMw,
         bessToSiteMw,
         gridToBessMw,
         gridToSiteMw,

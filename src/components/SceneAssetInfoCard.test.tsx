@@ -12,7 +12,7 @@ describe('SceneAssetInfoCard', () => {
             batterySocPercent: 38.4,
             batteryChargeFromSolarMw: 90,
             batteryChargeFromGridMw: 12,
-            batteryDischargeToGridMw: 0,
+            batteryDischargeToLoadMw: 0, batteryDischargeToExportMw: 0,
         });
 
         render(
@@ -40,7 +40,8 @@ describe('SceneAssetInfoCard', () => {
             solarCurtailedMw: 0,
             batteryChargeFromSolarMw: 34,
             batteryChargeFromGridMw: 11,
-            batteryDischargeToGridMw: 5,
+            batteryDischargeToLoadMw: 5,
+            batteryDischargeToExportMw: 0,
             gridImportMw: 11,
         }));
 

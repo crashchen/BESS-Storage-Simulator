@@ -129,7 +129,8 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
         cumulativeSolarOpportunityCostEur,
         batteryChargeFromSolarMw,
         batteryChargeFromGridMw,
-        batteryDischargeToGridMw,
+        batteryDischargeToLoadMw,
+        batteryDischargeToExportMw,
         solarExportMw,
         solarCurtailedMw,
         gridImportMw,
@@ -188,8 +189,12 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                         <p className="mt-1 font-mono text-base font-bold text-cyan-300">{batteryChargeFromGridMw.toFixed(0)} MW</p>
                     </div>
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS → Grid</p>
-                        <p className="mt-1 font-mono text-base font-bold text-amber-300">{batteryDischargeToGridMw.toFixed(0)} MW</p>
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS → Local Load</p>
+                        <p className="mt-1 font-mono text-base font-bold text-amber-300">{batteryDischargeToLoadMw.toFixed(0)} MW</p>
+                    </div>
+                    <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS → Grid Export</p>
+                        <p className="mt-1 font-mono text-base font-bold text-amber-300">{batteryDischargeToExportMw.toFixed(0)} MW</p>
                     </div>
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                         <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Grid Import</p>

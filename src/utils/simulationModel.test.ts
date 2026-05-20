@@ -8,8 +8,9 @@ function expectActivePowerConservation(
     settlement: ReturnType<typeof settleHybridProjectTick>,
 ) {
     const batteryChargeMw = settlement.batteryChargeFromSolarMw + settlement.batteryChargeFromGridMw;
+    const batteryDischargeTotalMw = settlement.batteryDischargeToLoadMw + settlement.batteryDischargeToExportMw;
     const supplyMw =
-        input.solarOutputMw + settlement.gridImportMw + settlement.gridOverloadMw + settlement.batteryDischargeToGridMw;
+        input.solarOutputMw + settlement.gridImportMw + settlement.gridOverloadMw + batteryDischargeTotalMw;
     const demandMw =
         input.gridDemandMw + settlement.gridExportMw + batteryChargeMw + settlement.solarCurtailedMw;
 
@@ -281,10 +282,32 @@ describe('simulationModel auto-arbitrage', () => {
                 dtHours: 1,
             },
         },
-    ])('preserves active-power conservation while $name', ({ input }) => {
+        {
+            // Demand exceeds the PCC limit and BESS cannot fully cover it:
+            // settlement reports the residual as `gridOverloadMw`, and the
+            // invariant must still hold with overload on the supply side.
+            name: 'overload with battery partially covering deficit',
+            input: {
+                solarOutputMw: 30,
+                gridDemandMw: 300,
+                batteryPowerMw: -80,
+                gridPvEvacuationMw: 102,
+                gridConnectionLimitMw: 150,
+                currentPriceEurMwh: 100,
+                dtHours: 1,
+            },
+        },
+    ])('preserves active-power conservation while $name', ({ name, input }) => {
         const settlement = settleHybridProjectTick(input);
 
         expectActivePowerConservation(input, settlement);
+
+        // Sanity: the overload row must actually exercise the overload branch
+        // so future tweaks to the input don't silently retire the case.
+        if (name === 'overload with battery partially covering deficit') {
+            expect(settlement.gridOverloadMw).toBeGreaterThan(0);
+            expect(settlement.gridOverloadWarning).toBe(true);
+        }
     });
 
     it('does not charge BESS margin opportunity cost for solar that would have been clipped', () => {
@@ -330,7 +353,8 @@ describe('simulationModel auto-arbitrage', () => {
         });
 
         expect(settlement.solarExportMw).toBe(130);
-        expect(settlement.batteryDischargeToGridMw).toBe(0);
+        expect(settlement.batteryDischargeToLoadMw).toBe(0);
+        expect(settlement.batteryDischargeToExportMw).toBe(0);
         expect(settlement.batteryPowerMw).toBe(0);
         expect(settlement.solarCurtailedMw).toBe(0);
         expect(settlement.gridExportMw).toBe(130);

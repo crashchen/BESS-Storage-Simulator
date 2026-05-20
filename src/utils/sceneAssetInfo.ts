@@ -53,7 +53,8 @@ function clampPercent(value: number): number {
 
 export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): SceneAssetInfo {
     const visibleFlows = getVisibleEnergyFlows(state);
-    const bessNetPower = state.batteryDischargeToGridMw - state.batteryChargeFromSolarMw - state.batteryChargeFromGridMw;
+    const bessDischargeTotalMw = state.batteryDischargeToLoadMw + state.batteryDischargeToExportMw;
+    const bessNetPower = bessDischargeTotalMw - state.batteryChargeFromSolarMw - state.batteryChargeFromGridMw;
     const stationThroughput = visibleFlows.grossRoutedMw;
     const bessChargeMw = state.batteryChargeFromSolarMw + state.batteryChargeFromGridMw;
     const gridConnectionMw = selectGridConnectionTotalMw(state);
@@ -83,12 +84,13 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
             flowRows: [
                 { label: 'Net power', value: formatMw(bessNetPower) },
                 { label: 'Charging input', value: formatMw(bessChargeMw) },
-                { label: 'Grid output', value: formatMw(state.batteryDischargeToGridMw) },
+                { label: 'Discharge output', value: formatMw(bessDischargeTotalMw) },
             ],
             rows: [
                 { label: 'Charge from solar', value: formatMw(state.batteryChargeFromSolarMw) },
                 { label: 'Charge from grid', value: formatMw(state.batteryChargeFromGridMw) },
-                { label: 'Discharge to grid', value: formatMw(state.batteryDischargeToGridMw) },
+                { label: 'Discharge to local load', value: formatMw(state.batteryDischargeToLoadMw) },
+                { label: 'Discharge to grid export', value: formatMw(state.batteryDischargeToExportMw) },
                 { label: 'Rated power', value: formatMw(state.batteryPowerRatingMw) },
                 { label: 'Energy capacity', value: formatMwh(state.batteryEnergyCapacityMwh) },
             ],
@@ -117,7 +119,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 { label: 'PV export to grid', value: formatMw(visibleFlows.solarToExportMw) },
                 { label: 'BESS charge path', value: formatMw(bessChargeMw) },
                 { label: 'Grid import to site', value: formatMw(visibleFlows.gridToSiteMw) },
-                { label: 'BESS discharge path', value: formatMw(state.batteryDischargeToGridMw) },
+                { label: 'BESS discharge path', value: formatMw(bessDischargeTotalMw) },
             ],
             rows: [
                 { label: 'PV to local load path', value: formatMw(visibleFlows.solarToLoadMw) },

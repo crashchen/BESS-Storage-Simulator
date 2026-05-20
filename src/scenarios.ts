@@ -1,5 +1,5 @@
 import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from './config';
-import type { BatteryMode, ScenarioPresetId, SimulationStatus, TariffPeriod } from './types';
+import type { BatteryMode, DispatchMode, ScenarioPresetId, SimulationStatus, TariffPeriod } from './types';
 
 export interface ScenarioPreset {
     id: ScenarioPresetId;
@@ -16,7 +16,10 @@ export interface ScenarioPreset {
         batterySocPercent: number;
         batteryMode: BatteryMode;
         batteryPowerMw: number;
-        autoArbEnabled: boolean;
+        /** Dispatch policy in effect when the preset loads. Single source of
+         * truth — the reducer no longer derives this from legacy
+         * `autoArbEnabled + batteryMode`. */
+        dispatchMode: DispatchMode;
         dispatchScalePercent: number;
         tariffRatesEurMwh: Record<TariffPeriod, number>;
         solarAcCapacityMw?: number;
@@ -44,7 +47,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             batterySocPercent: 38,
             batteryMode: 'charging',
             batteryPowerMw: 60,
-            autoArbEnabled: false,
+            dispatchMode: 'manual-charge',
             dispatchScalePercent: 65,
             tariffRatesEurMwh: TARIFF.defaultRatesEurMwh,
             solarAcCapacityMw: 140,
@@ -68,7 +71,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             batterySocPercent: 88,
             batteryMode: 'discharging',
             batteryPowerMw: -145,
-            autoArbEnabled: false,
+            dispatchMode: 'manual-discharge',
             dispatchScalePercent: 115,
             tariffRatesEurMwh: TARIFF.defaultRatesEurMwh,
             solarAcCapacityMw: SOLAR.acCapacityMw,
@@ -90,7 +93,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             batterySocPercent: 24,
             batteryMode: 'charging',
             batteryPowerMw: 70,
-            autoArbEnabled: false,
+            dispatchMode: 'manual-charge',
             dispatchScalePercent: 75,
             tariffRatesEurMwh: {
                 ...TARIFF.defaultRatesEurMwh,
@@ -113,7 +116,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             batterySocPercent: 34,
             batteryMode: 'idle',
             batteryPowerMw: 0,
-            autoArbEnabled: false,
+            dispatchMode: 'manual-idle',
             dispatchScalePercent: 150,
             tariffRatesEurMwh: TARIFF.defaultRatesEurMwh,
             solarAcCapacityMw: SOLAR.acCapacityMw,
