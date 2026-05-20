@@ -163,6 +163,58 @@ describe('tickEngine', () => {
         expect(next.gridOverloadMw).toBeGreaterThan(0);
     });
 
+    // AUTO peak pacing: with multiple hours of peak left, BESS should NOT dump
+    // full transferLimit; it should pace so the usable energy lasts ~the remaining
+    // peak window. With ~5 hours left and a full BESS, paced power is well below
+    // the rated transfer limit.
+    it('auto peak dispatch paces discharge over the remaining peak window', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            autoArbEnabled: true,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 18.0,
+            batterySocPercent: 90,
+            batteryMode: 'idle' as const,
+            dispatchScalePercent: 100,
+        };
+        const transferLimitMw = Math.min(initial.batteryPowerRatingMw, initial.gridBessConnectionMw);
+
+        const next = simulateTick(initial, 0.001, 1, () => 0.5);
+
+        // Discharging (negative power), but not full-bore.
+        expect(next.batteryPowerMw).toBeLessThan(0);
+        expect(Math.abs(next.batteryPowerMw)).toBeLessThan(transferLimitMw);
+
+        // Sanity: usable energy ≈ (90% - reserveSoc) × capacity, spread across
+        // ~5 peak hours, scaled by discharge efficiency.
+        // Expect roughly (energy × η_d / 5h) to be in the [40, 100] MW range
+        // for the default 744 MWh / 188 MW BESS.
+        expect(Math.abs(next.batteryPowerMw)).toBeGreaterThan(20);
+    });
+
+    // Near the end of the peak window with energy still available, the same
+    // BESS state should approach the transfer limit (less time → faster pace).
+    it('auto peak pacing approaches the transfer limit as the window nears its end', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            autoArbEnabled: true,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 22.7,
+            batterySocPercent: 80,
+            batteryMode: 'idle' as const,
+            dispatchScalePercent: 100,
+        };
+        const transferLimitMw = Math.min(initial.batteryPowerRatingMw, initial.gridBessConnectionMw);
+
+        const next = simulateTick(initial, 0.001, 1, () => 0.5);
+
+        // With ~18 minutes left and a still-mostly-full BESS, the paced rate
+        // should be clamped to the transfer limit.
+        expect(next.batteryPowerMw).toBeCloseTo(-transferLimitMw, 1);
+    });
+
     it('allows manual charging regardless of tariff period while respecting active-power limits', () => {
         const initial = {
             ...createInitialGridState(0),

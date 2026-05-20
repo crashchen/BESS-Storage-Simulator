@@ -147,6 +147,7 @@ function getAutoDesiredBatteryPowerMw(
     gridDemandMw: number,
     tariffPeriod: GridState['tariffPeriod'],
     dtHours: number,
+    timeOfDay: number,
 ): number {
     const transferLimitMw = getBatteryTransferLimitMw(state);
     const solarSurplusMw = Math.max(0, solarOutputMw - gridDemandMw);
@@ -155,7 +156,19 @@ function getAutoDesiredBatteryPowerMw(
     const nightTargetEnergyMwh = (AUTO_ARB.nightTargetSocPercent / 100) * state.batteryEnergyCapacityMwh;
 
     if (tariffPeriod === 'peak') {
-        return currentEnergyMwh > 0 ? -transferLimitMw : 0;
+        // Pace discharge across the remaining peak window instead of dumping
+        // the full transfer limit on entry. Reserve `peakReserveSocPercent`
+        // so the BESS doesn't run flat at the start. Convert internal energy
+        // headroom into PCC power via the discharge efficiency.
+        const reserveEnergyMwh = (AUTO_ARB.peakReserveSocPercent / 100) * state.batteryEnergyCapacityMwh;
+        const usableEnergyMwh = Math.max(0, currentEnergyMwh - reserveEnergyMwh);
+        if (usableEnergyMwh <= 0) return 0;
+        const peakRemainingHours = Math.max(
+            AUTO_ARB.forecastStepHours,
+            AUTO_ARB.peakEndHour - timeOfDay,
+        );
+        const pacedMw = (usableEnergyMwh * BESS.dischargeEfficiency) / peakRemainingHours;
+        return -Math.min(transferLimitMw, pacedMw);
     }
 
     if (tariffPeriod === 'off-peak') {
@@ -185,12 +198,13 @@ function getDesiredBatteryPowerMw(
     gridDemandMw: number,
     tariffPeriod: GridState['tariffPeriod'],
     dtHours: number,
+    timeOfDay: number,
 ): number {
     const transferLimitMw = getBatteryTransferLimitMw(state);
 
     switch (state.dispatchMode) {
         case 'auto':
-            return getAutoDesiredBatteryPowerMw(state, solarOutputMw, gridDemandMw, tariffPeriod, dtHours);
+            return getAutoDesiredBatteryPowerMw(state, solarOutputMw, gridDemandMw, tariffPeriod, dtHours, timeOfDay);
         case 'manual-charge':
             return transferLimitMw;
         case 'manual-discharge':
@@ -225,7 +239,7 @@ function simulateTickStep(
     );
     const tariffPeriod = getTariffPeriod(operationalTimeOfDay);
     const currentPriceEurMwh = getElectricityPriceEurMwh(operationalTimeOfDay, prev.tariffRatesEurMwh);
-    const desiredBatteryPowerMw = getDesiredBatteryPowerMw(prev, solarOutputMw, gridDemandMw, tariffPeriod, dtHours);
+    const desiredBatteryPowerMw = getDesiredBatteryPowerMw(prev, solarOutputMw, gridDemandMw, tariffPeriod, dtHours, operationalTimeOfDay);
     const requestedBatteryPowerMw = clampBatteryPowerToEnergy(prev, desiredBatteryPowerMw, dtHours);
 
     const settlement = settleHybridProjectTick({
