@@ -34,7 +34,8 @@ describe('SceneAssetInfoCard', () => {
 
     it('exposes PCS/MV throughput as a derived routed-flow value', () => {
         const info = getSceneAssetInfo('pcs-mv', makeGridState({
-            solarOutputMw: 106,
+            solarOutputMw: 146,
+            gridDemandMw: 40,
             solarExportMw: 72,
             solarCurtailedMw: 0,
             batteryChargeFromSolarMw: 34,
@@ -44,8 +45,9 @@ describe('SceneAssetInfoCard', () => {
         }));
 
         expect(info.title).toBe('PCS / MV Station');
-        expect(info.primary).toEqual({ label: 'Gross routed flow', value: '122.0 MW' });
-        expect(info.flowRows).toContainEqual({ label: 'PV to site/grid', value: '72.0 MW' });
+        expect(info.primary).toEqual({ label: 'Gross routed flow', value: '162.0 MW' });
+        expect(info.flowRows).toContainEqual({ label: 'PV to local load', value: '40.0 MW' });
+        expect(info.flowRows).toContainEqual({ label: 'PV export to grid', value: '72.0 MW' });
         expect(info.flowRows).toContainEqual({ label: 'BESS charge path', value: '45.0 MW' });
     });
 

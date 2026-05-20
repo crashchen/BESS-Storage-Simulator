@@ -113,13 +113,15 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 tone: 'cyan',
             },
             flowRows: [
-                { label: 'PV to site/grid', value: formatMw(visibleFlows.solarToSiteMw) },
+                { label: 'PV to local load', value: formatMw(visibleFlows.solarToLoadMw) },
+                { label: 'PV export to grid', value: formatMw(visibleFlows.solarToExportMw) },
                 { label: 'BESS charge path', value: formatMw(bessChargeMw) },
                 { label: 'Grid import to site', value: formatMw(visibleFlows.gridToSiteMw) },
                 { label: 'BESS discharge path', value: formatMw(state.batteryDischargeToGridMw) },
             ],
             rows: [
-                { label: 'PV to site/grid path', value: formatMw(visibleFlows.solarToSiteMw) },
+                { label: 'PV to local load path', value: formatMw(visibleFlows.solarToLoadMw) },
+                { label: 'PV export path', value: formatMw(visibleFlows.solarToExportMw) },
                 { label: 'Solar to BESS path', value: formatMw(visibleFlows.solarToBessMw) },
                 { label: 'Grid to BESS path', value: formatMw(visibleFlows.gridToBessMw) },
                 { label: 'Grid import to site path', value: formatMw(visibleFlows.gridToSiteMw) },

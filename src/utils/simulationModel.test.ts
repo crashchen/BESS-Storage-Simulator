@@ -3,6 +3,19 @@ import { AUTO_ARB, BESS, SOLAR } from '../config';
 import { makeGridState } from '../test/fixtures';
 import { computeGridDemandMw, computeSolarOutputMw, getAutoArbOutlook, getAutoArbPlan, integrateWindowEnergy, settleHybridProjectTick } from './simulationModel';
 
+function expectActivePowerConservation(
+    input: Parameters<typeof settleHybridProjectTick>[0],
+    settlement: ReturnType<typeof settleHybridProjectTick>,
+) {
+    const batteryChargeMw = settlement.batteryChargeFromSolarMw + settlement.batteryChargeFromGridMw;
+    const supplyMw =
+        input.solarOutputMw + settlement.gridImportMw + settlement.gridOverloadMw + settlement.batteryDischargeToGridMw;
+    const demandMw =
+        input.gridDemandMw + settlement.gridExportMw + batteryChargeMw + settlement.solarCurtailedMw;
+
+    expect(supplyMw).toBeCloseTo(demandMw, 6);
+}
+
 describe('simulationModel demand curve', () => {
     it('produces the same demand curve at the Romania baseline (288 MW total)', () => {
         const baselineFormula = (timeOfDay: number) => {
@@ -229,6 +242,49 @@ describe('simulationModel auto-arbitrage', () => {
         expect(settlement.solarExportMw).toBe(20);
         expect(settlement.projectPnlDeltaEur).toBe(2000);
         expect(settlement.bessMarginDeltaEur).toBe(-2000);
+    });
+
+    it.each([
+        {
+            name: 'charging from PV surplus',
+            input: {
+                solarOutputMw: 80,
+                gridDemandMw: 40,
+                batteryPowerMw: 20,
+                gridPvEvacuationMw: 102,
+                gridConnectionLimitMw: 288,
+                currentPriceEurMwh: 100,
+                dtHours: 1,
+            },
+        },
+        {
+            name: 'discharging into local deficit',
+            input: {
+                solarOutputMw: 20,
+                gridDemandMw: 70,
+                batteryPowerMw: -30,
+                gridPvEvacuationMw: 102,
+                gridConnectionLimitMw: 288,
+                currentPriceEurMwh: 100,
+                dtHours: 1,
+            },
+        },
+        {
+            name: 'idle with grid import and export clamp',
+            input: {
+                solarOutputMw: 150,
+                gridDemandMw: 30,
+                batteryPowerMw: 0,
+                gridPvEvacuationMw: 90,
+                gridConnectionLimitMw: 100,
+                currentPriceEurMwh: 100,
+                dtHours: 1,
+            },
+        },
+    ])('preserves active-power conservation while $name', ({ input }) => {
+        const settlement = settleHybridProjectTick(input);
+
+        expectActivePowerConservation(input, settlement);
     });
 
     it('does not charge BESS margin opportunity cost for solar that would have been clipped', () => {

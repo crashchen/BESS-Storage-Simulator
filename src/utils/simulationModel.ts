@@ -139,6 +139,11 @@ export function integrateWindowEnergy(fromHour: number, toHour: number, samplePo
     return energyMwh;
 }
 
+/**
+ * @deprecated Historical forecast helper retained for regression tests and
+ * possible future strategy work. The live simulator dispatch path now uses the
+ * active-power-only intent/clamp/settlement pipeline in `tickEngine`.
+ */
 export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number): AutoArbOutlook {
     const transferLimitMw = getBatteryTransferLimitMw(state);
     const currentEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
@@ -215,6 +220,11 @@ export function getAutoArbOutlook(state: DispatchModelState, timeOfDay: number):
     };
 }
 
+/**
+ * @deprecated Historical forecast helper retained for regression tests and
+ * possible future strategy work. The live simulator dispatch path now uses the
+ * active-power-only intent/clamp/settlement pipeline in `tickEngine`.
+ */
 export function getAutoArbPlan(
     state: DispatchModelState,
     timeOfDay: number,
@@ -358,6 +368,8 @@ export function settleHybridProjectTick({
         const importHeadroomMw = Math.max(0, pccLimitMw - baseGridImportMw);
         batteryChargeFromGridMw = Math.min(requestedGridChargeMw, importHeadroomMw);
         effectiveBatteryPowerMw = batteryChargeFromSolarMw + batteryChargeFromGridMw;
+        // Base site demand can already exceed PCC import capacity; clamp served
+        // import and report the remainder as overload below.
         gridImportMw = Math.min(pccLimitMw, baseGridImportMw + batteryChargeFromGridMw);
         gridOverloadMw = Math.max(0, baseGridImportMw - pccLimitMw);
 

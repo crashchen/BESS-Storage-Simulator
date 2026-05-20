@@ -417,7 +417,7 @@ const PowerLines = memo(function PowerLines() {
 
 // ── Grid Building (Load Consumer) ────────────────────────────
 const GRID_NODE_POSITION: [number, number, number] = [8.8, 0, 0.25];
-const SITE_LOAD_POSITION: [number, number, number] = [6.05, 0.1, 1.35];
+const SITE_LOAD_POSITION = SCENE_3D.pads.siteLoad.position;
 
 const LoadBuilding = memo(function LoadBuilding({
     interaction,
@@ -822,6 +822,18 @@ const FLOW_PATHS = {
         false,
         'centripetal',
     ),
+    // Solar array center → PCS/MV → site load marker (local PV consumption)
+    solarToLoad: new CatmullRomCurve3(
+        [
+            flowPoint(SOLAR_FLOW_POINT),
+            flowPoint(REAR_BUS_POINT_A),
+            flowPoint(REAR_BUS_POINT_B),
+            flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(SITE_LOAD_FLOW_POINT),
+        ],
+        false,
+        'centripetal',
+    ),
     // BESS → PCS/MV → Grid
     bessToGrid: new CatmullRomCurve3(
         [
@@ -953,7 +965,8 @@ function EnergyFlow({ curve, color, powerMw, maxPowerMw, active }: EnergyFlowPro
 // ── Energy Flow Controller ───────────────────────────────────
 interface EnergyFlowSystemProps {
     solarToBessMw: number;
-    solarToSiteMw: number;
+    solarToLoadMw: number;
+    solarToExportMw: number;
     bessToSiteMw: number;
     gridToBessMw: number;
     gridToSiteMw: number;
@@ -964,7 +977,8 @@ interface EnergyFlowSystemProps {
 
 function EnergyFlowSystem({
     solarToBessMw,
-    solarToSiteMw,
+    solarToLoadMw,
+    solarToExportMw,
     bessToSiteMw,
     gridToBessMw,
     gridToSiteMw,
@@ -983,13 +997,22 @@ function EnergyFlowSystem({
                 active={solarToBessMw > 0.5}
             />
             
-            {/* Solar → Site/Grid node (local demand + direct export) */}
+            {/* Solar → local load (direct PV consumption) */}
+            <EnergyFlow
+                curve={FLOW_PATHS.solarToLoad}
+                color={COLOR_SOLAR_FLOW}
+                powerMw={solarToLoadMw}
+                maxPowerMw={maxSolarMw}
+                active={solarToLoadMw > 0.5}
+            />
+
+            {/* Solar → Grid node (direct export) */}
             <EnergyFlow
                 curve={FLOW_PATHS.solarToGrid}
                 color={COLOR_SOLAR_FLOW}
-                powerMw={solarToSiteMw}
+                powerMw={solarToExportMw}
                 maxPowerMw={maxSolarMw}
-                active={solarToSiteMw > 0.5}
+                active={solarToExportMw > 0.5}
             />
             
             {/* BESS → Site/Grid node (local support + export) */}
@@ -1132,7 +1155,8 @@ export function MicrogridScene({
             {/* Energy flow animations */}
             <EnergyFlowSystem
                 solarToBessMw={visibleFlows.solarToBessMw}
-                solarToSiteMw={visibleFlows.solarToSiteMw}
+                solarToLoadMw={visibleFlows.solarToLoadMw}
+                solarToExportMw={visibleFlows.solarToExportMw}
                 bessToSiteMw={visibleFlows.bessToSiteMw}
                 gridToBessMw={visibleFlows.gridToBessMw}
                 gridToSiteMw={visibleFlows.gridToSiteMw}

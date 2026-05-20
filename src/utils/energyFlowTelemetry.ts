@@ -3,6 +3,8 @@ import type { GridState } from '../types';
 type FlowSource = Pick<
     GridState,
     | 'solarOutputMw'
+    | 'gridDemandMw'
+    | 'solarExportMw'
     | 'solarCurtailedMw'
     | 'batteryChargeFromSolarMw'
     | 'batteryChargeFromGridMw'
@@ -12,7 +14,8 @@ type FlowSource = Pick<
 
 export interface VisibleEnergyFlows {
     solarToBessMw: number;
-    solarToSiteMw: number;
+    solarToLoadMw: number;
+    solarToExportMw: number;
     bessToSiteMw: number;
     gridToBessMw: number;
     gridToSiteMw: number;
@@ -28,12 +31,10 @@ export function getVisibleEnergyFlows(state: FlowSource): VisibleEnergyFlows {
     const gridToBessMw = positive(state.batteryChargeFromGridMw);
     const bessToSiteMw = positive(state.batteryDischargeToGridMw);
 
-    // `solarExportMw` is only the post-demand export. For 3D storytelling we
-    // also need PV that is serving local demand, otherwise PV appears inactive
-    // whenever it is generated and consumed immediately at the site node.
-    const solarToSiteMw = positive(
-        state.solarOutputMw - state.batteryChargeFromSolarMw - state.solarCurtailedMw,
-    );
+    // Keep local PV consumption and grid export visually separate: they share
+    // the PV source, but tell different stories in the 3D scene.
+    const solarToLoadMw = positive(Math.min(state.solarOutputMw, state.gridDemandMw));
+    const solarToExportMw = positive(state.solarExportMw);
 
     // Grid import can either charge the battery or serve residual local demand.
     // Render both routes separately so grid support remains visible even when
@@ -42,10 +43,12 @@ export function getVisibleEnergyFlows(state: FlowSource): VisibleEnergyFlows {
 
     return {
         solarToBessMw,
-        solarToSiteMw,
+        solarToLoadMw,
+        solarToExportMw,
         bessToSiteMw,
         gridToBessMw,
         gridToSiteMw,
-        grossRoutedMw: solarToBessMw + solarToSiteMw + bessToSiteMw + gridToBessMw + gridToSiteMw,
+        grossRoutedMw:
+            solarToBessMw + solarToLoadMw + solarToExportMw + bessToSiteMw + gridToBessMw + gridToSiteMw,
     };
 }

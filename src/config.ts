@@ -271,5 +271,8 @@ export const SCENE_3D = {
             emissiveIntensity: 0.18,
             flowWaypointHeight: 1.65,
         },
+        siteLoad: {
+            position: [6.05, 0.1, 1.35] as const,
+        },
     },
 } as const;
