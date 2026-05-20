@@ -1,5 +1,5 @@
 import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from './config';
-import type { BatteryMode, DispatchMode, ScenarioPresetId, SimulationStatus, TariffPeriod } from './types';
+import type { DispatchMode, ScenarioPresetId, SimulationStatus, TariffPeriod } from './types';
 
 export interface ScenarioPreset {
     id: ScenarioPresetId;
@@ -9,16 +9,16 @@ export interface ScenarioPreset {
     description: string;
     expectedFlow: string;
     operatorCue: string;
+    /** A preset declares dispatch intent + the scene state needed to load the
+     * narrative; the reducer derives `batteryMode` / `autoArbEnabled` from
+     * `dispatchMode` + `sign(batteryPowerMw)` so presets can't drift out of
+     * the dispatch contract. */
     state: {
         simulationStatus: SimulationStatus;
         timeOfDay: number;
         timeSpeed: number;
         batterySocPercent: number;
-        batteryMode: BatteryMode;
         batteryPowerMw: number;
-        /** Dispatch policy in effect when the preset loads. Single source of
-         * truth — the reducer no longer derives this from legacy
-         * `autoArbEnabled + batteryMode`. */
         dispatchMode: DispatchMode;
         dispatchScalePercent: number;
         tariffRatesEurMwh: Record<TariffPeriod, number>;
@@ -45,7 +45,6 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             timeOfDay: 12.5,
             timeSpeed: SIMULATION.defaultTimeSpeed,
             batterySocPercent: 38,
-            batteryMode: 'charging',
             batteryPowerMw: 60,
             dispatchMode: 'manual-charge',
             dispatchScalePercent: 65,
@@ -69,7 +68,6 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             timeOfDay: 19.15,
             timeSpeed: SIMULATION.defaultTimeSpeed,
             batterySocPercent: 88,
-            batteryMode: 'discharging',
             batteryPowerMw: -145,
             dispatchMode: 'manual-discharge',
             dispatchScalePercent: 115,
@@ -91,7 +89,6 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             timeOfDay: 2,
             timeSpeed: SIMULATION.defaultTimeSpeed,
             batterySocPercent: 24,
-            batteryMode: 'charging',
             batteryPowerMw: 70,
             dispatchMode: 'manual-charge',
             dispatchScalePercent: 75,
@@ -114,7 +111,6 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             timeOfDay: 19.4,
             timeSpeed: SIMULATION.defaultTimeSpeed,
             batterySocPercent: 34,
-            batteryMode: 'idle',
             batteryPowerMw: 0,
             dispatchMode: 'manual-idle',
             dispatchScalePercent: 150,

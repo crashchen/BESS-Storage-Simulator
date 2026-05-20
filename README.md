@@ -96,8 +96,9 @@ src/
 
 - The baseline numbers intentionally follow the provided project screenshot, including the displayed `188 MW / 744 MWh` BESS configuration.
 - `Project P&L` and `BESS Margin` are intentionally separated:
-  - `Project P&L` = direct PV sales + BESS discharge revenue − grid-paid charging cost.
-  - `BESS Margin` = BESS discharge revenue − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
+  - `Project P&L` = direct PV sales + BESS discharge value − grid-paid charging cost.
+  - `BESS Margin` = BESS discharge value − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
+  - `BESS discharge value` lumps real export revenue (`batteryDischargeToExportMw`) and avoided-import value (`batteryDischargeToLoadMw` × current tariff). Both are valued at the same price because a BESS-served local MW directly displaces a grid-imported MW at the PCC, one-for-one.
 - The current dispatch model intentionally focuses on **Energy Arbitrage + Self-consumption** using active power only. It does not model FCR, frequency response, voltage control, protection trips, or AC transient dynamics.
 - Local supply/demand gaps are represented as grid import/export at the PCC. If import demand exceeds the configured PCC limit, the app surfaces `PCC Overload` instead of simulating grid-frequency collapse.
 - The built-in `AUTO` dispatch is a simplified rule tree: peak discharge, off-peak reserve charging to 40% SoC, PV-surplus charging, deficit discharge outside off-peak, and PV-priority export curtailment handling.

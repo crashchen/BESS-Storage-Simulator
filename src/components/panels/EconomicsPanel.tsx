@@ -188,13 +188,19 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                         <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Grid → BESS</p>
                         <p className="mt-1 font-mono text-base font-bold text-cyan-300">{batteryChargeFromGridMw.toFixed(0)} MW</p>
                     </div>
+                    {/* Single BESS discharge tile (avoids the 10th-tile orphan at xl:grid-cols-3)
+                        and visually pairs the two destinations of BESS energy so the user can
+                        see avoided-import vs export at a glance. */}
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS → Local Load</p>
-                        <p className="mt-1 font-mono text-base font-bold text-amber-300">{batteryDischargeToLoadMw.toFixed(0)} MW</p>
-                    </div>
-                    <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS → Grid Export</p>
-                        <p className="mt-1 font-mono text-base font-bold text-amber-300">{batteryDischargeToExportMw.toFixed(0)} MW</p>
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS Discharge</p>
+                        <p className="mt-1 font-mono text-base font-bold text-amber-300">
+                            {(batteryDischargeToLoadMw + batteryDischargeToExportMw).toFixed(0)} MW
+                        </p>
+                        <p className="mt-1 font-mono text-[10px] leading-tight text-slate-400">
+                            <span className="text-amber-200">{batteryDischargeToLoadMw.toFixed(0)}</span> to local load
+                            {' · '}
+                            <span className="text-amber-200">{batteryDischargeToExportMw.toFixed(0)}</span> to grid export
+                        </p>
                     </div>
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                         <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Grid Import</p>
@@ -233,14 +239,16 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                         Settlement Breakdown (auditable)
                     </summary>
                     <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
-                        <span className="font-semibold text-emerald-300">Project P&amp;L</span> = direct PV sales + BESS discharge revenue − grid-paid charging cost.
+                        <span className="font-semibold text-emerald-300">Project P&amp;L</span> = direct PV sales + BESS discharge value − grid-paid charging cost.
                         {' '}
-                        <span className="font-semibold text-sky-300">BESS Margin</span> = BESS discharge revenue − grid-paid charging cost − <span className="italic">Solar → BESS</span> opportunity cost (delayed sale value).
+                        <span className="font-semibold text-sky-300">BESS Margin</span> = BESS discharge value − grid-paid charging cost − <span className="italic">Solar → BESS</span> opportunity cost (delayed sale value).
+                        {' '}
+                        <span className="italic">BESS discharge value</span> sums real export revenue and avoided-import value when BESS serves local demand — both are priced at the current tariff because they offset each other one-for-one at the PCC.
                     </p>
                     <div className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 font-mono text-[11px] tabular-nums">
                         <span className="text-slate-400">Solar → Grid revenue</span>
                         <span className="text-emerald-300">{formatSignedEur(cumulativeSolarExportRevenueEur)}</span>
-                        <span className="text-slate-400">BESS discharge revenue</span>
+                        <span className="text-slate-400">BESS discharge value</span>
                         <span className="text-amber-300">{formatSignedEur(cumulativeBessDischargeRevenueEur)}</span>
                         <span className="text-slate-400">Grid → BESS cost</span>
                         <span className="text-rose-300">{formatSignedEur(-cumulativeBessGridChargeCostEur)}</span>
