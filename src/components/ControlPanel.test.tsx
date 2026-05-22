@@ -19,7 +19,7 @@ describe('ControlPanel', () => {
 
         render(
             <ControlPanel
-                gridState={makeGridState({ dispatchMode: 'manual-idle', autoArbEnabled: false })}
+                gridState={makeGridState({ dispatchMode: 'manual-idle' })}
                 history={[]}
                 onCommand={onCommand}
             />,
@@ -28,7 +28,7 @@ describe('ControlPanel', () => {
         await openLeftDrawer(user);
         await user.click(screen.getByRole('button', { name: /^auto$/i }));
 
-        expect(onCommand).toHaveBeenCalledWith({ type: 'SET_AUTO_ARB_ENABLED', payload: true });
+        expect(onCommand).toHaveBeenCalledWith({ type: 'SET_DISPATCH_MODE', payload: 'auto' });
     });
 
     it('dispatches manual charge mode from the dispatch controls', async () => {

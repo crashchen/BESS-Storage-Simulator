@@ -225,17 +225,15 @@ describe('gridReducer applyCommand', () => {
         expect(next.gridOverloadWarning).toBe(true);
     });
 
-    it('CHARGE switches to charging mode and disables auto-arb', () => {
+    it('CHARGE switches to manual-charge mode', () => {
         const prev = makeGridState({
             batteryMode: 'idle',
-            autoArbEnabled: true,
             dispatchMode: 'auto',
         });
         const { next, sideEffects } = applyCommand(prev, { type: 'CHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('charging');
         expect(next.dispatchMode).toBe('manual-charge');
-        expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
 
@@ -243,23 +241,20 @@ describe('gridReducer applyCommand', () => {
         const prev = makeGridState({
             batterySocPercent: 100,
             batteryMode: 'idle',
-            autoArbEnabled: true,
         });
         const { next, sideEffects } = applyCommand(prev, { type: 'CHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('idle');
         expect(next.dispatchMode).toBe('manual-charge');
-        expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
 
-    it('DISCHARGE switches to discharging mode and disables auto-arb', () => {
-        const prev = makeGridState({ batteryMode: 'idle', autoArbEnabled: true });
+    it('DISCHARGE switches to manual-discharge mode', () => {
+        const prev = makeGridState({ batteryMode: 'idle' });
         const { next, sideEffects } = applyCommand(prev, { type: 'DISCHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('discharging');
         expect(next.dispatchMode).toBe('manual-discharge');
-        expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
 
@@ -267,23 +262,20 @@ describe('gridReducer applyCommand', () => {
         const prev = makeGridState({
             batterySocPercent: 0,
             batteryMode: 'idle',
-            autoArbEnabled: true,
         });
         const { next, sideEffects } = applyCommand(prev, { type: 'DISCHARGE' }, NOW);
 
         expect(next.batteryMode).toBe('idle');
         expect(next.dispatchMode).toBe('manual-discharge');
-        expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
 
-    it('IDLE switches to idle mode and disables auto-arb', () => {
-        const prev = makeGridState({ batteryMode: 'charging', autoArbEnabled: true });
+    it('IDLE switches to manual-idle mode', () => {
+        const prev = makeGridState({ batteryMode: 'charging' });
         const { next, sideEffects } = applyCommand(prev, { type: 'IDLE' }, NOW);
 
         expect(next.batteryMode).toBe('idle');
         expect(next.dispatchMode).toBe('manual-idle');
-        expect(next.autoArbEnabled).toBe(false);
         expect(sideEffects).toEqual({});
     });
 
@@ -504,10 +496,9 @@ describe('gridReducer applyCommand', () => {
         );
     });
 
-    it('TOGGLE_AUTO_ARB flips auto-arb, resets the battery to idle, and zeroes commanded power', () => {
+    it('SET_DISPATCH_MODE switches mode, resets to idle, and zeroes commanded power', () => {
         const prev = makeGridState({
             simulationStatus: 'paused',
-            autoArbEnabled: false,
             dispatchMode: 'manual-idle',
             batteryMode: 'discharging',
             batteryPowerMw: -150,
@@ -516,9 +507,8 @@ describe('gridReducer applyCommand', () => {
             batteryDischargeToLoadMw: 90,
             batteryDischargeToExportMw: 60,
         });
-        const { next } = applyCommand(prev, { type: 'TOGGLE_AUTO_ARB' }, NOW);
+        const { next } = applyCommand(prev, { type: 'SET_DISPATCH_MODE', payload: 'auto' }, NOW);
 
-        expect(next.autoArbEnabled).toBe(true);
         expect(next.dispatchMode).toBe('auto');
         expect(next.batteryMode).toBe('idle');
         expect(next.batteryPowerMw).toBe(0);
@@ -528,43 +518,56 @@ describe('gridReducer applyCommand', () => {
         expect(next.batteryDischargeToExportMw).toBe(0);
     });
 
-    it('SET_AUTO_ARB_ENABLED sets the flag exactly to the payload idempotently', () => {
+    it('SET_DISPATCH_MODE is idempotent when the target mode equals the current mode', () => {
         const prev = makeGridState({
-            autoArbEnabled: false,
             dispatchMode: 'manual-charge',
             batteryMode: 'charging',
             batteryPowerMw: 80,
         });
-        const first = applyCommand(prev, { type: 'SET_AUTO_ARB_ENABLED', payload: true }, NOW);
-        const second = applyCommand(first.next, { type: 'SET_AUTO_ARB_ENABLED', payload: true }, NOW);
+        const first = applyCommand(prev, { type: 'SET_DISPATCH_MODE', payload: 'auto' }, NOW);
+        const second = applyCommand(first.next, { type: 'SET_DISPATCH_MODE', payload: 'auto' }, NOW);
 
-        expect(first.next.autoArbEnabled).toBe(true);
         expect(first.next.dispatchMode).toBe('auto');
         expect(first.next.batteryMode).toBe('idle');
         expect(first.next.batteryPowerMw).toBe(0);
-        expect(second.next.autoArbEnabled).toBe(true);
         expect(second.next.dispatchMode).toBe('auto');
         expect(second.next.batteryMode).toBe('idle');
         expect(second.next.batteryPowerMw).toBe(0);
     });
 
-    // dispatchMode is the new single source of truth; this round-trip pins
-    // that going auto → manual → auto cleanly restores `'auto'` semantics
-    // (autoArbEnabled flag, dispatchMode, idle-on-takeover).
+    // dispatchMode is the single source of truth; round-trip auto → manual
+    // → auto must restore clean auto semantics (idle-on-takeover, no stale
+    // power from the manual leg).
     it('auto → manual-charge → auto round-trips back to a clean auto state', () => {
-        const start = makeGridState({ dispatchMode: 'auto', autoArbEnabled: true, batteryMode: 'idle' });
+        const start = makeGridState({ dispatchMode: 'auto', batteryMode: 'idle' });
 
         const toManual = applyCommand(start, { type: 'CHARGE' }, NOW).next;
         expect(toManual.dispatchMode).toBe('manual-charge');
-        expect(toManual.autoArbEnabled).toBe(false);
         expect(toManual.batteryMode).toBe('charging');
 
-        const backToAuto = applyCommand(toManual, { type: 'TOGGLE_AUTO_ARB' }, NOW).next;
+        const backToAuto = applyCommand(toManual, { type: 'SET_DISPATCH_MODE', payload: 'auto' }, NOW).next;
         expect(backToAuto.dispatchMode).toBe('auto');
-        expect(backToAuto.autoArbEnabled).toBe(true);
         // Taking over from manual resets to idle until the next tick computes
         // the auto policy power.
         expect(backToAuto.batteryMode).toBe('idle');
         expect(backToAuto.batteryPowerMw).toBe(0);
+    });
+
+    // SET_DISPATCH_MODE must agree with the CHARGE / DISCHARGE / IDLE shortcuts
+    // for every manual mode — otherwise the UI has two paths to the same mode
+    // that produce different `batteryMode` snapshots. Locks the SoC-aware
+    // batteryMode preseeding so the two paths stay equivalent.
+    it.each([
+        ['manual-charge', { type: 'CHARGE' as const }],
+        ['manual-discharge', { type: 'DISCHARGE' as const }],
+        ['manual-idle', { type: 'IDLE' as const }],
+    ] as const)('SET_DISPATCH_MODE to %s matches the equivalent shortcut command', (mode, shortcut) => {
+        const prev = makeGridState({ dispatchMode: 'auto', batteryMode: 'idle' });
+        const viaSet = applyCommand(prev, { type: 'SET_DISPATCH_MODE', payload: mode }, NOW).next;
+        const viaShortcut = applyCommand(prev, shortcut, NOW).next;
+
+        expect(viaSet.dispatchMode).toBe(viaShortcut.dispatchMode);
+        expect(viaSet.batteryMode).toBe(viaShortcut.batteryMode);
+        expect(viaSet.batteryPowerMw).toBe(viaShortcut.batteryPowerMw);
     });
 });

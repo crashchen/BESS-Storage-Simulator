@@ -76,7 +76,6 @@ export function createInitialGridState(timestamp = 0): GridState {
         cumulativeBessDischargeRevenueEur: 0,
         cumulativeBessGridChargeCostEur: 0,
         cumulativeSolarOpportunityCostEur: 0,
-        autoArbEnabled: true,
     };
 }
 
@@ -322,7 +321,6 @@ function simulateTickStep(
         cumulativeBessDischargeRevenueEur,
         cumulativeBessGridChargeCostEur,
         cumulativeSolarOpportunityCostEur,
-        autoArbEnabled: prev.dispatchMode === 'auto',
     };
 }
 

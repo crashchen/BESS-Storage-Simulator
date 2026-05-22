@@ -125,7 +125,6 @@ describe('tickEngine', () => {
         const lowSocNightState = {
             ...initial,
             simulationStatus: 'running' as const,
-            autoArbEnabled: true,
             dispatchMode: 'auto' as const,
             timeOfDay: 2,
             dispatchScalePercent: 100,
@@ -146,7 +145,6 @@ describe('tickEngine', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
-            autoArbEnabled: true,
             dispatchMode: 'auto' as const,
             timeOfDay: 2,
             dispatchScalePercent: 800,
@@ -171,7 +169,6 @@ describe('tickEngine', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
-            autoArbEnabled: true,
             dispatchMode: 'auto' as const,
             timeOfDay: 18.0,
             batterySocPercent: 90,
@@ -199,7 +196,6 @@ describe('tickEngine', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
-            autoArbEnabled: true,
             dispatchMode: 'auto' as const,
             timeOfDay: 22.7,
             batterySocPercent: 80,
@@ -219,7 +215,6 @@ describe('tickEngine', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
-            autoArbEnabled: false,
             dispatchMode: 'manual-charge' as const,
             timeOfDay: 19,
             dispatchScalePercent: 50,
@@ -239,7 +234,6 @@ describe('tickEngine', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
-            autoArbEnabled: false,
             dispatchMode: 'manual-charge' as const,
             timeOfDay: 12,
             dispatchScalePercent: 50,
@@ -263,7 +257,6 @@ describe('tickEngine', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
-            autoArbEnabled: true,
             dispatchMode: 'auto' as const,
             batterySocPercent: 20,
             batteryMode: 'idle' as const,

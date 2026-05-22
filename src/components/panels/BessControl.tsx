@@ -60,7 +60,7 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
     return (
         <PanelCard title="⚡ BESS Dispatch Control">
             <div className="grid grid-cols-2 gap-2">
-                <ActionButton label="Auto" active={dispatchMode === 'auto'} color="#0ea5e9" onClick={() => onCommand({ type: 'SET_AUTO_ARB_ENABLED', payload: true })} />
+                <ActionButton label="Auto" active={dispatchMode === 'auto'} color="#0ea5e9" onClick={() => onCommand({ type: 'SET_DISPATCH_MODE', payload: 'auto' })} />
                 <ActionButton label="Charge" active={dispatchMode === 'manual-charge'} color="#22c55e" onClick={() => handleMode('CHARGE')} disabled={batterySocPercent >= 100} />
                 <ActionButton label="Idle" active={dispatchMode === 'manual-idle'} color="#64748b" onClick={() => handleMode('IDLE')} />
                 <ActionButton label="Discharge" active={dispatchMode === 'manual-discharge'} color="#f59e0b" onClick={() => handleMode('DISCHARGE')} disabled={batterySocPercent <= 0} />

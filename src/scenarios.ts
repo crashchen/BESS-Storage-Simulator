@@ -10,9 +10,9 @@ export interface ScenarioPreset {
     expectedFlow: string;
     operatorCue: string;
     /** A preset declares dispatch intent + the scene state needed to load the
-     * narrative; the reducer derives `batteryMode` / `autoArbEnabled` from
-     * `dispatchMode` + `sign(batteryPowerMw)` so presets can't drift out of
-     * the dispatch contract. */
+     * narrative; the reducer derives `batteryMode` from `dispatchMode` +
+     * `sign(batteryPowerMw)` so presets can't drift out of the dispatch
+     * contract. */
     state: {
         simulationStatus: SimulationStatus;
         timeOfDay: number;

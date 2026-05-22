@@ -78,15 +78,15 @@ describe('useGridSimulation dispatch', () => {
         expect(result.current.state.batteryPowerMw).toBeLessThan(0);
 
         act(() => {
-            result.current.dispatch({ type: 'TOGGLE_AUTO_ARB' });
+            result.current.dispatch({ type: 'SET_DISPATCH_MODE', payload: 'auto' });
         });
 
-        expect(result.current.state.autoArbEnabled).toBe(true);
+        expect(result.current.state.dispatchMode).toBe('auto');
         expect(result.current.state.batteryMode).toBe('idle');
         expect(result.current.state.batteryPowerMw).toBe(0);
     });
 
-    it('handles SET_AUTO_ARB_ENABLED idempotently', () => {
+    it('handles SET_DISPATCH_MODE idempotently', () => {
         const { result } = renderHook(() => useGridSimulation());
 
         act(() => {
@@ -96,18 +96,18 @@ describe('useGridSimulation dispatch', () => {
         advanceFrame(1100);
 
         act(() => {
-            result.current.dispatch({ type: 'SET_AUTO_ARB_ENABLED', payload: true });
+            result.current.dispatch({ type: 'SET_DISPATCH_MODE', payload: 'auto' });
         });
 
-        expect(result.current.state.autoArbEnabled).toBe(true);
+        expect(result.current.state.dispatchMode).toBe('auto');
         expect(result.current.state.batteryMode).toBe('idle');
         expect(result.current.state.batteryPowerMw).toBe(0);
 
         act(() => {
-            result.current.dispatch({ type: 'SET_AUTO_ARB_ENABLED', payload: true });
+            result.current.dispatch({ type: 'SET_DISPATCH_MODE', payload: 'auto' });
         });
 
-        expect(result.current.state.autoArbEnabled).toBe(true);
+        expect(result.current.state.dispatchMode).toBe('auto');
         expect(result.current.state.batteryMode).toBe('idle');
         expect(result.current.state.batteryPowerMw).toBe(0);
     });

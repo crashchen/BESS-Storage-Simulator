@@ -99,7 +99,6 @@ describe('S4 — display tariff/price use end-of-step time, not midpoint', () =>
             timeOfDay: 17.999,
             timeSpeed: 1,
             tariffPeriod: 'mid-peak',
-            autoArbEnabled: false,
             batteryMode: 'idle',
         });
         // 4 seconds at 1× should advance ~4 sim-seconds (negligible), so push speed up.
@@ -185,7 +184,6 @@ describe('H6 — 24h auto-arb smoke run stays finite and reconciles', () => {
         state = {
             ...state,
             simulationStatus: 'running',
-            autoArbEnabled: true,
             timeSpeed: 240,
         };
 

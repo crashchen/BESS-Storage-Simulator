@@ -7,7 +7,7 @@
 
 import { BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
 import { SCENARIO_PRESETS_BY_ID } from '../scenarios';
-import type { BESSCommand, GridState } from '../types';
+import type { BatteryMode, BESSCommand, GridState } from '../types';
 import {
     clamp,
     clampFinite,
@@ -204,7 +204,6 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                     tariffRatesEurMwh: prev.tariffRatesEurMwh,
                     dispatchScalePercent: prev.dispatchScalePercent,
                     dispatchMode: prev.dispatchMode,
-                    autoArbEnabled: prev.dispatchMode === 'auto',
                     timeSpeed: prev.timeSpeed,
                 }, now),
                 sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },
@@ -223,7 +222,6 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                     ...prev,
                     batteryMode: prev.batterySocPercent >= SOC_FULL_EPSILON ? 'idle' : 'charging',
                     dispatchMode: 'manual-charge',
-                    autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -234,7 +232,6 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                     ...prev,
                     batteryMode: prev.batterySocPercent <= SOC_EMPTY_EPSILON ? 'idle' : 'discharging',
                     dispatchMode: 'manual-discharge',
-                    autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -245,7 +242,6 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
                     ...prev,
                     batteryMode: 'idle',
                     dispatchMode: 'manual-idle',
-                    autoArbEnabled: false,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
@@ -436,39 +432,34 @@ export function applyCommand(prev: GridState, cmd: BESSCommand, now: number): Re
             };
         }
 
-        case 'TOGGLE_AUTO_ARB':
+        case 'SET_DISPATCH_MODE': {
+            // Generic mode setter — must agree with the CHARGE / DISCHARGE /
+            // IDLE shortcuts so a UI choosing either path lands on the same
+            // batteryMode. Manual modes pre-seed batteryMode for snappier
+            // visuals; auto / idle start from `'idle'` and let the next tick
+            // compute the policy power.
+            const nextBatteryMode: BatteryMode = cmd.payload === 'manual-charge'
+                ? (prev.batterySocPercent >= SOC_FULL_EPSILON ? 'idle' : 'charging')
+                : cmd.payload === 'manual-discharge'
+                    ? (prev.batterySocPercent <= SOC_EMPTY_EPSILON ? 'idle' : 'discharging')
+                    : 'idle';
             return {
                 next: reconcileStaticTelemetry({
                     ...prev,
-                    dispatchMode: prev.dispatchMode === 'auto' ? 'manual-idle' : 'auto',
-                    autoArbEnabled: prev.dispatchMode !== 'auto',
-                    batteryMode: 'idle',
+                    dispatchMode: cmd.payload,
+                    batteryMode: nextBatteryMode,
                 }, now),
                 sideEffects: NO_SIDE_EFFECTS,
             };
-
-        case 'SET_AUTO_ARB_ENABLED':
-            return {
-                next: reconcileStaticTelemetry({
-                    ...prev,
-                    dispatchMode: cmd.payload ? 'auto' : 'manual-idle',
-                    autoArbEnabled: cmd.payload,
-                    batteryMode: 'idle',
-                }, now),
-                sideEffects: NO_SIDE_EFFECTS,
-            };
+        }
 
         case 'APPLY_SCENARIO_PRESET': {
             const preset = SCENARIO_PRESETS_BY_ID[cmd.payload];
             const fresh = createInitialGridState(now);
-            // `preset.state.dispatchMode` is the single source of truth; keep
-            // the legacy `autoArbEnabled` flag in sync for any consumer still
-            // reading it (UI / tests). The reducer no longer derives.
             return {
                 next: reconcileScenarioTelemetry({
                     ...fresh,
                     ...preset.state,
-                    autoArbEnabled: preset.state.dispatchMode === 'auto',
                     timestamp: now,
                 }, now),
                 sideEffects: { resetHistory: true, resetTimerRefs: true, resetFrameRef: true },

@@ -46,7 +46,6 @@ export function makeGridState(overrides: Partial<GridState> = {}): GridState {
         cumulativeBessDischargeRevenueEur: 0,
         cumulativeBessGridChargeCostEur: 0,
         cumulativeSolarOpportunityCostEur: 0,
-        autoArbEnabled: true,
         ...overrides,
     };
 }
