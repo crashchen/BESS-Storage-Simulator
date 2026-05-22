@@ -137,7 +137,6 @@ describe('gridReducer applyCommand', () => {
                 next.solarExportMw,
                 next.solarCurtailedMw,
                 next.gridDemandMw,
-                next.gridFrequencyHz,
                 next.gridImportMw,
                 next.gridExportMw,
                 next.gridOverloadMw,
@@ -222,7 +221,6 @@ describe('gridReducer applyCommand', () => {
         expect(next.simulationStatus).toBe('paused');
         expect(next.batteryMode).toBe('idle');
         expect(next.batteryPowerMw).toBe(0);
-        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
         expect(next.gridImportMw).toBe(selectGridConnectionTotalMw(next));
         expect(next.gridOverloadWarning).toBe(true);
     });

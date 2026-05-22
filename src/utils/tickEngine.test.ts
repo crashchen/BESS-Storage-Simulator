@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AUTO_ARB, BESS, GRID, SIMULATION } from '../config';
+import { AUTO_ARB, BESS, SIMULATION } from '../config';
 import { computeGridDemandMw, computeSolarOutputMw } from './simulationModel';
 import { selectGridConnectionTotalMw } from './gridSelectors';
 import { createInitialGridState, simulateTick } from './tickEngine';
@@ -140,7 +140,6 @@ describe('tickEngine', () => {
         expect(next.batteryMode).toBe('charging');
         expect(next.batteryChargeFromGridMw).toBeGreaterThan(0);
         expect(next.batteryPowerMw).toBeGreaterThan(0);
-        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
     });
 
     it('auto off-peak does not discharge even when local demand exceeds the PCC import limit', () => {
@@ -233,7 +232,6 @@ describe('tickEngine', () => {
 
         expect(next.batteryPowerMw).toBeGreaterThan(0);
         expect(next.batteryChargeFromGridMw + next.batteryChargeFromSolarMw).toBeGreaterThan(0);
-        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
         expect(next.batteryMode).toBe('charging');
     });
 
@@ -258,7 +256,6 @@ describe('tickEngine', () => {
 
         expect(next.batteryPowerMw).toBeGreaterThan(0);
         expect(next.batteryChargeFromSolarMw).toBeGreaterThan(0);
-        expect(next.gridFrequencyHz).toBe(GRID.nominalFrequencyHz);
         expect(next.batteryMode).toBe('charging');
     });
 

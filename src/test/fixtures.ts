@@ -12,7 +12,6 @@ export function makeGridState(overrides: Partial<GridState> = {}): GridState {
         gridBessConnectionMw: 186,
         siteYieldKwhPerKwYear: 1380,
         simulationStatus: 'running',
-        gridFrequencyHz: 50,
         solarOutputMw: 45,
         gridDemandMw: 152,
         dispatchScalePercent: 100,

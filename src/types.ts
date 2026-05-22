@@ -30,10 +30,6 @@ export interface GridState {
     siteYieldKwhPerKwYear: number;
 
     simulationStatus: SimulationStatus;
-    /** @deprecated Pinned to `GRID.nominalFrequencyHz` every tick; the
-     * active-power-only model no longer simulates frequency. Field is kept
-     * to avoid churning historical state shapes; do not drive UI from it. */
-    gridFrequencyHz: number;
     solarOutputMw: number;
     gridDemandMw: number;
     dispatchScalePercent: number;

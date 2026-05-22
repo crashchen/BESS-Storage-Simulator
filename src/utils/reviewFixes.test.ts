@@ -253,7 +253,7 @@ describe('H6 — 24h auto-arb smoke run stays finite and reconciles', () => {
 describe('config sanity (to keep imports honest)', () => {
     it('AUTO_ARB / GRID / SIMULATION / SOLAR are all defined', () => {
         expect(AUTO_ARB.peakStartHour).toBeGreaterThan(0);
-        expect(GRID.nominalFrequencyHz).toBe(50);
+        expect(GRID.bessConnectionMw).toBeGreaterThan(0);
         expect(SIMULATION.maxTimeSpeed).toBeGreaterThan(SIMULATION.minTimeSpeed);
         expect(SOLAR.dcCapacityMwp).toBeGreaterThan(0);
     });

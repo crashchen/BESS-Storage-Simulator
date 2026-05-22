@@ -154,7 +154,6 @@ function reconcileScenarioTelemetry(state: GridState, now: number): GridState {
 
     return {
         ...state,
-        gridFrequencyHz: GRID.nominalFrequencyHz,
         solarOutputMw,
         gridDemandMw,
         batteryPowerMw: settlement.batteryPowerMw,

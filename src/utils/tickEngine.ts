@@ -46,7 +46,6 @@ export function createInitialGridState(timestamp = 0): GridState {
         gridBessConnectionMw: GRID.bessConnectionMw,
         siteYieldKwhPerKwYear: SOLAR.yieldKwhPerKwYear,
         simulationStatus: 'stopped',
-        gridFrequencyHz: GRID.nominalFrequencyHz,
         solarOutputMw,
         gridDemandMw,
         dispatchScalePercent: 100,
@@ -289,7 +288,6 @@ function simulateTickStep(
 
     return {
         ...prev,
-        gridFrequencyHz: GRID.nominalFrequencyHz,
         solarOutputMw,
         gridDemandMw,
         batterySocPercent,
