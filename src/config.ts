@@ -113,25 +113,21 @@ export const TARIFF = {
 } as const;
 
 // ── Auto-Arbitrage Strategy ──────────────────────────────────
+// AUTO 走窗口驱动的 rule tree，不再用 forecast-based planner（详见
+// `tickEngine.ts` 的 `getAutoDesiredBatteryPowerMw` 注释）。Forecast 时代的
+// minPeakEntrySocPercent / targetBufferMwh / solarConfidenceBufferMwh /
+// off/midPeakTopUpFraction 已随旧 planner 一起删除。
 export const AUTO_ARB = {
     /** Peak window start hour */
     peakStartHour: 18,
     /** Peak window end hour */
     peakEndHour: 23,
-    /** Forecast integration step (hours) */
+    /** Minimum chunk for peak-pacing discharge (hours). Acts as a floor on
+     * `peakEndHour - timeOfDay` so the pacing formula doesn't divide by
+     * something arbitrarily small near the end of the peak window. */
     forecastStepHours: 0.25,
-    /** Minimum SoC target before peak (%) */
-    minPeakEntrySocPercent: 92,
     /** Reserve SoC to keep during peak discharge (%) */
     peakReserveSocPercent: 12,
-    /** Energy buffer above forecast (MWh) */
-    targetBufferMwh: 12,
-    /** Confidence buffer for solar forecast (MWh) */
-    solarConfidenceBufferMwh: 10,
-    /** Off-peak grid top-up fraction of transfer limit */
-    offPeakTopUpFraction: 0.35,
-    /** Mid-peak grid top-up fraction of transfer limit */
-    midPeakTopUpFraction: 0.2,
     /** Night reserve target SoC (%) */
     nightTargetSocPercent: 40.0,
 } as const;

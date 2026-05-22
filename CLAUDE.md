@@ -51,7 +51,7 @@ This split is a product decision, not a bug. Don't "simplify" them into one numb
 
 ### Active-power dispatch model
 
-The live simulator is currently scoped to **Energy Arbitrage + Self-consumption**. It does not model FCR, frequency response, voltage control, protection trips, or AC transients. Keep frequency-related values neutral unless the product direction explicitly changes.
+The live simulator is currently scoped to **Energy Arbitrage + Self-consumption**. It does not model FCR, frequency response, voltage control, protection trips, or AC transients. The frequency surface (state field + config constants) has been removed; do not reintroduce it without first deciding what behaviour the new fields should drive.
 
 `tickEngine.ts` uses a fixed pipeline:
 
@@ -59,9 +59,9 @@ The live simulator is currently scoped to **Energy Arbitrage + Self-consumption*
 2. **Hardware clamp** — BESS power is limited by PCS rating, BESS grid connection, SoC, energy capacity, and efficiency.
 3. **PCC settlement** — `settleHybridProjectTick` balances demand, PV, BESS, grid import/export, curtailment, and overload.
 
-`AUTO` uses a simple rule tree: discharge during peak; lock out automatic off-peak discharge; charge toward a 40% night reserve during off-peak; charge from PV surplus; discharge against local deficit outside off-peak. If PV plus BESS export would exceed the PCC limit, PV export keeps priority and BESS discharge is reduced before curtailment. Manual modes bypass economic rules but still respect physical/PCC constraints.
+`AUTO` uses a simple rule tree: discharge during peak (paced as `usableEnergy × η_d / remainingPeakHours`); lock out automatic off-peak discharge; charge toward a 40% night reserve during off-peak; charge from PV surplus; discharge against local deficit outside off-peak. The rule tree deliberately drops the old forecast planner's symmetric round-trip price gate — peak windows discharge whenever SoC > reserve, regardless of the off-peak / peak rate ratio. That contract is locked in by `tickEngine.test.ts`'s "AUTO discharges through peak regardless of unfavorable tariff ratios" case; revive the price gate only after a deliberate product decision. If PV plus BESS export would exceed the PCC limit, PV export keeps priority and BESS discharge is reduced before curtailment. Manual modes bypass economic rules but still respect physical/PCC constraints.
 
-Legacy `getAutoArbOutlook` / `getAutoArbPlan` helpers still exist in `simulationModel.ts` for historical tests and possible future strategy work, but they are not the live dispatch path. Do not wire new UI to those helpers without revalidating the product semantics.
+The dispatch API is converged on `SET_DISPATCH_MODE` (`payload: DispatchMode`). The `CHARGE` / `DISCHARGE` / `IDLE` shortcuts are kept as UI-friendly sugar; `gridReducer.test.ts` has an `it.each` test pinning that `SET_DISPATCH_MODE` and the shortcuts produce identical state for every manual mode.
 
 ### Rendering layers
 
