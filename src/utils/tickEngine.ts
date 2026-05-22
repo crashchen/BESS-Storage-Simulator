@@ -159,6 +159,14 @@ function getAutoDesiredBatteryPowerMw(
         // the full transfer limit on entry. Reserve `peakReserveSocPercent`
         // so the BESS doesn't run flat at the start. Convert internal energy
         // headroom into PCC power via the discharge efficiency.
+        //
+        // NOTE: this rule tree is window-driven only — it does NOT compare
+        // peakRate vs offRate / round-trip efficiency. The earlier
+        // `getAutoArbPlan` helper applied a symmetric price gate, but the
+        // active-power scope retired it; the contract is locked in by the
+        // "AUTO discharges through peak regardless of …" tests in
+        // tickEngine.test.ts. Reintroduce a gate here only after a deliberate
+        // product decision.
         const reserveEnergyMwh = (AUTO_ARB.peakReserveSocPercent / 100) * state.batteryEnergyCapacityMwh;
         const usableEnergyMwh = Math.max(0, currentEnergyMwh - reserveEnergyMwh);
         if (usableEnergyMwh <= 0) return 0;

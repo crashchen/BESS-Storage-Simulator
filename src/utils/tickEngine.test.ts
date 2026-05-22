@@ -371,4 +371,34 @@ describe('tickEngine', () => {
         expect(relaxed.gridOverloadWarning).toBe(false);
         expect(relaxed.gridOverloadMw).toBe(0);
     });
+
+    // Contract lock for the active-power-only AUTO rule tree: the legacy
+    // `getAutoArbPlan` helper used a symmetric round-trip price gate (peak
+    // discharge only when `peakRate > offRate / roundTripEff`). The new tick
+    // engine deliberately drops that gate — peak windows discharge whenever
+    // SoC > reserve. Pin the simpler contract so future tweaks that revive a
+    // price gate have to delete this test on purpose.
+    it('AUTO discharges through peak regardless of unfavorable tariff ratios', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 19,
+            timeSpeed: 0,
+            dispatchScalePercent: 100,
+            batterySocPercent: 80,
+            batteryMode: 'idle' as const,
+            batteryPowerMw: 0,
+            // Peak rate is BELOW off-peak / round-trip — legacy planner would
+            // have refused to discharge here. The simplified rule tree ignores
+            // the ratio and paces discharge through the peak window anyway.
+            tariffRatesEurMwh: { 'off-peak': 200, 'mid-peak': 90, peak: 80 },
+        };
+
+        const next = simulateTick(initial, 1, 1, () => 0.5);
+
+        expect(next.tariffPeriod).toBe('peak');
+        expect(next.batteryMode).toBe('discharging');
+        expect(next.batteryPowerMw).toBeLessThan(0);
+    });
 });

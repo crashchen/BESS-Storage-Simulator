@@ -4,12 +4,11 @@
 // ============================================================
 
 import { describe, expect, it } from 'vitest';
-import { AUTO_ARB, BESS, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
+import { AUTO_ARB, GRID, SIMULATION, SOLAR, TARIFF } from '../config';
 import { makeGridState } from '../test/fixtures';
 import { applyCommand } from './gridReducer';
 import {
     clampFinite,
-    getAutoArbPlan,
     getElectricityPriceEurMwh,
     getTariffPeriod,
     settleHybridProjectTick,
@@ -58,33 +57,6 @@ describe('H1 — reducer rejects non-finite payloads', () => {
             NOW,
         );
         expect(next.tariffRatesEurMwh.peak).toBe(before);
-    });
-});
-
-// ─── S2: Peak-Ready threshold accounts for round-trip efficiency ─
-describe('S2 — peak discharge threshold is symmetric with charge gate', () => {
-    const baseState = makeGridState({
-        timeOfDay: 19,
-        batterySocPercent: 80,
-        autoArbEnabled: true,
-    });
-    const roundTripEff = BESS.chargeEfficiency * BESS.dischargeEfficiency;
-    const offRate = 100;
-
-    it('discharges when peak rate clearly beats round-trip-adjusted off-peak cost', () => {
-        const rates = { 'off-peak': offRate, 'mid-peak': 150, peak: 200 };
-        const plan = getAutoArbPlan(baseState, 19, 30, 220, 'peak', rates);
-        expect(plan.mode).toBe('discharging');
-        expect(plan.targetPowerMw).toBeLessThan(0);
-    });
-
-    it('refuses to discharge when peak rate falls below off-peak / round-trip', () => {
-        // off=100, roundTripEff≈0.92 → break-even ≈ 109. Set peak=105 → unprofitable.
-        const breakEven = offRate / roundTripEff;
-        expect(105).toBeLessThan(breakEven);
-        const rates = { 'off-peak': offRate, 'mid-peak': 90, peak: 105 };
-        const plan = getAutoArbPlan(baseState, 19, 30, 220, 'peak', rates);
-        expect(plan.mode).toBe('idle');
     });
 });
 
