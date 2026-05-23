@@ -67,29 +67,36 @@ npm run build
 src/
   App.tsx                        App shell and overlay composition
   config.ts                      Centralized configuration constants
-  types.ts                       Shared state and command contracts
+  types.ts                       Shared GridState and BESSCommand contracts
   scenarios.ts                   Demo scenario definitions (currently hidden from the main controls)
   hooks/
-    useGridSimulation.ts         Utility-scale dispatch and simulation loop
+    useGridSimulation.ts         RAF tick loop, throttled React updates, history snapshots
   components/
-    SimulationViewport.tsx       Canvas wrapper with error boundary
-    MicrogridScene.tsx           3D scene with energy flow particle animations
-    ControlPanel.tsx             Collapsible drawer layout
+    SimulationViewport.tsx       Canvas wrapper with WebGL error boundary and asset hover/click
+    MicrogridScene.tsx           3D scene: 6 energy-flow particle paths, BESS SoC, LOCAL LOAD node
+    SceneAssetInfoCard.tsx       Hover/click info card for BESS / PCS-MV / Grid Node
     StatusHud.tsx                Compact live status bar
+    ControlPanel.tsx             Collapsible drawer layout
     TelemetryChart.tsx           Lazy-loaded chart module
     panels/                      Modular control panel components
-      SimulationControl.tsx      Play/pause/stop controls
-      BessControl.tsx            BESS dispatch and capacity settings
+      SimulationControl.tsx      Play/pause/stop/reset + time speed
+      BessControl.tsx            Dispatch mode (Auto / Charge / Idle / Discharge) + SoC gauge
+      BessCapacitySetup.tsx      BESS power and energy capacity inputs
+      ProjectCapacitySetup.tsx   Solar / grid connection / PV evacuation inputs
+      DispatchParameters.tsx     Tariff editor + dispatch scale
+      ScenarioPresetsPanel.tsx   Demo preset launcher (currently disabled in ControlPanel)
       MetricsPanel.tsx           Project specifications
-      EconomicsPanel.tsx         Tariffs and P&L display
+      EconomicsPanel.tsx         Tariffs and P&L breakdown
     ui/
-      PanelPrimitives.tsx        Reusable UI components (Gauge, ActionButton, etc.)
+      PanelPrimitives.tsx        Reusable UI (Gauge, ActionButton, NumericField, PanelCard)
   utils/
-    gridReducer.ts               Pure reducer for BESSCommand handling
-    tickEngine.ts                Simulation tick with tariff-boundary sub-stepping
+    gridReducer.ts               Pure BESSCommand reducer; emits ReducerResult with side-effects
+    tickEngine.ts                Deterministic tick: tariff-boundary sub-stepping + AUTO rule tree
     simulationModel.ts           Active-power settlement, solar/demand models, P&L math
-    gridSelectors.ts             Derived state selectors
-  test/                          Test setup and fixtures
+    energyFlowTelemetry.ts       Display-only: GridState → 6 visible energy flows
+    sceneAssetInfo.ts            Structured asset info for the 3D info cards
+    gridSelectors.ts             Derived state (battery duration, total grid connection)
+  test/                          Vitest setup and shared GridState fixture
 ```
 
 ## Notes
@@ -101,7 +108,8 @@ src/
   - `BESS discharge value` lumps real export revenue (`batteryDischargeToExportMw`) and avoided-import value (`batteryDischargeToLoadMw` × current tariff). Both are valued at the same price because a BESS-served local MW directly displaces a grid-imported MW at the PCC, one-for-one.
 - The current dispatch model intentionally focuses on **Energy Arbitrage + Self-consumption** using active power only. It does not model FCR, frequency response, voltage control, protection trips, or AC transient dynamics.
 - Local supply/demand gaps are represented as grid import/export at the PCC. If import demand exceeds the configured PCC limit, the app surfaces `PCC Overload` instead of simulating grid-frequency collapse.
-- The built-in `AUTO` dispatch is a simplified rule tree: peak discharge, off-peak reserve charging to 40% SoC, PV-surplus charging, deficit discharge outside off-peak, and PV-priority export curtailment handling.
+- The built-in `AUTO` dispatch is a simplified rule tree: peak discharge (paced as `usableEnergy × η_d / remainingPeakHours`), off-peak reserve charging to 40% SoC, PV-surplus charging, deficit discharge outside off-peak, and PV-priority export curtailment handling. The rule tree deliberately omits the symmetric round-trip price gate from the earlier forecast planner — peak windows discharge whenever SoC > reserve.
+- Dispatch mode is the single source of truth. Every UI command lands as a `BESSCommand` and ultimately flips `dispatchMode` via `SET_DISPATCH_MODE` (or its `CHARGE` / `DISCHARGE` / `IDLE` shortcuts, which are equivalence-tested).
 - Demo scenario definitions remain in code for later restoration, but the scenario panel is currently hidden while the base model is being hardened.
 
 ## Contributing
