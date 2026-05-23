@@ -11,12 +11,6 @@ import {
 } from './simulationModel';
 import { selectGridConnectionTotalMw } from './gridSelectors';
 
-export function gaussianNoise(sigma: number, random: () => number = Math.random): number {
-    const u1 = random() || 1e-10;
-    const u2 = random();
-    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2) * sigma;
-}
-
 export function createInitialGridState(timestamp = 0): GridState {
     const gridConnectionTotalMw = GRID.pvEvacuationMw + GRID.bessConnectionMw;
     const solarOutputMw = computeSolarOutputMw(
