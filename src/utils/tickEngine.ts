@@ -322,9 +322,7 @@ export function simulateTick(
     prev: GridState,
     dtReal: number,
     now: number,
-    _random: () => number = Math.random,
 ): GridState {
-    void _random;
     const dtSim = dtReal * prev.timeSpeed;
     const dtHours = dtSim / 3600;
     const endTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours);

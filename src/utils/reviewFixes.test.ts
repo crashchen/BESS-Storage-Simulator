@@ -173,13 +173,6 @@ describe('S1 — auditable P&L breakdown', () => {
 // ─── H6: 24h smoke test — no NaN/Infinity, cumulative reconciles ─
 describe('H6 — 24h auto-arb smoke run stays finite and reconciles', () => {
     it('runs a full sim-day at 240× without producing NaN/Infinity, and components add up to totals', () => {
-        // Use a deterministic RNG so the noise floor is reproducible.
-        let seed = 0x1234;
-        const rng = () => {
-            seed = (seed * 16807) % 2147483647;
-            return seed / 2147483647;
-        };
-
         let state = createInitialGridState(NOW);
         state = {
             ...state,
@@ -193,7 +186,7 @@ describe('H6 — 24h auto-arb smoke run stays finite and reconciles', () => {
         const totalSteps = Math.ceil(24 / simHoursPerStep) + 1;
 
         for (let i = 0; i < totalSteps; i++) {
-            state = simulateTick(state, realDtSec, NOW + i * realDtSec * 1000, rng);
+            state = simulateTick(state, realDtSec, NOW + i * realDtSec * 1000);
         }
 
         for (const key of Object.keys(state) as (keyof typeof state)[]) {

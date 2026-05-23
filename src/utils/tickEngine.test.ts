@@ -11,8 +11,8 @@ describe('tickEngine', () => {
             simulationStatus: 'running' as const,
         };
 
-        const first = simulateTick(initial, 1, 1, () => 0.5);
-        const second = simulateTick(initial, 1, 1, () => 0.5);
+        const first = simulateTick(initial, 1, 1);
+        const second = simulateTick(initial, 1, 1);
 
         expect(first).toEqual(second);
     });
@@ -26,7 +26,7 @@ describe('tickEngine', () => {
             dispatchMode: 'manual-discharge' as const,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.batteryMode).toBe('idle');
         expect(next.batteryPowerMw).toBe(0);
@@ -41,7 +41,7 @@ describe('tickEngine', () => {
             dispatchMode: 'manual-charge' as const,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.batteryMode).toBe('idle');
         expect(next.batteryPowerMw).toBe(0);
@@ -55,7 +55,7 @@ describe('tickEngine', () => {
             batteryMode: 'charging',
             dispatchMode: 'manual-charge',
             timeSpeed: SIMULATION.maxTimeSpeed,
-        }, 1, 1, () => 0.5);
+        }, 1, 1);
         const overdischarge = simulateTick({
             ...createInitialGridState(0),
             simulationStatus: 'running',
@@ -63,7 +63,7 @@ describe('tickEngine', () => {
             batteryMode: 'discharging',
             dispatchMode: 'manual-discharge',
             timeSpeed: SIMULATION.maxTimeSpeed,
-        }, 1, 1, () => 0.5);
+        }, 1, 1);
 
         expect(overcharge.batterySocPercent).toBeLessThanOrEqual(100);
         expect(overdischarge.batterySocPercent).toBeGreaterThanOrEqual(0);
@@ -82,7 +82,7 @@ describe('tickEngine', () => {
             cumulativeRevenueEur: 1000,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.batterySocPercent).toBe(100);
         expect(next.batteryMode).toBe('charging');
@@ -90,7 +90,7 @@ describe('tickEngine', () => {
         expect(next.batteryChargeFromSolarMw + next.batteryChargeFromGridMw).toBeGreaterThan(0);
         expect(next.cumulativeRevenueEur).not.toBe(initial.cumulativeRevenueEur);
 
-        const afterClamp = simulateTick(next, 1, 2, () => 0.5);
+        const afterClamp = simulateTick(next, 1, 2);
         expect(afterClamp.batteryMode).toBe('idle');
         expect(afterClamp.batteryPowerMw).toBe(0);
     });
@@ -107,7 +107,7 @@ describe('tickEngine', () => {
             cumulativeRevenueEur: 1000,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.batterySocPercent).toBeCloseTo(0, 10);
         expect(next.batteryMode).toBe('discharging');
@@ -115,7 +115,7 @@ describe('tickEngine', () => {
         expect(next.batteryDischargeToLoadMw + next.batteryDischargeToExportMw).toBeGreaterThan(0);
         expect(next.cumulativeRevenueEur).not.toBe(initial.cumulativeRevenueEur);
 
-        const afterClamp = simulateTick(next, 1, 2, () => 0.5);
+        const afterClamp = simulateTick(next, 1, 2);
         expect(afterClamp.batteryMode).toBe('idle');
         expect(afterClamp.batteryPowerMw).toBe(0);
     });
@@ -133,7 +133,7 @@ describe('tickEngine', () => {
             batteryPowerMw: 0,
         };
 
-        const next = simulateTick(lowSocNightState, 1, 1, () => 0.5);
+        const next = simulateTick(lowSocNightState, 1, 1);
 
         expect(next.tariffPeriod).toBe('off-peak');
         expect(next.batteryMode).toBe('charging');
@@ -152,7 +152,7 @@ describe('tickEngine', () => {
             batteryMode: 'idle' as const,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.batteryPowerMw).toBe(0);
         expect(next.batteryMode).toBe('idle');
@@ -182,7 +182,7 @@ describe('tickEngine', () => {
         const peakRemainingHours = AUTO_ARB.peakEndHour - initial.timeOfDay;
         const expectedPacedMw = (usableEnergyMwh * BESS.dischargeEfficiency) / peakRemainingHours;
 
-        const next = simulateTick(initial, 0.001, 1, () => 0.5);
+        const next = simulateTick(initial, 0.001, 1);
 
         expect(next.batteryPowerMw).toBeLessThan(0);
         expect(Math.abs(next.batteryPowerMw)).toBeLessThan(transferLimitMw);
@@ -204,7 +204,7 @@ describe('tickEngine', () => {
         };
         const transferLimitMw = Math.min(initial.batteryPowerRatingMw, initial.gridBessConnectionMw);
 
-        const next = simulateTick(initial, 0.001, 1, () => 0.5);
+        const next = simulateTick(initial, 0.001, 1);
 
         // With ~18 minutes left and a still-mostly-full BESS, the paced rate
         // should be clamped to the transfer limit.
@@ -227,7 +227,7 @@ describe('tickEngine', () => {
         const expectedPacedMw = (usableEnergyMwh * BESS.dischargeEfficiency) /
             AUTO_ARB.peakPacingMinRemainingHours;
 
-        const next = simulateTick(initial, 0.001, 1, () => 0.5);
+        const next = simulateTick(initial, 0.001, 1);
 
         expect(Math.abs(next.batteryPowerMw)).toBeCloseTo(expectedPacedMw, 1);
     });
@@ -244,7 +244,7 @@ describe('tickEngine', () => {
             batteryPowerMw: 0,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.batteryPowerMw).toBeGreaterThan(0);
         expect(next.batteryChargeFromGridMw + next.batteryChargeFromSolarMw).toBeGreaterThan(0);
@@ -267,7 +267,7 @@ describe('tickEngine', () => {
             batteryPowerRatingMw: 80,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.batteryPowerMw).toBeGreaterThan(0);
         expect(next.batteryChargeFromSolarMw).toBeGreaterThan(0);
@@ -288,7 +288,7 @@ describe('tickEngine', () => {
             solarDcCapacityMwp: 220,
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.solarOutputMw).toBeGreaterThan(next.gridDemandMw);
         expect(next.batteryMode).toBe('charging');
@@ -310,7 +310,7 @@ describe('tickEngine', () => {
         const midpointTimeOfDay = initial.timeOfDay + dtHours / 2;
         const endTimeOfDay = initial.timeOfDay + dtHours;
 
-        const next = simulateTick(initial, dtRealSeconds, 1, () => 0.5);
+        const next = simulateTick(initial, dtRealSeconds, 1);
 
         expect(next.timeOfDay).toBeCloseTo(endTimeOfDay, 10);
         expect(next.solarOutputMw).toBeCloseTo(
@@ -348,7 +348,7 @@ describe('tickEngine', () => {
             dischargeMw * 0.03 * initial.tariffRatesEurMwh.peak;
         const wrongPeakOnlyRevenueEur = dischargeMw * 0.04 * initial.tariffRatesEurMwh.peak;
 
-        const next = simulateTick(initial, 0.1, 1, () => 0.5);
+        const next = simulateTick(initial, 0.1, 1);
 
         expect(next.cumulativeRevenueEur).toBeCloseTo(expectedRevenueEur, 6);
         expect(next.cumulativeRevenueEur).not.toBeCloseTo(wrongPeakOnlyRevenueEur, 6);
@@ -371,7 +371,7 @@ describe('tickEngine', () => {
             gridBessConnectionMw: 50,
         };
 
-        const overloaded = simulateTick(overloadInitial, 1, 1, () => 0.5);
+        const overloaded = simulateTick(overloadInitial, 1, 1);
         expect(overloaded.gridOverloadWarning).toBe(true);
         expect(overloaded.gridOverloadMw).toBeGreaterThan(0);
 
@@ -380,7 +380,6 @@ describe('tickEngine', () => {
             { ...overloaded, dispatchScalePercent: 40 },
             1,
             2,
-            () => 0.5,
         );
         expect(relaxed.gridOverloadWarning).toBe(false);
         expect(relaxed.gridOverloadMw).toBe(0);
@@ -409,7 +408,7 @@ describe('tickEngine', () => {
             tariffRatesEurMwh: { 'off-peak': 200, 'mid-peak': 90, peak: 80 },
         };
 
-        const next = simulateTick(initial, 1, 1, () => 0.5);
+        const next = simulateTick(initial, 1, 1);
 
         expect(next.tariffPeriod).toBe('peak');
         expect(next.batteryMode).toBe('discharging');
