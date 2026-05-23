@@ -211,6 +211,27 @@ describe('tickEngine', () => {
         expect(next.batteryPowerMw).toBeCloseTo(-transferLimitMw, 1);
     });
 
+    it('auto peak pacing floors the remaining horizon near peak end', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 22.9,
+            batterySocPercent: AUTO_ARB.peakReserveSocPercent + 1,
+            batteryMode: 'idle' as const,
+            dispatchScalePercent: 100,
+        };
+        const usableEnergyMwh =
+            ((initial.batterySocPercent - AUTO_ARB.peakReserveSocPercent) / 100) *
+            initial.batteryEnergyCapacityMwh;
+        const expectedPacedMw = (usableEnergyMwh * BESS.dischargeEfficiency) /
+            AUTO_ARB.peakPacingMinRemainingHours;
+
+        const next = simulateTick(initial, 0.001, 1, () => 0.5);
+
+        expect(Math.abs(next.batteryPowerMw)).toBeCloseTo(expectedPacedMw, 1);
+    });
+
     it('allows manual charging regardless of tariff period while respecting active-power limits', () => {
         const initial = {
             ...createInitialGridState(0),

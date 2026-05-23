@@ -170,7 +170,7 @@ function getAutoDesiredBatteryPowerMw(
         const usableEnergyMwh = Math.max(0, currentEnergyMwh - reserveEnergyMwh);
         if (usableEnergyMwh <= 0) return 0;
         const peakRemainingHours = Math.max(
-            AUTO_ARB.forecastStepHours,
+            AUTO_ARB.peakPacingMinRemainingHours,
             AUTO_ARB.peakEndHour - timeOfDay,
         );
         const pacedMw = (usableEnergyMwh * BESS.dischargeEfficiency) / peakRemainingHours;

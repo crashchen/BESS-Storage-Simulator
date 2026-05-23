@@ -122,10 +122,10 @@ export const AUTO_ARB = {
     peakStartHour: 18,
     /** Peak window end hour */
     peakEndHour: 23,
-    /** Minimum chunk for peak-pacing discharge (hours). Acts as a floor on
+    /** Minimum remaining peak horizon for pacing discharge (hours). Acts as a floor on
      * `peakEndHour - timeOfDay` so the pacing formula doesn't divide by
      * something arbitrarily small near the end of the peak window. */
-    forecastStepHours: 0.25,
+    peakPacingMinRemainingHours: 0.25,
     /** Reserve SoC to keep during peak discharge (%) */
     peakReserveSocPercent: 12,
     /** Night reserve target SoC (%) */
