@@ -73,27 +73,27 @@ src/
     useGridSimulation.ts         RAF tick loop, throttled React updates, history snapshots
   components/
     SimulationViewport.tsx       Canvas wrapper with WebGL error boundary and asset hover/click
-    MicrogridScene.tsx           3D scene: 6 energy-flow particle paths, BESS SoC, LOCAL LOAD node
+    MicrogridScene.tsx           3D scene: 7 energy-flow particle paths, BESS SoC, LOCAL LOAD node
     SceneAssetInfoCard.tsx       Hover/click info card for BESS / PCS-MV / Grid Node
     StatusHud.tsx                Compact live status bar
     ControlPanel.tsx             Collapsible drawer layout
     TelemetryChart.tsx           Lazy-loaded chart module
     panels/                      Modular control panel components
+      index.ts                   Barrel re-exporting the panel components below
       SimulationControl.tsx      Play/pause/stop/reset + time speed
-      BessControl.tsx            Dispatch mode (Auto / Charge / Idle / Discharge) + SoC gauge
-      BessCapacitySetup.tsx      BESS power and energy capacity inputs
-      ProjectCapacitySetup.tsx   Solar / grid connection / PV evacuation inputs
-      DispatchParameters.tsx     Tariff editor + dispatch scale
+      BessControl.tsx            Houses four components: BessDispatchControl (mode + SoC/output gauges),
+                                 BessCapacitySetup (power/energy), ProjectCapacitySetup (solar/grid/PV
+                                 evacuation), and DispatchParameters (grid dispatch scale)
       ScenarioPresetsPanel.tsx   Demo preset launcher (currently disabled in ControlPanel)
       MetricsPanel.tsx           Project specifications
-      EconomicsPanel.tsx         Tariffs and P&L breakdown
+      EconomicsPanel.tsx         Tariff editor + P&L / settlement breakdown
     ui/
       PanelPrimitives.tsx        Reusable UI (Gauge, ActionButton, NumericField, PanelCard)
   utils/
     gridReducer.ts               Pure BESSCommand reducer; emits ReducerResult with side-effects
     tickEngine.ts                Deterministic tick: tariff-boundary sub-stepping + AUTO rule tree
     simulationModel.ts           Active-power settlement, solar/demand models, P&L math
-    energyFlowTelemetry.ts       Display-only: GridState → 6 visible energy flows
+    energyFlowTelemetry.ts       Display-only: GridState → 7 visible energy flows
     sceneAssetInfo.ts            Structured asset info for the 3D info cards
     gridSelectors.ts             Derived state (battery duration, total grid connection)
   test/                          Vitest setup and shared GridState fixture
