@@ -68,7 +68,7 @@ The dispatch API is converged on `SET_DISPATCH_MODE` (`payload: DispatchMode`). 
 
 `App.tsx` composes three overlays over a fullscreen container:
 
-1. `SimulationViewport` — r3f `Canvas` wrapped in a `CanvasErrorBoundary` (graceful fallback on WebGL crashes), hosting `MicrogridScene` (3D BESS container with SoC health-color gradient, solar array, PCS/MV node, Grid Node, energy-flow particles, curtailment particles, overload highlighting, and time-of-day lighting). Props-only subscription to `GridState`; do not hold React state for the scene here.
+1. `SimulationViewport` — r3f `Canvas` wrapped in a `CanvasErrorBoundary` (graceful fallback on WebGL crashes), hosting `MicrogridScene` (3D BESS container with SoC health-color gradient, solar array, GLB equipment models for the PCS-MV skid and the Grid Node main transformer, energy-flow particles, curtailment particles, overload highlighting, and time-of-day lighting). Props-only subscription to `GridState`; do not hold React state for the scene here.
 2. `StatusHud` — compact top-of-screen live metrics bar.
 3. `ControlPanel` — left/right slide-out drawers. Inside, individual panels live under `src/components/panels/` and share primitives (`Gauge`, `ActionButton`, `NumericField`, `PanelCard`) from `src/components/ui/PanelPrimitives.tsx`. `TelemetryChart` is `lazy()`-loaded to keep the initial bundle small.
 
@@ -78,11 +78,12 @@ The dispatch API is converged on `SET_DISPATCH_MODE` (`payload: DispatchMode`). 
 
 ### R3F scene patterns
 
-`MicrogridScene.tsx` (~660 lines) contains many sub-components (BESSContainer, SolarPanel, EnergyParticle, CurtailmentParticle, etc.). Key patterns to follow when editing:
+`MicrogridScene.tsx` (~1,200 lines) contains many sub-components (BESSContainer, SolarPanel, EnergyParticle, CurtailmentParticle, etc.). Key patterns to follow when editing:
 
 - **Avoid mixing declarative JSX material props with imperative `useFrame` updates on the same property.** R3F's reconciler may overwrite your `useFrame` changes on re-render. If you animate a property in `useFrame`, don't also set it via JSX.
 - **Reuse Vector3 and Color objects** — pass a target ref to `curve.getPoint(t, targetVec)` instead of allocating each frame.
 - **`useMemo` dependencies on floating-point values** like `soc` should be discretized (e.g., `Math.round(soc / 100 * 8)`) since the raw float changes every frame, making the memo pointless.
+- **Equipment GLBs** live in `public/models` (metre-scale, centre-ground anchor, texture-free; provenance in `public/models/README.md`), are configured in `SCENE_3D.models`, and load via drei `useGLTF` at `import.meta.env.BASE_URL + file` so the GitHub Pages sub-path keeps resolving. Never mutate GLB materials for highlight/overload feedback — use separate overlay meshes (the cached GLTF must stay pristine across canvas remounts). `modelAssets.test.ts` pins the files as valid, brand-string-free glTF 2.0 binaries.
 
 ### Tests
 
