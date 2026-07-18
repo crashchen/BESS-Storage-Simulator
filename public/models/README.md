@@ -13,7 +13,8 @@ Format contract (pinned by `src/utils/modelAssets.test.ts`):
 - glTF 2.0 binary, single embedded buffer, no external textures, no
   Draco/meshopt decoders — loadable by drei's `useGLTF` as-is.
 - Metres, centre-ground anchor, static meshes.
-- No supplier/brand strings anywhere in the JSON chunk.
+- None of the banned brand tokens (`BANNED_BRAND_TOKENS` in
+  `src/utils/modelAssets.test.ts`) anywhere in the JSON chunk.
 
 Provenance: built with the parametric Blender pipeline in the (private)
 `crashchen/switchyard` repo (`tools/blender/`). The copies here were
@@ -23,5 +24,11 @@ and chunk layout are untouched. To regenerate, rebuild in that repo and
 re-apply the rename (or rename the spec in its `switchyard_materials.py`
 before exporting).
 
-Scene placement (scale, envelope) is configured in `SCENE_3D.models` in
-`src/config.ts` — keep this README and that block in sync when adding models.
+Each model is a **representative single unit** standing in for station-scale
+equipment (the demo site runs up to 186 MW BESS interconnect / 288 MW PCC) —
+info cards frame all telemetry as station-level aggregates rather than
+single-unit ratings.
+
+Scene placement (scale, envelope, unit rating) is configured in
+`SCENE_3D.models` in `src/config.ts` — keep this README and that block in
+sync when adding models.

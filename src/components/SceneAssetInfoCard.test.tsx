@@ -52,6 +52,16 @@ describe('SceneAssetInfoCard', () => {
         expect(info.flowRows).toContainEqual({ label: 'BESS charge path', value: '45.0 MW' });
     });
 
+    it('frames the representative models as station-aggregate telemetry', () => {
+        const pcs = getSceneAssetInfo('pcs-mv', makeGridState({ gridBessConnectionMw: 186 }));
+        // 186 MW interconnect / 5 MW representative skid → ≈38 equivalent units
+        expect(pcs.description).toContain('station-level aggregates');
+        expect(pcs.rows).toContainEqual({ label: 'Model equivalence', value: '≈38 × 5 MW skid units' });
+
+        const grid = getSceneAssetInfo('grid-node', makeGridState());
+        expect(grid.description).toContain('schematic stand-in');
+    });
+
     it('calls onClose when the pinned card close button is clicked', async () => {
         const user = userEvent.setup();
         const onClose = vi.fn();

@@ -229,12 +229,17 @@ export const SCENE_3D = {
      * no textures/decoders; see public/models/README.md for provenance and the
      * de-brand contract. `file` is joined with import.meta.env.BASE_URL in the
      * scene layer so the GitHub Pages sub-path base keeps resolving.
-     * `size` is the real-world envelope [width, height, depth] in metres. */
+     * `size` is the real-world envelope [width, height, depth] in metres.
+     * Each model is a REPRESENTATIVE single unit standing in for station-scale
+     * equipment — never a 1:1 capacity claim. Info cards must frame telemetry
+     * as station-level aggregates; `unitRatingMw` feeds the "≈N × unit"
+     * equivalence note where a real per-unit rating exists. */
     models: {
         pcsMvSkid: {
             file: 'models/generic-pcs-mv-skid-5mw-v1.glb',
             scale: 0.3,
             size: [6, 3, 3] as const,
+            unitRatingMw: 5,
         },
         mainTransformer: {
             file: 'models/generic-main-transformer-50mva-33-220kv-v1.glb',

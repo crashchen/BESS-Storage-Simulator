@@ -4,10 +4,12 @@ import { resolve } from 'node:path';
 import { SCENE_3D } from '../config';
 
 // Contract for the equipment GLBs copied from the (private) Switchyard repo:
-// this public repo must not ship supplier/brand strings, and the files must
-// stay valid single-buffer glTF 2.0 binaries so drei's useGLTF can load them
-// without external textures or decoders. Re-copying a freshly built model from
-// Switchyard without the de-brand pass should fail here, not in review.
+// this public repo must not ship any of the known brand tokens below, and the
+// files must stay valid single-buffer glTF 2.0 binaries so drei's useGLTF can
+// load them without external textures or decoders. Re-copying a freshly built
+// model from Switchyard without the de-brand pass should fail here, not in
+// review. Extend the token list when assets from new suppliers are added.
+const BANNED_BRAND_TOKENS = ['gotion'] as const;
 
 // Vitest runs with the repo root as cwd (vitest.config.ts lives there).
 const publicDir = resolve(process.cwd(), 'public');
@@ -35,7 +37,10 @@ describe('equipment GLB assets', () => {
         expect(doc.images ?? []).toHaveLength(0);
     });
 
-    it.each(models)('%s carries no brand strings', (_, model) => {
-        expect(readGlbJsonChunk(model.file).toLowerCase()).not.toContain('gotion');
+    it.each(models)('%s carries no banned brand tokens', (_, model) => {
+        const json = readGlbJsonChunk(model.file).toLowerCase();
+        for (const token of BANNED_BRAND_TOKENS) {
+            expect(json).not.toContain(token);
+        }
     });
 });
