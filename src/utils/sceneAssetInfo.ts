@@ -1,3 +1,4 @@
+import { SCENE_3D } from '../config';
 import type { GridState, SceneAssetId } from '../types';
 import { getVisibleEnergyFlows } from './energyFlowTelemetry';
 import { selectGridConnectionTotalMw } from './gridSelectors';
@@ -98,12 +99,14 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
     }
 
     if (assetId === 'pcs-mv') {
+        const skidRatingMw = SCENE_3D.models.pcsMvSkid.unitRatingMw;
+        const skidEquivalents = Math.max(1, Math.ceil(state.gridBessConnectionMw / skidRatingMw));
         return {
             title: 'PCS / MV Station',
             eyebrow: 'Power Conversion + Medium Voltage Node',
             status: stationThroughput > 0.5 ? 'Routing power' : 'Standing by',
             accent: 'from-cyan-300 to-sky-500',
-            description: 'Visualizes the site collection and step-up node where PV, BESS, and grid-side flows meet.',
+            description: `Representative single ${skidRatingMw} MW PCS-MV skid standing in for the site collection and step-up stage — all figures are station-level aggregates.`,
             primary: {
                 label: 'Gross routed flow',
                 value: formatMw(stationThroughput),
@@ -130,6 +133,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 { label: 'BESS discharge path', value: formatMw(visibleFlows.bessToSiteMw) },
                 { label: 'BESS interconnect cap', value: formatMw(state.gridBessConnectionMw) },
                 { label: 'PV evacuation cap', value: formatMw(state.gridPvEvacuationMw) },
+                { label: 'Model equivalence', value: `≈${skidEquivalents} × ${skidRatingMw} MW skid units` },
             ],
         };
     }
@@ -142,7 +146,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
         accent: overloaded
             ? 'from-red-400 to-orange-300'
             : 'from-blue-300 to-emerald-300',
-        description: 'Represents the PCC import/export boundary for the active-power-only site model.',
+        description: 'Represents the PCC import/export boundary for the active-power-only site model. The transformer is a schematic stand-in — figures are station aggregates, not a single-unit rating.',
         primary: {
             label: overloaded ? 'Unserved overload' : 'Net grid exchange',
             value: overloaded ? formatMw(state.gridOverloadMw) : formatMw(state.projectNetExportMw),

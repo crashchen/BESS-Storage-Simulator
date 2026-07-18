@@ -52,6 +52,35 @@ describe('SceneAssetInfoCard', () => {
         expect(info.flowRows).toContainEqual({ label: 'BESS charge path', value: '45.0 MW' });
     });
 
+    it('frames the representative models as station-aggregate telemetry', () => {
+        const pcs = getSceneAssetInfo('pcs-mv', makeGridState({ gridBessConnectionMw: 186 }));
+        // 186 MW interconnect / 5 MW representative skid → ≈38 equivalent units
+        expect(pcs.description).toContain('station-level aggregates');
+        expect(pcs.rows).toContainEqual({ label: 'Model equivalence', value: '≈38 × 5 MW skid units' });
+
+        const grid = getSceneAssetInfo('grid-node', makeGridState());
+        expect(grid.description).toContain('schematic stand-in');
+    });
+
+    it('caps card height to the viewport and allows vertical scroll', () => {
+        // Guards the 720p clipping fix: the card can grow taller than a short
+        // viewport (esp. the PCS card with its extra rows), so it must cap its
+        // height and scroll rather than clip content off-screen. jsdom has no
+        // layout engine, so assert the scroll affordance is wired on the container.
+        render(
+            <SceneAssetInfoCard
+                assetId="pcs-mv"
+                gridState={makeGridState()}
+                pinned
+                onClose={vi.fn()}
+            />,
+        );
+
+        const card = screen.getByTestId('scene-asset-info-card');
+        expect(card.className).toContain('overflow-y-auto');
+        expect(card.className).toMatch(/max-h-\[/);
+    });
+
     it('calls onClose when the pinned card close button is clicked', async () => {
         const user = userEvent.setup();
         const onClose = vi.fn();

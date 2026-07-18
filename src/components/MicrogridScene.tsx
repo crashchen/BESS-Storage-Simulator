@@ -4,9 +4,9 @@
 // dynamic time-of-day lighting. Subscribes to GridState.
 // ============================================================
 
-import { memo, useRef, useMemo } from 'react';
+import { memo, useRef, useMemo, Suspense } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, Text, Grid, Line } from '@react-three/drei';
+import { Clone, OrbitControls, Text, Grid, Line, useGLTF } from '@react-three/drei';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
 import { BESS, SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
@@ -113,6 +113,18 @@ function createAssetInteraction(
             },
         },
     };
+}
+
+// ── Equipment GLB models ─────────────────────────────────────
+// Metre-scale, centre-ground-anchored static GLBs (public/models). Deep-cloned
+// so the shadow flags reach every mesh. Highlight/overload feedback lives on
+// separate overlay meshes — GLB materials are never mutated, keeping the cached
+// GLTF pristine across canvas remounts.
+type EquipmentModelSpec = (typeof SCENE_3D.models)[keyof typeof SCENE_3D.models];
+
+function EquipmentModel({ model }: { model: EquipmentModelSpec }) {
+    const { scene } = useGLTF(import.meta.env.BASE_URL + model.file);
+    return <Clone object={scene} scale={model.scale} castShadow receiveShadow />;
 }
 
 // ── BESS Container ───────────────────────────────────────────
@@ -422,6 +434,11 @@ const PowerLines = memo(function PowerLines() {
 const GRID_NODE_POSITION: [number, number, number] = [8.8, 0, 0.25];
 const SITE_LOAD_POSITION = SCENE_3D.pads.siteLoad.position;
 
+const TRANSFORMER_MODEL = SCENE_3D.models.mainTransformer;
+const TRANSFORMER_WIDTH = TRANSFORMER_MODEL.size[0] * TRANSFORMER_MODEL.scale;
+const TRANSFORMER_HEIGHT = TRANSFORMER_MODEL.size[1] * TRANSFORMER_MODEL.scale;
+const TRANSFORMER_DEPTH = TRANSFORMER_MODEL.size[2] * TRANSFORMER_MODEL.scale;
+
 const LoadBuilding = memo(function LoadBuilding({
     interaction,
     overloaded,
@@ -435,43 +452,25 @@ const LoadBuilding = memo(function LoadBuilding({
     return (
         <group position={GRID_NODE_POSITION} {...interaction.handlers}>
             {(isActive || overloaded) && (
-                <mesh position={[0, 2, 0]} scale={[1.08, 1.06, 1.08]}>
-                    <boxGeometry args={[3, 4, 3]} />
+                <mesh position={[0, TRANSFORMER_HEIGHT / 2, 0]}>
+                    <boxGeometry
+                        args={[TRANSFORMER_WIDTH + 0.35, TRANSFORMER_HEIGHT + 0.25, TRANSFORMER_DEPTH + 0.35]}
+                    />
                     <meshStandardMaterial
                         color={highlightColor}
                         emissive={highlightColor}
                         emissiveIntensity={overloaded ? 0.55 : 0.25}
                         transparent
-                        opacity={overloaded ? 0.2 : 0.12}
+                        opacity={overloaded ? 0.22 : 0.12}
                         side={BackSide}
                     />
                 </mesh>
             )}
-            <mesh position={[0, 2, 0]} castShadow receiveShadow>
-                <boxGeometry args={[3, 4, 3]} />
-                <meshStandardMaterial
-                    color="#334155"
-                    emissive={highlightColor}
-                    emissiveIntensity={overloaded ? 0.32 : isActive ? 0.08 : 0}
-                    metalness={0.3}
-                    roughness={0.7}
-                />
-            </mesh>
-            {/* Windows */}
-            {[[-0.8, 2.5], [0.8, 2.5], [-0.8, 1.2], [0.8, 1.2]].map(([x, y], i) => (
-                <mesh key={i} position={[x, y, 1.51]}>
-                    <planeGeometry args={[0.6, 0.5]} />
-                    <meshStandardMaterial
-                        color="#fbbf24"
-                        emissive="#fbbf24"
-                        emissiveIntensity={0.4}
-                        transparent
-                        opacity={0.7}
-                    />
-                </mesh>
-            ))}
+            <Suspense fallback={null}>
+                <EquipmentModel model={TRANSFORMER_MODEL} />
+            </Suspense>
             <Text
-                position={[0, 4.5, 0]}
+                position={[0, TRANSFORMER_HEIGHT + 0.5, 0]}
                 fontSize={0.26}
                 color={isActive || overloaded ? highlightColor : '#e2e8f0'}
                 anchorX="center"
@@ -529,6 +528,11 @@ const SiteLoadMarker = memo(function SiteLoadMarker() {
     );
 });
 
+const PCS_SKID_MODEL = SCENE_3D.models.pcsMvSkid;
+const PCS_SKID_HEIGHT = PCS_SKID_MODEL.size[1] * PCS_SKID_MODEL.scale;
+// Skid sits on top of the substation pad (centre-ground GLB anchor).
+const PCS_PAD_TOP_Y = SCENE_3D.pads.substation.position[1] + SCENE_3D.pads.substation.size[1] / 2;
+
 const SitePads = memo(function SitePads({
     capacityScale,
     pcsInteraction,
@@ -585,53 +589,24 @@ const SitePads = memo(function SitePads({
                 />
             </mesh>
             <group
-                position={[SCENE_3D.pads.substation.position[0], 0.45, SCENE_3D.pads.substation.position[2]]}
+                position={[SCENE_3D.pads.substation.position[0], PCS_PAD_TOP_Y, SCENE_3D.pads.substation.position[2]]}
                 {...pcsInteraction.handlers}
             >
                 <Line
                     points={[
-                        [0, 0.28, 0],
-                        [0, SCENE_3D.pads.substation.flowWaypointHeight - 0.45, 0],
+                        [0, PCS_SKID_HEIGHT + 0.04, 0],
+                        [0, SCENE_3D.pads.substation.flowWaypointHeight - PCS_PAD_TOP_Y, 0],
                     ]}
                     color={pcsHighlightColor}
                     lineWidth={pcsActive ? 4 : 2.5}
                     transparent
                     opacity={pcsActive ? 1 : 0.75}
                 />
-                <mesh position={[0, -0.26, 0]} castShadow>
-                    <boxGeometry args={[1.75, 0.05, 0.95]} />
-                    <meshStandardMaterial
-                        color={SCENE_3D.pads.substation.equipmentAccentColor}
-                        emissive={SCENE_3D.pads.substation.emissiveColor}
-                        emissiveIntensity={pcsActive ? 0.36 : SCENE_3D.pads.substation.emissiveIntensity}
-                        transparent
-                        opacity={pcsActive ? 0.5 : 0.35}
-                        roughness={0.35}
-                        metalness={0.25}
-                    />
-                </mesh>
-                <mesh castShadow>
-                    <boxGeometry args={[0.55, 0.55, 0.42]} />
-                    <meshStandardMaterial
-                        color={SCENE_3D.pads.substation.equipmentColor}
-                        emissive={SCENE_3D.pads.substation.emissiveColor}
-                        emissiveIntensity={pcsActive ? 0.42 : SCENE_3D.pads.substation.emissiveIntensity}
-                        roughness={0.42}
-                        metalness={0.62}
-                    />
-                </mesh>
-                <mesh position={[0.48, 0, 0]} castShadow>
-                    <boxGeometry args={[0.32, 0.4, 0.34]} />
-                    <meshStandardMaterial
-                        color={SCENE_3D.pads.substation.equipmentAccentColor}
-                        emissive={SCENE_3D.pads.substation.emissiveColor}
-                        emissiveIntensity={pcsActive ? 0.56 : SCENE_3D.pads.substation.emissiveIntensity + 0.12}
-                        roughness={0.35}
-                        metalness={0.45}
-                    />
-                </mesh>
+                <Suspense fallback={null}>
+                    <EquipmentModel model={PCS_SKID_MODEL} />
+                </Suspense>
                 <Text
-                    position={[0, 0.55, 0]}
+                    position={[0, PCS_SKID_HEIGHT + 0.32, 0]}
                     fontSize={0.14}
                     color={pcsActive ? '#ffffff' : SCENE_3D.pads.substation.labelColor}
                     anchorX="center"
