@@ -53,6 +53,10 @@ describe('SceneAssetInfoCard', () => {
     });
 
     it('frames the representative models as station-aggregate telemetry', () => {
+        const bess = getSceneAssetInfo('bess', makeGridState({ batteryEnergyCapacityMwh: 744 }));
+        expect(bess.description).toContain('station-level aggregates');
+        expect(bess.rows).toContainEqual({ label: 'Model equivalence', value: '≈149 × 5 MWh container units' });
+
         const pcs = getSceneAssetInfo('pcs-mv', makeGridState({ gridBessConnectionMw: 186 }));
         // 186 MW interconnect / 5 MW representative skid → ≈38 equivalent units
         expect(pcs.description).toContain('station-level aggregates');

@@ -62,6 +62,8 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
     const stationCapacityMw = Math.max(gridConnectionMw, state.solarAcCapacityMw + state.gridBessConnectionMw, 1);
 
     if (assetId === 'bess') {
+        const containerEnergyMwh = SCENE_3D.models.bessContainer.unitEnergyMwh;
+        const containerEquivalents = Math.max(1, Math.ceil(state.batteryEnergyCapacityMwh / containerEnergyMwh));
         return {
             title: 'BESS Unit',
             eyebrow: 'Battery Energy Storage System',
@@ -71,7 +73,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 : state.batteryMode === 'discharging'
                     ? 'from-amber-300 to-orange-400'
                     : 'from-slate-400 to-blue-300',
-            description: 'Stores surplus PV or grid energy, then exports during peak-price or support events.',
+            description: `Representative generic ${containerEnergyMwh} MWh liquid-cooled container standing in for the site BESS block — all figures are station-level aggregates.`,
             primary: {
                 label: 'State of charge',
                 value: formatPercent(state.batterySocPercent),
@@ -94,6 +96,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 { label: 'Discharge to grid export', value: formatMw(state.batteryDischargeToExportMw) },
                 { label: 'Rated power', value: formatMw(state.batteryPowerRatingMw) },
                 { label: 'Energy capacity', value: formatMwh(state.batteryEnergyCapacityMwh) },
+                { label: 'Model equivalence', value: `≈${containerEquivalents} × ${containerEnergyMwh} MWh container units` },
             ],
         };
     }

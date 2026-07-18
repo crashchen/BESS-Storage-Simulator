@@ -38,9 +38,11 @@ describe('equipment GLB assets', () => {
     });
 
     it.each(models)('%s carries no banned brand tokens', (_, model) => {
-        const json = readGlbJsonChunk(model.file).toLowerCase();
+        // Scan the whole container, not only JSON. This also catches textual
+        // metadata hidden inside a BIN payload (for example PNG XMP fields).
+        const glb = readFileSync(resolve(publicDir, model.file)).toString('latin1').toLowerCase();
         for (const token of BANNED_BRAND_TOKENS) {
-            expect(json).not.toContain(token);
+            expect(glb).not.toContain(token);
         }
     });
 });
