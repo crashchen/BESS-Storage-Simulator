@@ -27,7 +27,7 @@ export function SceneAssetInfoCard({ assetId, gridState, pinned, onClose }: Scen
       role="region"
       aria-label={`${info.title} live information`}
       data-testid="scene-asset-info-card"
-      className="pointer-events-auto absolute bottom-5 left-1/2 z-30 w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl md:left-auto md:right-5 md:top-24 md:bottom-auto md:translate-x-0"
+      className="pointer-events-auto absolute bottom-5 left-1/2 z-30 max-h-[calc(100dvh-2.5rem)] w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overflow-x-hidden overscroll-contain rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl md:left-auto md:right-5 md:top-24 md:bottom-auto md:max-h-[calc(100dvh-7rem)] md:translate-x-0"
     >
       <div className={`h-1.5 bg-gradient-to-r ${info.accent}`} />
       <div className="p-4">
