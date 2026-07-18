@@ -204,10 +204,6 @@ export const SCENE_3D = {
         fadeDistance: 60,
         fadeStrength: 1,
     },
-    capacityScale: {
-        minBessWidthScale: 0.6,
-        maxBessWidthScale: 2.0,
-    },
     solarArray: {
         baselineCols: 4,
         baselineRows: 3,
@@ -232,9 +228,15 @@ export const SCENE_3D = {
      * `size` is the real-world envelope [width, height, depth] in metres.
      * Each model is a REPRESENTATIVE single unit standing in for station-scale
      * equipment — never a 1:1 capacity claim. Info cards must frame telemetry
-     * as station-level aggregates; `unitRatingMw` feeds the "≈N × unit"
-     * equivalence note where a real per-unit rating exists. */
+     * as station-level aggregates; `unitRatingMw` / `unitEnergyMwh` feed the
+     * "≈N × unit" equivalence note where a real per-unit rating exists. */
     models: {
+        bessContainer: {
+            file: 'models/generic-bess-5mwh-v1.glb',
+            scale: 0.9,
+            size: [6.1, 2.9, 2.44] as const,
+            unitEnergyMwh: 5,
+        },
         pcsMvSkid: {
             file: 'models/generic-pcs-mv-skid-5mw-v1.glb',
             scale: 0.3,

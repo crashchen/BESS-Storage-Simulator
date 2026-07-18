@@ -27,7 +27,7 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 - **Price Scenarios**: Edit wholesale price windows, including negative-price scenarios
 - **Live Metrics**: Track SoC, solar output, grid demand, BESS power, grid import/export, and PCC overload
 - **P&L Tracking**: Project P&L, BESS margin, curtailment, import/export, and energy flow analysis
-- **3D Visualization**: Interactive Three.js scene with animated energy flow particles through PV, BESS, PCS/MV, and Grid Node assets; the PCS-MV skid and grid transformer render from supplier-neutral GLB equipment models
+- **3D Visualization**: Interactive Three.js scene with animated energy flow particles through PV, BESS, PCS/MV, and Grid Node assets; the BESS container, PCS-MV skid, and grid transformer render from supplier-neutral GLB equipment models
 - **Overload Warnings**: PCC overload is surfaced in the economics panel and highlighted in the 3D grid/load area
 - **Collapsible UI**: Desktop slide-out drawers can be opened together; narrow screens fall back to mutually exclusive drawers
 - **Error Resilience**: 3D viewport gracefully handles WebGL rendering errors with retry option
@@ -65,7 +65,9 @@ npm run build
 
 ```text
 public/
-  models/                        Supplier-neutral equipment GLBs (PCS-MV skid, main transformer) — see its README
+  models/                        Supplier-neutral equipment GLBs (BESS, PCS-MV, transformer) — see its README
+scripts/
+  make_generic_bess_glb.py       Downstream Blender pass that removes BESS branding without editing Switchyard
 src/
   App.tsx                        App shell and overlay composition
   config.ts                      Centralized configuration constants

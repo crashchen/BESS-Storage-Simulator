@@ -8,7 +8,7 @@ import { memo, useRef, useMemo, Suspense } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { Clone, OrbitControls, Text, Grid, Line, useGLTF } from '@react-three/drei';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
-import { BESS, SCENE_3D, SOLAR } from '../config';
+import { SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
 import { getVisibleEnergyFlows } from '../utils/energyFlowTelemetry';
 
@@ -128,20 +128,36 @@ function EquipmentModel({ model }: { model: EquipmentModelSpec }) {
 }
 
 // ── BESS Container ───────────────────────────────────────────
-// memo so static reconciles only on mode/soc/capacityScale/interaction changes
-// (interaction is itself memoized in MicrogridScene).
+const BESS_MODEL = SCENE_3D.models.bessContainer;
+const BESS_MODEL_WIDTH = BESS_MODEL.size[0] * BESS_MODEL.scale;
+const BESS_MODEL_HEIGHT = BESS_MODEL.size[1] * BESS_MODEL.scale;
+const BESS_MODEL_DEPTH = BESS_MODEL.size[2] * BESS_MODEL.scale;
+const BESS_PAD_TOP_Y = SCENE_3D.pads.bess.position[1] + SCENE_3D.pads.bess.size[1] / 2;
+const BESS_MODEL_URL = import.meta.env.BASE_URL + BESS_MODEL.file;
+
+useGLTF.preload(BESS_MODEL_URL);
+
+function BessModelPlaceholder() {
+    return (
+        <mesh position={[0, BESS_MODEL_HEIGHT / 2, 0]} castShadow receiveShadow>
+            <boxGeometry args={[BESS_MODEL_WIDTH, BESS_MODEL_HEIGHT, BESS_MODEL_DEPTH]} />
+            <meshStandardMaterial color="#334155" metalness={0.45} roughness={0.55} />
+        </mesh>
+    );
+}
+
+// The detailed GLB remains fixed-scale: capacity edits describe the aggregate
+// site, not a physically stretched representative container. Dynamic SoC,
+// operating-state glow, and interaction feedback live in separate overlays.
 const BESSContainer = memo(function BESSContainer({
     mode,
     soc,
-    capacityScale,
     interaction,
 }: {
     mode: BatteryMode;
     soc: number;
-    capacityScale: number;
     interaction: AssetInteraction;
 }) {
-    const meshRef = useRef<Mesh>(null);
     const glowRef = useRef<Mesh>(null);
 
     const targetColor = mode === 'charging' ? COLOR_CHARGE : mode === 'discharging' ? COLOR_DISCHARGE : COLOR_IDLE;
@@ -152,19 +168,12 @@ const BESSContainer = memo(function BESSContainer({
         return Array.from({ length: 8 }, (_, index) => ({
             key: index,
             active: index < activeSegments,
-            y: -0.95 + index * 0.28,
+            x: -0.37 + index * 0.105,
         }));
     }, [activeSegments]);
-    const fillHeight = Math.max(0.08, (soc / 100) * 2.0);
-    const fillCenterY = -1.0 + fillHeight / 2;
 
-    useFrame(() => {
-        currentColor.current.lerp(targetColor, 0.05);
-        if (meshRef.current) {
-            const mat = meshRef.current.material as MeshStandardMaterial;
-            mat.emissive.copy(currentColor.current);
-            mat.emissiveIntensity = 0.12 + (soc / 100) * 0.32;
-        }
+    useFrame((_, delta) => {
+        currentColor.current.lerp(targetColor, 1 - Math.exp(-delta * 3));
         if (glowRef.current) {
             const mat = glowRef.current.material as MeshStandardMaterial;
             mat.emissive.copy(currentColor.current);
@@ -173,22 +182,16 @@ const BESSContainer = memo(function BESSContainer({
         }
     });
 
-    // Scale width with capacity while keeping the demo composition readable.
-    const widthScale = Math.max(
-        SCENE_3D.capacityScale.minBessWidthScale,
-        Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale),
-    );
-    const containerWidth = 4 * widthScale;
     const interactionColor = interaction.isSelected ? '#67e8f9' : '#93c5fd';
 
     return (
         <group
-            position={[SCENE_3D.pads.bess.position[0], 1.5, SCENE_3D.pads.bess.position[2]]}
+            position={[SCENE_3D.pads.bess.position[0], BESS_PAD_TOP_Y, SCENE_3D.pads.bess.position[2]]}
             {...interaction.handlers}
         >
             {interaction.isHighlighted && (
-                <mesh scale={[1.08, 1.08, 1.12]}>
-                    <boxGeometry args={[containerWidth, 3, 2]} />
+                <mesh position={[0, BESS_MODEL_HEIGHT / 2, 0]} scale={[1.05, 1.08, 1.08]}>
+                    <boxGeometry args={[BESS_MODEL_WIDTH, BESS_MODEL_HEIGHT, BESS_MODEL_DEPTH]} />
                     <meshStandardMaterial
                         color={interactionColor}
                         emissive={interactionColor}
@@ -199,43 +202,28 @@ const BESSContainer = memo(function BESSContainer({
                     />
                 </mesh>
             )}
-            {/* Main container body */}
-            <mesh ref={meshRef} castShadow receiveShadow>
-                <boxGeometry args={[containerWidth, 3, 2]} />
-                <meshStandardMaterial
-                    color="#1e293b"
-                    metalness={0.8}
-                    roughness={0.3}
-                />
-            </mesh>
 
-            {/* Battery-style SoC viewport */}
-            <group position={[0, 0, 1.04]}>
+            <Suspense fallback={<BessModelPlaceholder />}>
+                <EquipmentModel model={BESS_MODEL} />
+            </Suspense>
+
+            {/* Compact SoC display occupies the space vacated by the logo. */}
+            <group position={[-1.55, 2.08, BESS_MODEL_DEPTH / 2 + 0.035]}>
                 <mesh>
-                    <boxGeometry args={[1.55, 2.35, 0.12]} />
+                    <boxGeometry args={[1.22, 0.52, 0.07]} />
                     <meshStandardMaterial color="#0f172a" metalness={0.35} roughness={0.55} />
                 </mesh>
-                <mesh position={[0, 1.28, 0.02]}>
-                    <boxGeometry args={[0.38, 0.18, 0.12]} />
+                <mesh position={[0.62, 0.08, 0.01]}>
+                    <boxGeometry args={[0.08, 0.18, 0.08]} />
                     <meshStandardMaterial color="#334155" metalness={0.5} roughness={0.45} />
                 </mesh>
-                <mesh position={[0, 0, 0.03]}>
-                    <boxGeometry args={[1.28, 2.05, 0.04]} />
+                <mesh position={[0, 0.08, 0.04]}>
+                    <boxGeometry args={[0.94, 0.22, 0.025]} />
                     <meshStandardMaterial color="#020617" transparent opacity={0.92} />
                 </mesh>
-                <mesh position={[0, fillCenterY, 0.05]}>
-                    <boxGeometry args={[1.08, fillHeight, 0.03]} />
-                    <meshStandardMaterial
-                        color={levelColor}
-                        emissive={levelColor}
-                        emissiveIntensity={0.35 + (soc / 100) * 0.55}
-                        transparent
-                        opacity={0.32}
-                    />
-                </mesh>
                 {socSegments.map((segment) => (
-                    <mesh key={segment.key} position={[0, segment.y, 0.06]}>
-                        <boxGeometry args={[1.0, 0.18, 0.05]} />
+                    <mesh key={segment.key} position={[segment.x, 0.08, 0.06]}>
+                        <boxGeometry args={[0.075, 0.15, 0.03]} />
                         <meshStandardMaterial
                             color={segment.active ? levelColor : '#0f172a'}
                             emissive={segment.active ? levelColor : '#020617'}
@@ -246,9 +234,9 @@ const BESSContainer = memo(function BESSContainer({
                     </mesh>
                 ))}
                 <Text
-                    position={[0, -1.22, 0.08]}
-                    fontSize={0.18}
-                    maxWidth={1.15}
+                    position={[0, -0.15, 0.06]}
+                    fontSize={0.14}
+                    maxWidth={1.0}
                     color="#dbeafe"
                     anchorX="center"
                     anchorY="middle"
@@ -258,8 +246,8 @@ const BESSContainer = memo(function BESSContainer({
             </group>
 
             {/* Glow shell */}
-            <mesh ref={glowRef} scale={[1.08, 1.08, 1.08]}>
-                <boxGeometry args={[containerWidth, 3, 2]} />
+            <mesh ref={glowRef} position={[0, BESS_MODEL_HEIGHT / 2, 0]} scale={[1.03, 1.05, 1.05]}>
+                <boxGeometry args={[BESS_MODEL_WIDTH, BESS_MODEL_HEIGHT, BESS_MODEL_DEPTH]} />
                 <meshStandardMaterial
                     color="#000000"
                     transparent
@@ -269,7 +257,7 @@ const BESSContainer = memo(function BESSContainer({
 
             {/* Label */}
             <Text
-                position={[0, 2.28, -1.2]}
+                position={[0, BESS_MODEL_HEIGHT + 0.38, 0]}
                 fontSize={0.28}
                 color={interaction.isHighlighted ? interactionColor : '#e2e8f0'}
                 anchorX="center"
@@ -277,12 +265,6 @@ const BESSContainer = memo(function BESSContainer({
             >
                 BESS UNIT
             </Text>
-
-            {/* Mounting base */}
-            <mesh position={[0, -1.7, 0]} receiveShadow>
-                <boxGeometry args={[containerWidth + 0.5, 0.3, 2.5]} />
-                <meshStandardMaterial color="#374151" metalness={0.9} roughness={0.2} />
-            </mesh>
         </group>
     );
 });
@@ -533,20 +515,9 @@ const PCS_SKID_HEIGHT = PCS_SKID_MODEL.size[1] * PCS_SKID_MODEL.scale;
 // Skid sits on top of the substation pad (centre-ground GLB anchor).
 const PCS_PAD_TOP_Y = SCENE_3D.pads.substation.position[1] + SCENE_3D.pads.substation.size[1] / 2;
 
-const SitePads = memo(function SitePads({
-    capacityScale,
-    pcsInteraction,
-}: {
-    capacityScale: number;
-    pcsInteraction: AssetInteraction;
-}) {
-    const bessWidthScale = Math.max(1, Math.min(SCENE_3D.capacityScale.maxBessWidthScale, capacityScale));
+const SitePads = memo(function SitePads({ pcsInteraction }: { pcsInteraction: AssetInteraction }) {
     const solarPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.solar.size], []);
-    const bessPadSize = useMemo<[number, number, number]>(() => [
-        SCENE_3D.pads.bess.size[0] * bessWidthScale,
-        SCENE_3D.pads.bess.size[1],
-        SCENE_3D.pads.bess.size[2],
-    ], [bessWidthScale]);
+    const bessPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.bess.size], []);
     const substationPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.substation.size], []);
     const substationHighlightSize = useMemo<[number, number, number]>(() => [
         SCENE_3D.pads.substation.size[0] + 0.32,
@@ -654,23 +625,20 @@ const StaticTerrain = memo(function StaticTerrain() {
     );
 });
 
-// Substation + power lines + load building are visually static; only the BESS
-// pad width depends on capacityScale. Wrapping in memo means re-renders only
-// fire when the user actually edits BESS energy capacity, not every tick.
+// Site furniture is memoized so the static meshes skip 30 fps reconciliation;
+// it only re-renders when interaction or overload feedback changes.
 const StaticSiteFurniture = memo(function StaticSiteFurniture({
-    capacityScale,
     pcsInteraction,
     gridInteraction,
     gridOverloadWarning,
 }: {
-    capacityScale: number;
     pcsInteraction: AssetInteraction;
     gridInteraction: AssetInteraction;
     gridOverloadWarning: boolean;
 }) {
     return (
         <>
-            <SitePads capacityScale={capacityScale} pcsInteraction={pcsInteraction} />
+            <SitePads pcsInteraction={pcsInteraction} />
             <SiteLoadMarker />
             <PowerLines />
             <LoadBuilding interaction={gridInteraction} overloaded={gridOverloadWarning} />
@@ -1061,14 +1029,12 @@ export function MicrogridScene({
         timeOfDay,
         solarCurtailedMw,
         batteryPowerRatingMw,
-        batteryEnergyCapacityMwh,
         solarDcCapacityMwp,
         gridPvEvacuationMw,
         gridBessConnectionMw,
         gridOverloadWarning,
     } = gridState;
 
-    const bessCapacityScale = batteryEnergyCapacityMwh / BESS.defaultEnergyCapacityMwh;
     const sunPos = sunPosition(timeOfDay);
     const ambientIntensity = timeOfDay > 6 && timeOfDay < 19
         ? 0.4 + 0.5 * Math.sin(((timeOfDay - 6) / 12) * Math.PI)
@@ -1134,10 +1100,9 @@ export function MicrogridScene({
             {/* Fog */}
             <fog ref={fogRef} attach="fog" args={[SCENE_3D.fog.color, SCENE_3D.fog.near, SCENE_3D.fog.far]} />
 
-            {/* Static environment — memoized, only re-renders on capacity edits */}
+            {/* Static environment — memoized around interaction/overload changes */}
             <StaticTerrain />
             <StaticSiteFurniture
-                capacityScale={bessCapacityScale}
                 pcsInteraction={pcsInteraction}
                 gridInteraction={gridInteraction}
                 gridOverloadWarning={gridOverloadWarning}
@@ -1147,7 +1112,6 @@ export function MicrogridScene({
             <BESSContainer
                 mode={batteryMode}
                 soc={batterySocPercent}
-                capacityScale={bessCapacityScale}
                 interaction={bessInteraction}
             />
             <SolarArray solarOutputMw={solarOutputMw} solarAcCapacityMw={solarAcCapacityMw} dcCapacityMwp={solarDcCapacityMwp} />
