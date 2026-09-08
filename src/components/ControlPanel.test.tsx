@@ -1,8 +1,31 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-import { ControlPanel } from './ControlPanel';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ControlPanel as ControlledPanel } from './ControlPanel';
 import { makeGridState } from '../test/fixtures';
+import { useDrawerLayout } from '../hooks/useDrawerLayout';
+import type { ControlPanelProps } from '../types';
+
+function ControlPanel(props: Omit<ControlPanelProps, 'layout' | 'simulationResetVersion'>) {
+    const layout = useDrawerLayout();
+    return <ControlledPanel {...props} layout={layout} simulationResetVersion={0} />;
+}
+
+afterEach(() => vi.unstubAllGlobals());
+
+function mockViewport(initialCompact = false) {
+    let compact = initialCompact;
+    const listeners = new Set<(event: { matches: boolean }) => void>();
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+        get matches() { return compact; },
+        addEventListener: (_event: string, listener: (event: { matches: boolean }) => void) => listeners.add(listener),
+        removeEventListener: (_event: string, listener: (event: { matches: boolean }) => void) => listeners.delete(listener),
+    })));
+    return (nextCompact: boolean) => act(() => {
+        compact = nextCompact;
+        listeners.forEach(listener => listener({ matches: compact }));
+    });
+}
 
 async function openLeftDrawer(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByTitle('Controls'));
@@ -13,6 +36,35 @@ async function openRightDrawer(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('ControlPanel', () => {
+    it.each(['left', 'right'] as const)('keeps the last opened %s drawer when resizing to a narrow viewport', async (lastSide) => {
+        const resize = mockViewport();
+        const user = userEvent.setup();
+        render(<ControlPanel gridState={makeGridState()} history={[]} onCommand={vi.fn()} />);
+        await (lastSide === 'left' ? openRightDrawer(user) : openLeftDrawer(user));
+        await (lastSide === 'left' ? openLeftDrawer(user) : openRightDrawer(user));
+        // Move focus into the panel that will close; resize must not strand it.
+        screen.getByRole('button', { name: lastSide === 'left' ? 'Close Metrics & Economics panel' : 'Close Controls panel' }).focus();
+        resize(true);
+        expect(screen.getAllByRole('region')).toHaveLength(1);
+        const survivingLabel = lastSide === 'left' ? 'Controls' : 'Metrics & Economics';
+        expect(screen.getByRole('region', { name: survivingLabel })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: `Close ${survivingLabel} panel` })).toHaveFocus();
+        resize(false);
+        expect(screen.getAllByRole('region')).toHaveLength(1);
+        await user.keyboard('{Escape}');
+        expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    });
+
+    it('keeps drawers mutually exclusive when opening on a narrow viewport', async () => {
+        mockViewport(true);
+        const user = userEvent.setup();
+        render(<ControlPanel gridState={makeGridState()} history={[]} onCommand={vi.fn()} />);
+        await openLeftDrawer(user);
+        await openRightDrawer(user);
+        expect(screen.queryByRole('region', { name: 'Controls' })).not.toBeInTheDocument();
+        expect(screen.getByRole('region', { name: 'Metrics & Economics' })).toBeInTheDocument();
+    });
+
     it('dispatches auto mode from the control button', async () => {
         const user = userEvent.setup();
         const onCommand = vi.fn();

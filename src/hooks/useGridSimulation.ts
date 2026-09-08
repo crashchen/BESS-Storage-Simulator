@@ -17,6 +17,9 @@ export function useGridSimulation() {
 
     const [state, setState] = useState<GridState>(createInitialGridState());
     const [history, setHistory] = useState<GridSnapshot[]>([]);
+    // A Reset is meaningful to editable drafts even when every model value is
+    // already at its default. Keep this presentation signal outside GridState.
+    const [simulationResetVersion, setSimulationResetVersion] = useState(0);
 
     const syncState = useCallback(() => {
         setState(simRef.current);
@@ -28,6 +31,10 @@ export function useGridSimulation() {
 
         const { next, sideEffects } = applyCommand(simRef.current, cmd, now);
         simRef.current = next;
+
+        if (cmd.type === 'RESET_SIMULATION') {
+            setSimulationResetVersion(version => version + 1);
+        }
 
         if (sideEffects.resetHistory) {
             historyRef.current = [];
@@ -99,5 +106,5 @@ export function useGridSimulation() {
         return () => cancelAnimationFrame(rafId);
     }, []);
 
-    return { state, history, dispatch };
+    return { state, history, dispatch, simulationResetVersion };
 }

@@ -2,7 +2,7 @@
 // Economics Panel - Tariffs, P&L, and energy flows
 // ============================================================
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { BESSCommand, GridState, TariffPeriod } from '../../types';
 import { TARIFF } from '../../config';
 import { PanelCard } from '../ui/PanelPrimitives';
@@ -32,60 +32,78 @@ const TARIFF_WINDOW_LABELS: Record<TariffPeriod, string> = {
 const TIMELINE_SEGMENTS = [
     {
         period: 'off-peak' as const,
-        spanHours: TARIFF.periods.offPeakEnd,
+        startHour: 0,
+        endHour: TARIFF.periods.offPeakEnd,
         title: `Off-peak 00-${formatHour(TARIFF.periods.offPeakEnd)}`,
         className: 'rounded-l-full bg-green-600/60',
     },
     {
         period: 'mid-peak' as const,
-        spanHours: TARIFF.periods.midPeakEnd - TARIFF.periods.offPeakEnd,
+        startHour: TARIFF.periods.offPeakEnd,
+        endHour: TARIFF.periods.midPeakEnd,
         title: `Mid-peak ${formatHour(TARIFF.periods.offPeakEnd)}-${formatHour(TARIFF.periods.midPeakEnd)}`,
         className: 'bg-yellow-500/60',
     },
     {
         period: 'peak' as const,
-        spanHours: TARIFF.periods.peakEnd - TARIFF.periods.midPeakEnd,
+        startHour: TARIFF.periods.midPeakEnd,
+        endHour: TARIFF.periods.peakEnd,
         title: `Peak ${formatHour(TARIFF.periods.midPeakEnd)}-${formatHour(TARIFF.periods.peakEnd)}`,
         className: 'bg-red-500/60',
     },
     {
         period: 'off-peak' as const,
-        spanHours: 24 - TARIFF.periods.peakEnd,
+        startHour: TARIFF.periods.peakEnd,
+        endHour: 24,
         title: `Off-peak ${formatHour(TARIFF.periods.peakEnd)}-24`,
         className: 'rounded-r-full bg-green-600/60',
     },
 ];
 
-const TIMELINE_TICK_LABELS = [
-    '00',
-    formatHour(TARIFF.periods.offPeakEnd),
-    formatHour(TARIFF.periods.midPeakEnd),
-    formatHour(TARIFF.periods.peakEnd),
-    '24',
+const TIMELINE_TICK_HOURS = [
+    0,
+    TARIFF.periods.offPeakEnd,
+    TARIFF.periods.midPeakEnd,
+    TARIFF.periods.peakEnd,
+    24,
 ];
 
-function TariffRateInput({ period, value, onCommit }: {
+function TariffRateInput({ period, value, simulationResetVersion, onCommit }: {
     period: TariffPeriod;
     value: number;
+    simulationResetVersion: number;
     onCommit: (period: TariffPeriod, value: number) => void;
 }) {
-    const [draft, setDraft] = useState(String(value));
-
-    useEffect(() => {
-        setDraft(String(value));
-    }, [value]);
+    const [draftState, setDraftState] = useState({
+        sourceValue: value,
+        simulationResetVersion,
+        draft: String(value),
+        invalid: false,
+    });
+    const isCurrentDraft = Object.is(draftState.sourceValue, value)
+        && draftState.simulationResetVersion === simulationResetVersion;
+    if (!isCurrentDraft) {
+        // Retire the old draft when the applied rate changes, including when a
+        // later update returns to its original value or Reset reapplies it.
+        setDraftState({ sourceValue: value, simulationResetVersion, draft: String(value), invalid: false });
+    }
+    const draft = isCurrentDraft ? draftState.draft : String(value);
+    const invalid = isCurrentDraft ? draftState.invalid : false;
+    const errorId = `tariff-rate-${period}-error`;
 
     const commit = () => {
-        const n = Number(draft);
-        if (draft !== '' && Number.isFinite(n)) {
+        const trimmedDraft = draft.trim();
+        const n = Number(trimmedDraft);
+        if (trimmedDraft !== '' && Number.isFinite(n) && n >= TARIFF.minRateEurMwh && n <= TARIFF.maxRateEurMwh) {
+            setDraftState({ sourceValue: value, simulationResetVersion, draft: String(n), invalid: false });
             onCommit(period, n);
         } else {
-            setDraft(String(value));
+            setDraftState({ sourceValue: value, simulationResetVersion, draft, invalid: true });
         }
     };
 
     return (
-        <div className="w-[118px]">
+        <div className="w-full shrink-0 sm:w-[118px]">
             <label className="sr-only" htmlFor={`tariff-rate-${period}`}>
                 {period} tariff rate
             </label>
@@ -93,15 +111,24 @@ function TariffRateInput({ period, value, onCommit }: {
                 id={`tariff-rate-${period}`}
                 data-testid={`tariff-rate-${period}`}
                 type="number"
+                aria-invalid={invalid || undefined}
+                aria-describedby={invalid ? errorId : undefined}
                 min={TARIFF.minRateEurMwh}
                 max={TARIFF.maxRateEurMwh}
                 step={5}
                 value={draft}
-                onChange={(event) => setDraft(event.target.value)}
+                onChange={(event) => setDraftState({ sourceValue: value, simulationResetVersion, draft: event.target.value, invalid: false })}
                 onBlur={commit}
                 onKeyDown={(event) => { if (event.key === 'Enter') commit(); }}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 font-mono text-sm text-slate-100 outline-none transition focus:border-slate-500"
+                className={`w-full rounded-lg border bg-slate-950/70 px-3 py-2 font-mono text-sm text-slate-100 outline-none transition ${invalid
+                    ? 'border-red-400 shadow-[0_0_0_1px_rgba(248,113,113,0.4)] focus:border-red-300'
+                    : 'border-slate-700 focus:border-slate-500'}`}
             />
+            {invalid ? (
+                <p id={errorId} role="alert" className="mt-1.5 text-[11px] font-medium text-red-300">
+                    Enter {TARIFF.minRateEurMwh} to {TARIFF.maxRateEurMwh} €/MWh. Current: {value} €/MWh.
+                </p>
+            ) : null}
         </div>
     );
 }
@@ -109,6 +136,7 @@ function TariffRateInput({ period, value, onCommit }: {
 interface EconomicsPanelProps {
     gridState: GridState;
     onCommand: (cmd: BESSCommand) => void;
+    simulationResetVersion: number;
 }
 
 function formatSignedEur(value: number): string {
@@ -116,7 +144,7 @@ function formatSignedEur(value: number): string {
     return `${sign}€${Math.abs(value).toFixed(0)}`;
 }
 
-export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
+export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }: EconomicsPanelProps) {
     const {
         tariffPeriod,
         tariffRatesEurMwh,
@@ -272,7 +300,7 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                             key={period}
                             className="rounded-lg border border-slate-800 bg-slate-950/50 p-3"
                         >
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex items-center gap-2">
                                     <span
                                         className="rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-white"
@@ -280,9 +308,10 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                                     >
                                         {TARIFF_LABELS[period]}
                                     </span>
-                                    <span className="text-xs text-slate-400">{TARIFF_WINDOW_LABELS[period]}</span>
+                                    <span className="whitespace-nowrap text-xs text-slate-400">{TARIFF_WINDOW_LABELS[period]}</span>
                                 </div>
                                 <TariffRateInput
+                                    simulationResetVersion={simulationResetVersion}
                                     period={period}
                                     value={tariffRatesEurMwh[period]}
                                     onCommit={(p, v) => onCommand({ type: 'SET_TARIFF_RATE', payload: { period: p, value: v } })}
@@ -295,19 +324,26 @@ export function EconomicsPanel({ gridState, onCommand }: EconomicsPanelProps) {
                     These inputs are coarse wholesale price windows, not retail tariffs. EU spot markets can clear below zero.
                 </p>
 
-                <div className="flex h-2 gap-0.5 overflow-hidden rounded-full">
+                <div className="relative h-2 overflow-hidden rounded-full">
                     {TIMELINE_SEGMENTS.map((segment) => (
                         <div
                             key={`${segment.period}-${segment.title}`}
-                            className={segment.className}
+                            className={`absolute inset-y-0 ${segment.className}`}
                             title={segment.title}
-                            style={{ flexBasis: 0, flexGrow: segment.spanHours }}
+                            style={{ left: `${segment.startHour / 24 * 100}%`, width: `${(segment.endHour - segment.startHour) / 24 * 100}%` }}
                         />
                     ))}
                 </div>
-                <div className="-mt-1 flex justify-between text-[9px] text-slate-400">
-                    {TIMELINE_TICK_LABELS.map((label) => (
-                        <span key={label}>{label}</span>
+                <div className="-mt-1 relative h-6 font-mono text-[9px] leading-3 tabular-nums text-slate-400">
+                    {TIMELINE_TICK_HOURS.map((hour) => (
+                        <span
+                            key={hour}
+                            // Stagger the day-end label so 23 and 24 remain readable in a narrow drawer.
+                            className={`absolute ${hour === 24 ? 'top-3' : 'top-0'}`}
+                            style={{ left: `${hour / 24 * 100}%`, transform: hour === 0 ? undefined : `translateX(${hour === 24 ? '-100%' : '-50%'})` }}
+                        >
+                            {formatHour(hour)}
+                        </span>
                     ))}
                 </div>
             </div>

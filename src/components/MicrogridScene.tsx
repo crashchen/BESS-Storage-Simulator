@@ -282,27 +282,31 @@ const SolarPanel = memo(function SolarPanel({
     panelColor: Color;
     emissiveIntensity: number;
 }) {
+    const supportHeight = position[1] - GROUND_POSITION[1];
+
     return (
-        <group position={position} rotation={[-0.35, 0, 0]}>
-            {/* Panel frame */}
-            <mesh castShadow receiveShadow>
-                <boxGeometry args={[1.65, 0.06, 1.08]} />
-                <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.4} />
-            </mesh>
-            {/* Active surface */}
-            <mesh position={[0, 0.035, 0]}>
-                <planeGeometry args={[1.45, 0.88]} />
-                <meshStandardMaterial
-                    color={panelColor}
-                    emissive={COLOR_SOLAR_ON}
-                    emissiveIntensity={emissiveIntensity}
-                    metalness={0.9}
-                    roughness={0.1}
-                />
-            </mesh>
-            {/* Support pole */}
-            <mesh position={[0, -0.6, 0]}>
-                <cylinderGeometry args={[0.05, 0.05, 1.2]} />
+        <group position={position}>
+            <group rotation={[0.35, 0, 0]}>
+                {/* Panel frame */}
+                <mesh castShadow receiveShadow>
+                    <boxGeometry args={[1.65, 0.06, 1.08]} />
+                    <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.4} />
+                </mesh>
+                {/* Active surface */}
+                <mesh position={[0, 0.035, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                    <planeGeometry args={[1.45, 0.88]} />
+                    <meshStandardMaterial
+                        color={panelColor}
+                        emissive={COLOR_SOLAR_ON}
+                        emissiveIntensity={emissiveIntensity}
+                        metalness={0.9}
+                        roughness={0.1}
+                    />
+                </mesh>
+            </group>
+            {/* Upright pole reaches the ground; its top cap embeds in the frame. */}
+            <mesh position={[0, -supportHeight / 2, 0]}>
+                <cylinderGeometry args={[0.05, 0.05, supportHeight]} />
                 <meshStandardMaterial color="#6b7280" metalness={0.8} roughness={0.3} />
             </mesh>
         </group>

@@ -29,8 +29,8 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 - **P&L Tracking**: Project P&L, BESS margin, curtailment, import/export, and energy flow analysis
 - **3D Visualization**: Interactive Three.js scene with animated energy flow particles through PV, BESS, PCS/MV, and Grid Node assets; the BESS container, PCS-MV skid, and grid transformer render from supplier-neutral GLB equipment models
 - **Overload Warnings**: PCC overload is surfaced in the economics panel and highlighted in the 3D grid/load area
-- **Collapsible UI**: Desktop slide-out drawers can be opened together; narrow screens fall back to mutually exclusive drawers
-- **Error Resilience**: 3D viewport gracefully handles WebGL rendering errors with retry option
+- **Collapsible UI**: Desktop slide-out drawers can be opened together; entering a narrow viewport keeps only the most recently opened drawer. Metrics, and either drawer on narrow screens, take priority over equipment cards; clicking equipment closes the drawers and opens its pinned card.
+- **Viewport Recovery**: Retry rebuilds the 3D viewport while preserving simulation configuration, SoC, accumulated results, and history
 - **Accessibility**: ARIA support for screen readers (aria-pressed, aria-valuetext), keyboard navigation, and input validation feedback
 - **Efficiency Modeling**: BESS charge/discharge efficiency losses
 
@@ -61,6 +61,10 @@ npm run test
 npm run build
 ```
 
+Latest local verification on 2026-09-08: lint and build passed; Vitest passed **146 tests across 15 files**. The first audit batch and review follow-up fix solar-panel orientation and upright ground supports, drawer/card overlap and hover restoration, tariff input feedback and timeline alignment, same-value Reset draft clearing, and viewport retry state preservation. Delivery branch: `codex/audit-batch-1-demo-ux`. This batch has no deployment run; the 724.90 kB Three vendor chunk warning remains.
+
+Real-browser checks cover desktop/phone layout and tariff input, including 350 → invalid 2000 → Reset → 350 with the error cleared and focus retained on Reset. Hover restoration is covered by App integration events. Retry uses the real App/hook/reducer with a simulated canvas context-loss event, rather than an actual GPU failure. Model, numerical, loading, and release-process follow-ups remain in the [audit and optimization plan](docs/audits/2026-09-08/README.md).
+
 ## Project Structure
 
 ```text
@@ -71,10 +75,11 @@ scripts/
 src/
   App.tsx                        App shell and overlay composition
   config.ts                      Centralized configuration constants
-  types.ts                       Shared GridState and BESSCommand contracts
+  types.ts                       Shared simulation, drawer-layout, and component-prop contracts
   scenarios.ts                   Demo scenario definitions (currently hidden from the main controls)
   hooks/
     useGridSimulation.ts         RAF tick loop, throttled React updates, history snapshots
+    useDrawerLayout.ts           Shared responsive drawer state and equipment-overlay coordination
   components/
     SimulationViewport.tsx       Canvas wrapper with WebGL error boundary and asset hover/click
     MicrogridScene.tsx           3D scene: 7 energy-flow particle paths, BESS SoC, LOCAL LOAD node
@@ -113,7 +118,10 @@ src/
 - The current dispatch model intentionally focuses on **Energy Arbitrage + Self-consumption** using active power only. It does not model FCR, frequency response, voltage control, protection trips, or AC transient dynamics.
 - Local supply/demand gaps are represented as grid import/export at the PCC. If import demand exceeds the configured PCC limit, the app surfaces `PCC Overload` instead of simulating grid-frequency collapse.
 - The built-in `AUTO` dispatch is a simplified rule tree: peak discharge (paced as `usableEnergy × η_d / remainingPeakHours`), off-peak reserve charging to 40% SoC, PV-surplus charging, deficit discharge outside off-peak, and PV-priority export curtailment handling. The rule tree deliberately omits the symmetric round-trip price gate from the earlier forecast planner — peak windows discharge whenever SoC > reserve.
-- Dispatch mode is the single source of truth. Every UI command lands as a `BESSCommand` and ultimately flips `dispatchMode` via `SET_DISPATCH_MODE` (or its `CHARGE` / `DISCHARGE` / `IDLE` shortcuts, which are equivalence-tested).
+- Every simulation edit goes through a `BESSCommand` and the reducer. `dispatchMode` is the single source of truth for dispatch intent: `SET_DISPATCH_MODE` and its equivalence-tested `CHARGE` / `DISCHARGE` / `IDLE` shortcuts select that intent. Capacity, tariff, speed, and run-state commands have their own effects; they do not all change dispatch mode.
+- `Pause` freezes the clock and retains the current run. `Stop` starts a fresh stopped run: time and SoC return to their initial values, and accumulated results/history are cleared, while configured capacities, tariffs, demand scale, time speed, and dispatch intent are preserved. `Reset` also restores those settings to the baseline. Neither `Stop` nor `Reset` is equivalent to `Pause`.
+- `Reset` clears tariff drafts and validation errors even when the applied tariff already equals the baseline. `Pause` and `Stop` do not trigger this explicit draft reset. Equipment hover continues to track pointer entry and exit while a drawer hides the card, so closing the drawer restores the current preview without reviving a departed hover.
+- The BESS container and its pad are fixed-scale representative equipment. Changing station capacity updates the telemetry and the info card's approximate unit count; it does not stretch the model.
 - Demo scenario definitions remain in code for later restoration, but the scenario panel is currently hidden while the base model is being hardened.
 
 ## Contributing
