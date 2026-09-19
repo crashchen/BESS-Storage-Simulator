@@ -1,17 +1,15 @@
-import { Component, useCallback, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import { MicrogridScene } from './MicrogridScene';
 import { SceneAssetInfoCard } from './SceneAssetInfoCard';
 import { SCENE_3D } from '../config';
-import type { BESSCommand, GridState, SceneAssetId } from '../types';
+import type { GridState, SceneAssetId } from '../types';
 
 interface SimulationViewportProps {
   gridState: GridState;
-  /** Optional hook for the host to perform a clean reset (e.g. dispatch RESET_SIMULATION)
-   *  when the user clicks Retry. Without this, Retry only remounts the canvas — which is
-   *  enough for transient WebGL faults but not for state-poisoning bugs. */
-  onCommand?: (cmd: BESSCommand) => void;
+  equipmentInfoEnabled?: boolean;
+  onAssetInspect?: () => void;
 }
 
 type ViewportFailure =
@@ -71,46 +69,60 @@ function ViewportFallback({ failure, onRetry }: { failure: ViewportFailure; onRe
   );
 }
 
-export function SimulationViewport({ gridState, onCommand }: SimulationViewportProps) {
+export function SimulationViewport({
+  gridState,
+  equipmentInfoEnabled = true,
+  onAssetInspect,
+}: SimulationViewportProps) {
   const [failure, setFailure] = useState<ViewportFailure | null>(null);
   const [canvasKey, setCanvasKey] = useState(0);
   const [hoveredAssetId, setHoveredAssetId] = useState<SceneAssetId | null>(null);
   const [selectedAssetId, setSelectedAssetId] = useState<SceneAssetId | null>(null);
+  const canvasListenerCleanup = useRef<(() => void) | null>(null);
+
+  const clearCanvasListener = useCallback(() => {
+    canvasListenerCleanup.current?.();
+    canvasListenerCleanup.current = null;
+  }, []);
+
+  useEffect(() => clearCanvasListener, [clearCanvasListener]);
 
   const handleCanvasCreated = useCallback(({ gl }: { gl: { domElement: HTMLCanvasElement } }) => {
+    clearCanvasListener();
     const handler = (event: Event) => {
       // preventDefault tells the browser we *want* to handle restoration ourselves;
       // without it the canvas will never fire `webglcontextrestored`.
       event.preventDefault();
+      clearCanvasListener();
       setFailure({ kind: 'context-lost' });
       // Clear pinned/hovered card so it doesn't render over the WebGL fallback.
       setHoveredAssetId(null);
       setSelectedAssetId(null);
     };
     gl.domElement.addEventListener('webglcontextlost', handler);
-    // Returned cleanup runs on Canvas dispose (e.g. when canvasKey changes).
-    return () => gl.domElement.removeEventListener('webglcontextlost', handler);
-  }, []);
+    // R3F does not consume an onCreated return value. Retain the cleanup for
+    // viewport failure, canvas replacement, and host unmount instead.
+    canvasListenerCleanup.current = () => gl.domElement.removeEventListener('webglcontextlost', handler);
+  }, [clearCanvasListener]);
 
   const handleError = useCallback((error: Error) => {
+    clearCanvasListener();
     setFailure({ kind: 'render-error', error });
     setHoveredAssetId(null);
     setSelectedAssetId(null);
-  }, []);
+  }, [clearCanvasListener]);
 
   const handleRetry = useCallback(() => {
     setFailure(null);
     setCanvasKey(k => k + 1);
     setHoveredAssetId(null);
     setSelectedAssetId(null);
-    // If the host provided a reset hook, also dispatch RESET so any poisoned state
-    // (NaN/Infinity surviving the H1 guards, accumulated drift) gets cleared.
-    onCommand?.({ type: 'RESET_SIMULATION' });
-  }, [onCommand]);
+  }, []);
 
   const handleAssetSelect = useCallback((assetId: SceneAssetId) => {
+    onAssetInspect?.();
     setSelectedAssetId(assetId);
-  }, []);
+  }, [onAssetInspect]);
 
   const handleClearSelection = useCallback(() => {
     setSelectedAssetId(null);
@@ -141,7 +153,8 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedAssetId]);
 
-  const activeAssetId = selectedAssetId ?? hoveredAssetId;
+  // Hide only the presentation; keep tracking pointer enter/leave behind drawers.
+  const activeAssetId = equipmentInfoEnabled ? selectedAssetId ?? hoveredAssetId : null;
 
   return (
     <div className="relative h-full w-full">
@@ -173,8 +186,8 @@ export function SimulationViewport({ gridState, onCommand }: SimulationViewportP
             </PerformanceMonitor>
             <MicrogridScene
               gridState={gridState}
-              hoveredAssetId={hoveredAssetId}
-              selectedAssetId={selectedAssetId}
+              hoveredAssetId={equipmentInfoEnabled ? hoveredAssetId : null}
+              selectedAssetId={equipmentInfoEnabled ? selectedAssetId : null}
               onAssetHover={setHoveredAssetId}
               onAssetSelect={handleAssetSelect}
             />

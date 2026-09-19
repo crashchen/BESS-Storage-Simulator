@@ -1,0 +1,83 @@
+{
+  "timestepResults": [
+    {
+      "steps": 1,
+      "realSecondsPerStep": 0.1,
+      "soc": 100,
+      "projectPnlEur": 30,
+      "bessMarginEur": 0,
+      "gridChargeCostEur": 0,
+      "solarExportRevenueEur": 30
+    },
+    {
+      "steps": 6,
+      "realSecondsPerStep": 0.016666666666666666,
+      "soc": 100,
+      "projectPnlEur": -132.36608416097573,
+      "bessMarginEur": -162.36608416097573,
+      "gridChargeCostEur": 152.36608416097573,
+      "solarExportRevenueEur": 20
+    },
+    {
+      "steps": 60,
+      "realSecondsPerStep": 0.0016666666666666668,
+      "soc": 100,
+      "projectPnlEur": -154.891179843821,
+      "bessMarginEur": -184.89117984382102,
+      "gridChargeCostEur": 176.391179843821,
+      "solarExportRevenueEur": 21.500000000000004
+    },
+    {
+      "steps": 600,
+      "realSecondsPerStep": 0.0001666666666666667,
+      "soc": 100,
+      "projectPnlEur": -156.372789681497,
+      "bessMarginEur": -186.37278968150198,
+      "gridChargeCostEur": 177.97278968150192,
+      "solarExportRevenueEur": 21.600000000000172
+    },
+    {
+      "steps": 6000,
+      "realSecondsPerStep": 0.000016666666666666667,
+      "soc": 100,
+      "projectPnlEur": -156.3727896826888,
+      "bessMarginEur": -186.3727896826695,
+      "gridChargeCostEur": 177.97278968266914,
+      "solarExportRevenueEur": 21.599999999999987
+    }
+  ],
+  "overloadValuation": {
+    "baselineImportMw": 288,
+    "dischargeImportMw": 288,
+    "baselineOverloadMw": 62,
+    "dischargeOverloadMw": 32,
+    "reportedDischargeValueEur": 10500,
+    "avoidedImportCostEur": 0
+  },
+  "uiReachableOverload": {
+    "demandMw": 349.40807924757917,
+    "solarMw": 13.012874533108576,
+    "baselineImportMw": 288,
+    "importMw": 241.7584047144706,
+    "reportedDischargeValueEur": 220.81920000000005,
+    "avoidedImportCostEur": 107.89705566623527
+  },
+  "solarYield": {
+    "dailyMwh": 997.3566475991936,
+    "annualMwhIfRepeated": 364035.1763737057,
+    "annualSpecificYieldKwhPerKwp": 3111.411763877826,
+    "displayedSpecificYieldKwhPerKwp": 1380,
+    "statedAnnualMwh": 161460
+  },
+  "pausedTariffEdit": {
+    "before": {
+      "powerMw": 68.89998115251703,
+      "mode": "charging"
+    },
+    "after": {
+      "powerMw": 0,
+      "mode": "charging"
+    },
+    "note": "Static reconciliation intentionally zeros flows; status explanation still derives only from tariff/surplus."
+  }
+}

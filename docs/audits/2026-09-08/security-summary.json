@@ -1,0 +1,297 @@
+{
+  "verified_date": "2026-09-08",
+  "verified_commit": "033cedd7896696e4f6e8c09efcd8a9f0df7184b4",
+  "note": "npm package advisory matches, not proven application exploitability; no dependencies changed.",
+  "all_dependencies": {
+    "counts": {
+      "info": 0,
+      "low": 2,
+      "moderate": 2,
+      "high": 9,
+      "critical": 0,
+      "total": 13
+    },
+    "packages": [
+      {
+        "name": "@babel/core",
+        "severity": "low",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/@babel/core",
+            "version": "7.29.0",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-4x5r-pxfx-6jf8"
+        ]
+      },
+      {
+        "name": "@humanfs/node",
+        "severity": "moderate",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/@humanfs/node",
+            "version": "0.16.7",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-p498-v437-472g"
+        ]
+      },
+      {
+        "name": "brace-expansion",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/@typescript-eslint/typescript-estree/node_modules/brace-expansion",
+            "version": "5.0.4",
+            "dev": true
+          },
+          {
+            "path": "node_modules/brace-expansion",
+            "version": "1.1.12",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+          "https://github.com/advisories/GHSA-jxxr-4gwj-5jf2",
+          "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+          "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+          "https://github.com/advisories/GHSA-rgw5-rvv9-x895"
+        ]
+      },
+      {
+        "name": "browserslist",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/browserslist",
+            "version": "4.28.1",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+          "https://github.com/advisories/GHSA-73wf-gq98-2v4g"
+        ]
+      },
+      {
+        "name": "esbuild",
+        "severity": "low",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/esbuild",
+            "version": "0.27.3",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-g7r4-m6w7-qqqr"
+        ]
+      },
+      {
+        "name": "fflate",
+        "severity": "moderate",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/fflate",
+            "version": "0.8.2",
+            "dev": false
+          },
+          {
+            "path": "node_modules/three-stdlib/node_modules/fflate",
+            "version": "0.6.10",
+            "dev": false
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-px8p-9vwx-vf98"
+        ]
+      },
+      {
+        "name": "flatted",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/flatted",
+            "version": "3.3.4",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-25h7-pfq9-p65f",
+          "https://github.com/advisories/GHSA-rf6f-7fwh-wjgh"
+        ]
+      },
+      {
+        "name": "js-yaml",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/js-yaml",
+            "version": "4.1.1",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-h67p-54hq-rp68",
+          "https://github.com/advisories/GHSA-52cp-r559-cp3m",
+          "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj"
+        ]
+      },
+      {
+        "name": "nanoid",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/nanoid",
+            "version": "3.3.11",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-28wg-ghj8-5hjv",
+          "https://github.com/advisories/GHSA-2v37-7h3g-55p8",
+          "https://github.com/advisories/GHSA-xwg4-73v4-xw9w"
+        ]
+      },
+      {
+        "name": "picomatch",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/picomatch",
+            "version": "4.0.3",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-3v7f-55p6-f55p",
+          "https://github.com/advisories/GHSA-c2c7-rcm5-vvqj"
+        ]
+      },
+      {
+        "name": "postcss",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/postcss",
+            "version": "8.5.8",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+          "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+          "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+          "https://github.com/advisories/GHSA-r28c-9q8g-f849"
+        ]
+      },
+      {
+        "name": "undici",
+        "severity": "high",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/undici",
+            "version": "7.24.2",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-vmh5-mc38-953g",
+          "https://github.com/advisories/GHSA-p88m-4jfj-68fv",
+          "https://github.com/advisories/GHSA-vxpw-j846-p89q",
+          "https://github.com/advisories/GHSA-hm92-r4w5-c3mj",
+          "https://github.com/advisories/GHSA-g8m3-5g58-fq7m",
+          "https://github.com/advisories/GHSA-pr7r-676h-xcf6",
+          "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+          "https://github.com/advisories/GHSA-4cwx-7wf7-3272",
+          "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+          "https://github.com/advisories/GHSA-jr45-8vmc-qm54",
+          "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+          "https://github.com/advisories/GHSA-35p6-xmwp-9g52"
+        ]
+      },
+      {
+        "name": "vite",
+        "severity": "high",
+        "direct": true,
+        "installed": [
+          {
+            "path": "node_modules/vite",
+            "version": "7.3.1",
+            "dev": true
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-4w7w-66w2-5vf9",
+          "https://github.com/advisories/GHSA-v2wj-q39q-566r",
+          "https://github.com/advisories/GHSA-p9ff-h696-f583",
+          "https://github.com/advisories/GHSA-v6wh-96g9-6wx3",
+          "https://github.com/advisories/GHSA-fx2h-pf6j-xcff"
+        ]
+      }
+    ]
+  },
+  "production_dependencies": {
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 0,
+      "critical": 0,
+      "total": 1
+    },
+    "packages": [
+      {
+        "name": "fflate",
+        "severity": "moderate",
+        "direct": false,
+        "installed": [
+          {
+            "path": "node_modules/fflate",
+            "version": "0.8.2",
+            "dev": false
+          },
+          {
+            "path": "node_modules/three-stdlib/node_modules/fflate",
+            "version": "0.6.10",
+            "dev": false
+          }
+        ],
+        "fix_available": true,
+        "advisories": [
+          "https://github.com/advisories/GHSA-px8p-9vwx-vf98"
+        ]
+      }
+    ]
+  }
+}

@@ -108,10 +108,27 @@ export interface MicrogridSceneProps {
     onAssetSelect?: (assetId: SceneAssetId) => void;
 }
 
+export type DrawerSide = 'left' | 'right';
+
+export interface DrawerState {
+    leftOpen: boolean;
+    rightOpen: boolean;
+    escapeOwner: DrawerSide | null;
+    compact: boolean;
+}
+
+export interface DrawerLayout extends DrawerState {
+    open: (side: DrawerSide) => void;
+    close: (side: DrawerSide) => void;
+    closeAll: () => void;
+}
+
 export interface ControlPanelProps {
     gridState: GridState;
     history: GridSnapshot[];
     onCommand: (cmd: BESSCommand) => void;
+    layout: DrawerLayout;
+    simulationResetVersion: number;
 }
 
 export interface StatusHudProps {

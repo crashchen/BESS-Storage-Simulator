@@ -2,7 +2,7 @@
 // Control Panel - Collapsible drawer layout
 // ============================================================
 
-import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useId, useRef } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import type { ControlPanelProps } from '../types';
 import { PanelCard } from './ui/PanelPrimitives';
@@ -20,12 +20,6 @@ const TelemetryChart = lazy(async () => {
     const module = await import('./TelemetryChart');
     return { default: module.TelemetryChart };
 });
-
-function shouldUseMutualDrawers(): boolean {
-    return typeof window !== 'undefined' &&
-        typeof window.matchMedia === 'function' &&
-        window.matchMedia('(max-width: 1023px)').matches;
-}
 
 // Collapsed sidebar trigger button
 function DrawerTrigger({
@@ -187,23 +181,25 @@ function Drawer({
     );
 }
 
-export function ControlPanel({ gridState, history, onCommand }: ControlPanelProps) {
-    const [leftOpen, setLeftOpen] = useState(false);
-    const [rightOpen, setRightOpen] = useState(false);
-    const [escapeOwner, setEscapeOwner] = useState<'left' | 'right' | null>(null);
+export function ControlPanel({ gridState, history, onCommand, layout, simulationResetVersion }: ControlPanelProps) {
+    const { leftOpen, rightOpen, escapeOwner, compact, open, close } = layout;
     const leftTriggerRef = useRef<HTMLButtonElement>(null);
     const rightTriggerRef = useRef<HTMLButtonElement>(null);
-    const closeLeftDrawer = () => {
-        setLeftOpen(false);
-        setEscapeOwner(rightOpen ? 'right' : null);
-    };
-    const closeRightDrawer = () => {
-        setRightOpen(false);
-        setEscapeOwner(leftOpen ? 'left' : null);
-    };
+    const closeLeftDrawer = () => close('left');
+    const closeRightDrawer = () => close('right');
+
+    // Narrowing can unmount the drawer that held focus. Keep keyboard navigation
+    // in the surviving panel, including when focus had moved away from Escape's owner.
+    useEffect(() => {
+        if (!compact || (!leftOpen && !rightOpen)) return;
+        const drawer = document.getElementById(leftOpen ? 'drawer-controls' : 'drawer-metrics');
+        if (!drawer?.contains(document.activeElement)) {
+            drawer?.querySelector<HTMLButtonElement>('button')?.focus();
+        }
+    }, [compact, leftOpen, rightOpen]);
 
     return (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[3.5rem] z-10 select-none sm:top-[4.75rem]">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[3.5rem] z-40 select-none sm:top-[4.75rem]">
             {/* Left drawer - Controls */}
             <Drawer
                 id="drawer-controls"
@@ -236,7 +232,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                 triggerRef={rightTriggerRef}
             >
                 <MetricsPanel gridState={gridState} />
-                <EconomicsPanel gridState={gridState} onCommand={onCommand} />
+                <EconomicsPanel gridState={gridState} onCommand={onCommand} simulationResetVersion={simulationResetVersion} />
 
                 {rightOpen && history.length > 2 && (
                     <PanelCard title="📊 Real-Time Telemetry">
@@ -254,11 +250,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                         icon="⚡"
                         label="Controls"
                         isOpen={leftOpen}
-                        onClick={() => {
-                            setLeftOpen(true);
-                            if (shouldUseMutualDrawers()) setRightOpen(false);
-                            setEscapeOwner('left');
-                        }}
+                        onClick={() => open('left')}
                         position="left"
                         controlsId="drawer-controls"
                         triggerRef={leftTriggerRef}
@@ -272,11 +264,7 @@ export function ControlPanel({ gridState, history, onCommand }: ControlPanelProp
                         icon="📊"
                         label="Metrics"
                         isOpen={rightOpen}
-                        onClick={() => {
-                            setRightOpen(true);
-                            if (shouldUseMutualDrawers()) setLeftOpen(false);
-                            setEscapeOwner('right');
-                        }}
+                        onClick={() => open('right')}
                         position="right"
                         controlsId="drawer-metrics"
                         triggerRef={rightTriggerRef}
