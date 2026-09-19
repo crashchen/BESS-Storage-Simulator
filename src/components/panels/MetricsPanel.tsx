@@ -73,9 +73,10 @@ export function MetricsPanel({ gridState }: MetricsPanelProps) {
                     </div>
                 </div>
                 <div className="rounded-lg border border-emerald-900/40 bg-emerald-950/20 p-3 sm:col-span-2">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-300">Yield Assumption</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-300">Annual Yield Reference</p>
                     <p className="mt-1 text-xs leading-relaxed text-emerald-100">
-                        Fixed-panel annual yield modelled at {siteYieldKwhPerKwYear.toLocaleString()} kWh/kW/year using Romania site data.
+                        Reference yield: {siteYieldKwhPerKwYear.toLocaleString()} kWh/kW/year for fixed panels.
+                        {' '}This reference does not scale the demo’s daily solar curve or provide an annual forecast.
                     </p>
                 </div>
             </div>

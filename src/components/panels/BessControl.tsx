@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import { AUTO_ARB, BESS, GRID, SIMULATION, SOLAR } from '../../config';
 import type { BESSCommand, GridState } from '../../types';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
+import { selectBessDisplay } from '../../utils/bessDisplay';
 import { getBatteryTransferLimitMw } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
 
@@ -14,33 +15,11 @@ interface BessControlProps {
     onCommand: (cmd: BESSCommand) => void;
 }
 
-function getAutoDispatchText(gridState: GridState): string {
-    const solarSurplusMw = Math.max(0, gridState.solarOutputMw - gridState.gridDemandMw);
-    const loadDeficitMw = Math.max(0, gridState.gridDemandMw - gridState.solarOutputMw);
-
-    if (gridState.dispatchMode !== 'auto') {
-        return 'Manual override is active; AUTO returns control to the active-power dispatch rule tree.';
-    }
-    if (gridState.tariffPeriod === 'peak') {
-        return 'Peak price window: BESS discharges first, with PV export kept ahead of battery export when the PCC is congested.';
-    }
-    if (gridState.tariffPeriod === 'off-peak') {
-        if (gridState.batterySocPercent < AUTO_ARB.nightTargetSocPercent) {
-            return `Off-peak reserve: grid/PV charging toward ${AUTO_ARB.nightTargetSocPercent.toFixed(0)}% SoC; auto discharge is locked out.`;
-        }
-        return 'Off-peak: auto discharge is locked out; PV surplus may still charge the battery.';
-    }
-    if (solarSurplusMw > 0) return 'Self-consumption: PV surplus is routed into BESS before curtailment.';
-    if (loadDeficitMw > 0) return 'Self-consumption: BESS discharges to reduce grid import while energy is available.';
-    return 'Balanced node: BESS is holding idle.';
-}
-
 export function BessDispatchControl({ gridState, onCommand }: BessControlProps) {
     const {
         batterySocPercent,
         solarOutputMw,
         gridDemandMw,
-        batteryPowerMw,
         solarAcCapacityMw,
         gridImportMw,
         gridExportMw,
@@ -49,6 +28,7 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
         dispatchMode,
     } = gridState;
     const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
+    const bessDisplay = selectBessDisplay(gridState);
 
     const batteryTransferLimitMw = getBatteryTransferLimitMw(gridState);
 
@@ -68,13 +48,22 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
 
             <div className="mt-4 rounded-lg border border-sky-900/40 bg-sky-950/20 p-3">
                 <div className="flex items-center justify-between gap-3">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-300">Auto Dispatch</p>
-                    <span className="font-mono text-xs font-bold text-sky-200">
-                        Night reserve {AUTO_ARB.nightTargetSocPercent.toFixed(0)}%
-                    </span>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-300">Dispatch status</p>
+                    {dispatchMode === 'auto' && (
+                        <span className="font-mono text-xs font-bold text-sky-200">
+                            Night reserve {AUTO_ARB.nightTargetSocPercent.toFixed(0)}%
+                        </span>
+                    )}
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                    {getAutoDispatchText(gridState)}
+                <p aria-label="BESS operating status" className="mt-2 text-xs font-semibold leading-relaxed text-slate-100">
+                    {bessDisplay.runLabel} · {bessDisplay.powerLabel} · {Math.abs(bessDisplay.powerMw).toFixed(1)} MW
+                </p>
+                {bessDisplay.readingNote && (
+                    <p className="mt-1 text-xs leading-relaxed text-slate-300">{bessDisplay.readingNote}</p>
+                )}
+                <p className="mt-3 text-[11px] font-semibold text-sky-300">Selected dispatch: {bessDisplay.dispatchLabel}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                    {bessDisplay.policyText}
                 </p>
                 <div className="mt-2 grid gap-1 text-[11px] text-slate-400">
                     <div className="grid grid-cols-[1fr_auto] items-center gap-3">
@@ -102,7 +91,7 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
                 <Gauge label="Battery SoC" value={batterySocPercent} unit="%" min={0} max={100} color="#3b82f6" />
                 <Gauge label="Solar Output" value={solarOutputMw} unit="MW" min={0} max={solarAcCapacityMw} color="#facc15" />
                 <Gauge label="Grid Demand" value={gridDemandMw} unit="MW" min={0} max={gridConnectionTotalMw} color="#f97316" />
-                <Gauge label="Battery Power" value={Math.abs(batteryPowerMw)} unit="MW" min={0} max={batteryTransferLimitMw} color={batteryPowerMw >= 0 ? '#22c55e' : '#f59e0b'} />
+                <Gauge label="Battery Power" value={Math.abs(bessDisplay.powerMw)} unit="MW" min={0} max={batteryTransferLimitMw} color={bessDisplay.powerMode === 'charging' ? '#22c55e' : bessDisplay.powerMode === 'discharging' ? '#f59e0b' : '#64748b'} />
             </div>
         </PanelCard>
     );

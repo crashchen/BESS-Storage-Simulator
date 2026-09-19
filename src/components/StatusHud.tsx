@@ -1,4 +1,5 @@
 import { formatTime } from '../utils/formatTime';
+import { selectBessDisplay } from '../utils/bessDisplay';
 import type { SimulationStatus, StatusHudProps, TariffPeriod } from '../types';
 
 const modeBadge = {
@@ -22,17 +23,16 @@ const tariffBadge: Record<TariffPeriod, { color: string }> = {
 export function StatusHud({ gridState }: StatusHudProps) {
     const {
         timeOfDay,
-        batteryMode,
         batterySocPercent,
         solarOutputMw,
         tariffPeriod,
         currentPriceEurMwh,
         cumulativeRevenueEur,
-        dispatchMode,
         simulationStatus,
     } = gridState;
 
-    const mode = modeBadge[batteryMode];
+    const bessDisplay = selectBessDisplay(gridState);
+    const mode = modeBadge[bessDisplay.powerMode];
     const sim = simulationBadge[simulationStatus];
     const tariff = tariffBadge[tariffPeriod];
 
@@ -54,8 +54,14 @@ export function StatusHud({ gridState }: StatusHudProps) {
 
                 <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <div className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white sm:px-2.5 sm:text-[10px] ${mode.bg} ${mode.glow} transition-all duration-300`}>
-                    {dispatchMode === 'auto' ? 'AUTO' : mode.label}
+                <span aria-label={`Selected dispatch: ${bessDisplay.dispatchLabel}`} className="text-[9px] font-bold uppercase tracking-wider text-slate-300 sm:text-[10px]">
+                    {bessDisplay.dispatchLabel}
+                </span>
+                <div
+                    aria-label={`BESS power: ${bessDisplay.runLabel}, ${bessDisplay.powerLabel}, ${Math.abs(bessDisplay.powerMw).toFixed(1)} MW`}
+                    className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white sm:px-2.5 sm:text-[10px] ${mode.bg} ${mode.glow} transition-all duration-300`}
+                >
+                    {mode.label}{simulationStatus === 'paused' ? ' SNAPSHOT' : ''}
                 </div>
 
                 <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
