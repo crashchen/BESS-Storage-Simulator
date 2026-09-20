@@ -2,10 +2,11 @@
 // Control Panel - Collapsible drawer layout
 // ============================================================
 
-import { lazy, Suspense, useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import type { ControlPanelProps } from '../types';
 import { PanelCard } from './ui/PanelPrimitives';
+import { RecoverableTelemetryChart } from './RecoverableTelemetryChart';
 import {
     SimulationControl,
     BessDispatchControl,
@@ -15,11 +16,6 @@ import {
     MetricsPanel,
     EconomicsPanel,
 } from './panels';
-
-const TelemetryChart = lazy(async () => {
-    const module = await import('./TelemetryChart');
-    return { default: module.TelemetryChart };
-});
 
 // Collapsed sidebar trigger button
 function DrawerTrigger({
@@ -236,9 +232,7 @@ export function ControlPanel({ gridState, history, onCommand, layout, simulation
 
                 {rightOpen && history.length > 2 && (
                     <PanelCard title="📊 Real-Time Telemetry">
-                        <Suspense fallback={<div className="h-[170px] animate-pulse rounded-lg bg-slate-800/60" />}>
-                            <TelemetryChart history={history} />
-                        </Suspense>
+                        <RecoverableTelemetryChart history={history} />
                     </PanelCard>
                 )}
             </Drawer>

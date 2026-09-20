@@ -3,7 +3,7 @@
 日期：2026-09-19（Europe/Berlin）  
 基线：main `053c82cd23298391f0a0e400c2324d051241988d`（PR #4）  
 分支：`codex/audit-batch-2-model-clarity`  
-状态：用户提供的 CC 组合复审通过，收尾已落实；发布状态以 PR 为准，未部署第二批。本代理未调用或调度 CC。见 [复审收尾](cc-review.md)。
+状态：用户提供的 CC 组合复审通过，收尾已落实；已推送 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5) / `33ed745`，CI 已通过，未合并，未部署第二批。本代理未调用或调度 CC。见 [复审收尾](cc-review.md)。
 
 > 后续状态：用户已要求第三批与本批一并复审。当前组合工作树的积分变更、192/17 验收及复审入口见 [第三批记录](batch-3.md)；下述“未改 tick/数学”和 175/16 指第二批单独完成时的范围。
 

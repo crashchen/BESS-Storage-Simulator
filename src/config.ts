@@ -167,12 +167,6 @@ export const SCENE_3D = {
         min: 1,
         max: 2,
     },
-    performance: {
-        flipflops: 3,
-        highRefreshRateHz: 90,
-        standardBoundsFps: [30, 55] as const,
-        highRefreshBoundsFps: [45, 75] as const,
-    },
     shadows: {
         mapSize: 2048,
         cameraFar: 200,
