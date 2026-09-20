@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { telemetryChunk } from './build/telemetryChunk'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 // `ANALYZE=1 npm run build` opens dist/bundle-stats.html with a treemap of
@@ -11,8 +12,12 @@ const analyze = process.env.ANALYZE === '1'
 // https://vite.dev/config/
 export default defineConfig({
   base: process.env.BASE_URL || '/',
+  // The retryable chart URL is intentionally opaque to Vite's import scanner.
+  // Discover its vendor up front so first chart open cannot trigger a reload.
+  optimizeDeps: { include: ['recharts'] },
   plugins: [
     react(),
+    telemetryChunk(),
     tailwindcss(),
     ...(analyze
       ? [
@@ -30,6 +35,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // One retryable chart module; shared startup dependencies keep their chunks.
+          if (id.endsWith('/src/utils/formatTime.ts')) return 'app-shared'
+          if (id.endsWith('/src/components/TelemetryChart.tsx')) return 'charts-vendor'
+
           if (!id.includes('node_modules')) {
             return
           }

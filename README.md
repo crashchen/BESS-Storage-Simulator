@@ -46,10 +46,15 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 
 ## Local Development
 
+Use Node **24.21.0**, pinned in `.nvmrc` and used by CI. Activate it with your existing version manager (`nvm use` if nvm is installed), or install/unpack the official Node 24.21.0 distribution and put its `bin` directory first on `PATH`. nvm is optional; the project supports Node 24 from 24.21.0 onward, below Node 25.
+
 ```bash
-npm install
+node --version    # v24.21.0 for the exact CI runtime
+npm ci
 npm run dev
 ```
+
+For an unpacked distribution, run `export PATH="/absolute/path/to/node-v24.21.0-<platform>-<arch>/bin:$PATH"` first, replacing the example path with your actual directory. This changes only the current shell; it does not replace your global Node installation.
 
 Open the local URL printed by Vite after the dev server starts.
 
@@ -61,11 +66,15 @@ npm run test
 npm run build
 ```
 
-Latest local verification on 2026-09-19: lint and build passed; Vitest passed **192 tests across 17 files**. The second batch clarifies the annual yield reference and cumulative discharge valuation, and separates BESS sampled action, run state, and selected dispatch. The third batch splits SoC/night-target events before settlement and integrates the peak-horizon floor. Both batches on `codex/audit-batch-2-model-clarity` passed the user-arranged CC review; the two minor presentation findings and loop-progress documentation are addressed. See the [review outcome](docs/audits/2026-09-19/cc-review.md); see the [combined review entry](docs/audits/2026-09-19/batch-3.md). The 724.90 kB Three vendor chunk warning remains.
+Latest local verification on 2026-09-20: Node 24.21.0, lint, **197 tests across 18 files**, Pages-path build and actionlint passed; the clean install was verified on September 19. Batch 4 on `codex/audit-batch-4-recovery` adds chart/GLB recovery, root fallback, removes inactive DPR adaptation, updates compatible dependencies, and gates Pages deployment on quality checks. The user-arranged CC review found no blockers; follow-up coverage now exercises the production chart loader and rejects removal of its retry query. See the [batch 4 review and fault-injection guide](docs/audits/2026-09-19/batch-4.md) and [review closeout](docs/audits/2026-09-19/batch-4-review.md). The September 19 full/production npm audits each reported zero advisory entries; the 724.90 kB Three chunk warning remains.
+
+Batches 2–3 passed the user-arranged CC review and are pushed as `33ed745` in [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5), with [CI passing](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35467702457). They clarify the yield/valuation assumptions and sampled state, and improve storage-boundary convergence. They are not merged or deployed; the [review outcome](docs/audits/2026-09-19/cc-review.md) separates the pre-existing multi-day AUTO policy issue.
 
 The first batch's visual, drawer, tariff, Reset, and viewport-retry fixes are deployed through [PR #4](https://github.com/crashchen/BESS-Storage-Simulator/pull/4), merged as `053c82c`. Its [CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35449398794) and [Pages run](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35449398727) succeeded. Those runs cover the first batch only; the second and third batches are not deployed.
 
-Real-browser checks cover desktop/phone layout and tariff input, including the first batch's 350 → invalid 2000 → Reset → 350 with cleared validation and retained Reset focus. Second-batch checks cover yield/valuation copy, stopped/manual intent, running power, paused snapshots, and idle readouts after paused edits at desktop and phone widths. Hover restoration is covered by App integration events. Retry uses the real App/hook/reducer with a simulated canvas context-loss event, rather than an actual GPU failure. Numerical, loading, and release-process follow-ups remain in the [audit and optimization plan](docs/audits/2026-09-08/README.md).
+Real-browser checks cover desktop/phone layout and tariff input, including the first batch's 350 → invalid 2000 → Reset → 350 with cleared validation and retained Reset focus. Second-batch checks cover yield/valuation copy, stopped/manual intent, running power, paused snapshots, and idle readouts after paused edits at desktop and phone widths. Hover restoration is covered by App integration events. Retry uses the real App/hook/reducer with a simulated canvas context-loss event, rather than an actual GPU failure. Remaining product and experience work is tracked in the [audit and optimization plan](docs/audits/2026-09-08/README.md).
+
+Deploy calls the reusable CI workflow before uploading its verified artifact. Failed quality checks prevent downstream Pages jobs; this gate belongs to batch 4 and awaits merge/deployment. CI checks PRs against any base branch, including the batch 4 PR based on PR #5; pushes and Pages deployment remain scoped to `main`.
 
 ## Project Structure
 
@@ -88,7 +97,9 @@ src/
     SceneAssetInfoCard.tsx       Hover/click info card for BESS / PCS-MV / Grid Node
     StatusHud.tsx                Compact live status bar
     ControlPanel.tsx             Collapsible drawer layout
-    TelemetryChart.tsx           Lazy-loaded chart module
+    TelemetryChart.tsx           Single lazy chart entry with its chart-only dependencies
+    RecoverableTelemetryChart.tsx  Local fallback and fresh-URL retry
+    AppErrorBoundary.tsx         Last-resort render fallback with explicit reload semantics
     panels/                      Modular control panel components
       index.ts                   Barrel re-exporting the panel components below
       SimulationControl.tsx      Play/pause/stop/reset + time speed
@@ -108,6 +119,7 @@ src/
     bessDisplay.ts               Display-only: sampled BESS action, run state, dispatch intent, known limits
     sceneAssetInfo.ts            Structured asset info for the 3D info cards
     gridSelectors.ts             Derived state (battery duration, total grid connection)
+    importTelemetryChart.ts      Native import transport; retry/cache logic stays in the chart boundary
   test/                          Vitest setup and shared GridState fixture
 ```
 

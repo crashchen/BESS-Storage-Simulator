@@ -1,6 +1,6 @@
 import { Component, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
+import { clearEquipmentModelCache } from '../utils/equipmentModels';
 import { MicrogridScene } from './MicrogridScene';
 import { SceneAssetInfoCard } from './SceneAssetInfoCard';
 import { SCENE_3D } from '../config';
@@ -113,11 +113,12 @@ export function SimulationViewport({
   }, [clearCanvasListener]);
 
   const handleRetry = useCallback(() => {
+    if (failure?.kind === 'render-error') clearEquipmentModelCache();
     setFailure(null);
     setCanvasKey(k => k + 1);
     setHoveredAssetId(null);
     setSelectedAssetId(null);
-  }, []);
+  }, [failure]);
 
   const handleAssetSelect = useCallback((assetId: SceneAssetId) => {
     onAssetInspect?.();
@@ -176,14 +177,6 @@ export function SimulationViewport({
             onCreated={handleCanvasCreated}
             onPointerMissed={handleSceneMissed}
           >
-            <PerformanceMonitor
-              flipflops={SCENE_3D.performance.flipflops}
-              bounds={(refreshrate) => refreshrate > SCENE_3D.performance.highRefreshRateHz
-                ? [...SCENE_3D.performance.highRefreshBoundsFps]
-                : [...SCENE_3D.performance.standardBoundsFps]}
-            >
-              <AdaptiveDpr pixelated />
-            </PerformanceMonitor>
             <MicrogridScene
               gridState={gridState}
               hoveredAssetId={equipmentInfoEnabled ? hoveredAssetId : null}

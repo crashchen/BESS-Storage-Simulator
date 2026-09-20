@@ -1,0 +1,115 @@
+{
+  "date": "2026-09-19",
+  "node": "24.21.0",
+  "packageLockSha256": "54c587779ef5d71d3ffd2b8f11ad0697a780de9b0fcd1f276687652caaa87ac0",
+  "before": {
+    "info": 0,
+    "low": 2,
+    "moderate": 5,
+    "high": 9,
+    "critical": 0,
+    "total": 16
+  },
+  "after": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "productionAfter": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "beforeAdvisories": {
+    "@babel/core": [
+      "https://github.com/advisories/GHSA-4x5r-pxfx-6jf8"
+    ],
+    "@humanfs/node": [
+      "https://github.com/advisories/GHSA-p498-v437-472g"
+    ],
+    "@vitest/mocker": [
+      "https://github.com/advisories/GHSA-82fw-gwwq-j7x9"
+    ],
+    "baseline-browser-mapping": [
+      "https://github.com/advisories/GHSA-w5vr-8v7q-w6rv"
+    ],
+    "brace-expansion": [
+      "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+      "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+      "https://github.com/advisories/GHSA-jxxr-4gwj-5jf2",
+      "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+      "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+      "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+      "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+      "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+      "https://github.com/advisories/GHSA-rgw5-rvv9-x895"
+    ],
+    "browserslist": [
+      "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+      "https://github.com/advisories/GHSA-73wf-gq98-2v4g"
+    ],
+    "esbuild": [
+      "https://github.com/advisories/GHSA-g7r4-m6w7-qqqr"
+    ],
+    "fflate": [
+      "https://github.com/advisories/GHSA-px8p-9vwx-vf98",
+      "https://github.com/advisories/GHSA-px8p-9vwx-vf98"
+    ],
+    "flatted": [
+      "https://github.com/advisories/GHSA-25h7-pfq9-p65f",
+      "https://github.com/advisories/GHSA-rf6f-7fwh-wjgh"
+    ],
+    "js-yaml": [
+      "https://github.com/advisories/GHSA-h67p-54hq-rp68",
+      "https://github.com/advisories/GHSA-52cp-r559-cp3m",
+      "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+      "https://github.com/advisories/GHSA-2883-xcg3-v3hh"
+    ],
+    "nanoid": [
+      "https://github.com/advisories/GHSA-28wg-ghj8-5hjv",
+      "https://github.com/advisories/GHSA-2v37-7h3g-55p8",
+      "https://github.com/advisories/GHSA-xwg4-73v4-xw9w"
+    ],
+    "picomatch": [
+      "https://github.com/advisories/GHSA-3v7f-55p6-f55p",
+      "https://github.com/advisories/GHSA-c2c7-rcm5-vvqj"
+    ],
+    "postcss": [
+      "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+      "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+      "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+      "https://github.com/advisories/GHSA-r28c-9q8g-f849"
+    ],
+    "undici": [
+      "https://github.com/advisories/GHSA-vmh5-mc38-953g",
+      "https://github.com/advisories/GHSA-p88m-4jfj-68fv",
+      "https://github.com/advisories/GHSA-vxpw-j846-p89q",
+      "https://github.com/advisories/GHSA-hm92-r4w5-c3mj",
+      "https://github.com/advisories/GHSA-g8m3-5g58-fq7m",
+      "https://github.com/advisories/GHSA-pr7r-676h-xcf6",
+      "https://github.com/advisories/GHSA-8xcm-r25x-g524",
+      "https://github.com/advisories/GHSA-4cwx-7wf7-3272",
+      "https://github.com/advisories/GHSA-m8rv-5g2x-5cg5",
+      "https://github.com/advisories/GHSA-jr45-8vmc-qm54",
+      "https://github.com/advisories/GHSA-v3r7-h72x-cjcm",
+      "https://github.com/advisories/GHSA-35p6-xmwp-9g52"
+    ],
+    "vite": [
+      "https://github.com/advisories/GHSA-4w7w-66w2-5vf9",
+      "https://github.com/advisories/GHSA-v2wj-q39q-566r",
+      "https://github.com/advisories/GHSA-p9ff-h696-f583",
+      "https://github.com/advisories/GHSA-v6wh-96g9-6wx3",
+      "https://github.com/advisories/GHSA-fx2h-pf6j-xcff"
+    ],
+    "vitest": [
+      "https://github.com/advisories/GHSA-82fw-gwwq-j7x9"
+    ]
+  },
+  "interpretation": "Registry advisory counts, not proof of application exploitability or absence of all vulnerabilities."
+}

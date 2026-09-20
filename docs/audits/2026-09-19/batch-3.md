@@ -3,9 +3,9 @@
 日期：2026-09-19（Europe/Berlin）  
 合并基线：main `053c82cd23298391f0a0e400c2324d051241988d`（PR #4）  
 工作分支：`codex/audit-batch-2-model-clarity`（保留原分支名，包含第二、三批）  
-状态：两批已通过用户安排的 CC 组合复审，小项收尾已落实；发布状态以 PR 为准。见 [复审收尾](cc-review.md)。本代理未调用或调度 CC。线上仍为第一批 `053c82c`，原始 9 月 8 日复现结果保留。
+状态：两批已通过用户安排的 CC 组合复审，小项收尾已落实；已推送 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5) / `33ed745`，CI 已通过，未合并。见 [复审收尾](cc-review.md)。本代理未调用或调度 CC。线上仍为第一批 `053c82c`，原始 9 月 8 日复现结果保留。
 
-Housekeeping：README、CLAUDE、原审计实施状态及 vault 五篇笔记已同步组合工作树的 192/17 验收、瞬时/累计读数契约与第四批 backlog。vault 的 verified_commit 仍明确指已发布基线；第二批 175/16 记录保留为阶段历史。写入固定五篇前后均核验 SHA256。
+Housekeeping：README、CLAUDE、原审计实施状态及 vault 五篇笔记已同步组合工作树的 192/17 验收、瞬时/累计读数契约与第四批 backlog。当时 vault 的 verified_commit 指已发布基线；第四批现已另列 verified_commit（PR #5）与 deployed_commit（PR #4）。第二批 175/16 记录保留为阶段历史。写入固定五篇前后均核验 SHA256。
 
 ## 修复机制
 
@@ -79,4 +79,4 @@ BESS_AUDIT_OUTPUT=/tmp/bess-convergence-review.json node docs/audits/2026-09-19/
 
 建议重点检查事件根求解是否以实际功率为准、没有重复入账/遗漏剩余时长、夜间目标后 PV 继续充电、峰段解析积分及保留 reserve、最后子段遥测与累计账的一致性。第二批没有修改公式；第三批改变了积分和边界处理，但 `settleHybridProjectTick` 的估值公式保持不变。
 
-下一批仍是加载/发布：图表局部错误恢复、GLB 缓存、DPR、依赖/Node 与同 workflow 质量门禁。本批未处理这些项，线上没有部署第二、三批。
+当时下一批规划为加载/发布（后续实现见 [第四批记录](batch-4.md)）：图表局部错误恢复、GLB 缓存、DPR、依赖/Node 与同 workflow 质量门禁。本批未处理这些项，线上没有部署第二、三批。

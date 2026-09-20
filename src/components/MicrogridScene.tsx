@@ -12,6 +12,7 @@ import { SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
 import { getVisibleEnergyFlows } from '../utils/energyFlowTelemetry';
 import { selectBessPower } from '../utils/bessDisplay';
+import { equipmentModelUrl } from '../utils/equipmentModels';
 
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
@@ -124,7 +125,7 @@ function createAssetInteraction(
 type EquipmentModelSpec = (typeof SCENE_3D.models)[keyof typeof SCENE_3D.models];
 
 function EquipmentModel({ model }: { model: EquipmentModelSpec }) {
-    const { scene } = useGLTF(import.meta.env.BASE_URL + model.file);
+    const { scene } = useGLTF(equipmentModelUrl(model.file));
     return <Clone object={scene} scale={model.scale} castShadow receiveShadow />;
 }
 
@@ -134,7 +135,7 @@ const BESS_MODEL_WIDTH = BESS_MODEL.size[0] * BESS_MODEL.scale;
 const BESS_MODEL_HEIGHT = BESS_MODEL.size[1] * BESS_MODEL.scale;
 const BESS_MODEL_DEPTH = BESS_MODEL.size[2] * BESS_MODEL.scale;
 const BESS_PAD_TOP_Y = SCENE_3D.pads.bess.position[1] + SCENE_3D.pads.bess.size[1] / 2;
-const BESS_MODEL_URL = import.meta.env.BASE_URL + BESS_MODEL.file;
+const BESS_MODEL_URL = equipmentModelUrl(BESS_MODEL.file);
 
 useGLTF.preload(BESS_MODEL_URL);
 

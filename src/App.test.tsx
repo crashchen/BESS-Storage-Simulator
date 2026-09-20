@@ -3,6 +3,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ControlPanelProps, GridSnapshot, GridState, MicrogridSceneProps } from './types';
 import App from './App';
+import { SCENE_3D } from './config';
+import { useGLTF } from '@react-three/drei';
+
+const modelCache = vi.hoisted(() => ({ failed: false }));
 
 vi.mock('@react-three/fiber', async () => {
   const { useLayoutEffect, useRef } = await import('react');
@@ -22,12 +26,13 @@ vi.mock('@react-three/fiber', async () => {
 });
 
 vi.mock('@react-three/drei', () => ({
-  PerformanceMonitor: ({ children }: { children: ReactNode }) => children,
-  AdaptiveDpr: () => null,
+  useGLTF: { clear: vi.fn(() => { modelCache.failed = false; }) },
 }));
 
 vi.mock('./components/MicrogridScene', () => ({
-  MicrogridScene: ({ onAssetHover, onAssetSelect }: MicrogridSceneProps) => (
+  MicrogridScene: ({ onAssetHover, onAssetSelect }: MicrogridSceneProps) => {
+    if (modelCache.failed) throw new Error('Cached model download failure');
+    return (
     <button
       onMouseEnter={() => onAssetHover?.('bess')}
       onMouseLeave={() => onAssetHover?.(null)}
@@ -35,7 +40,8 @@ vi.mock('./components/MicrogridScene', () => ({
     >
       Inspect BESS
     </button>
-  ),
+    );
+  },
 }));
 
 // Keep the real App, viewport, reducer, simulation hook and drawer state together.
@@ -77,6 +83,8 @@ describe('App viewport integration', () => {
   let nowMs: number;
 
   beforeEach(() => {
+    modelCache.failed = false;
+    vi.mocked(useGLTF.clear).mockClear();
     frameCallback = null;
     nowMs = 1000;
     vi.spyOn(performance, 'now').mockImplementation(() => nowMs);
@@ -157,6 +165,28 @@ describe('App viewport integration', () => {
     const unmountedLoss = new Event('webglcontextlost', { cancelable: true });
     fireEvent(replacementCanvas, unmountedLoss);
     expect(unmountedLoss.defaultPrevented).toBe(false);
+  });
+
+  it('clears each model cache key before retry and preserves the live simulation', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(<StrictMode><App /></StrictMode>);
+    fireEvent.click(screen.getByRole('button', { name: 'Run custom simulation' }));
+    advanceFrames(10);
+    modelCache.failed = true;
+    advanceFrames(1);
+    expect(screen.getByRole('alert')).toHaveTextContent('3D viewport unavailable');
+    const failedState = readSimulation();
+    advanceFrames(10);
+    const beforeRetry = readSimulation();
+    expect(beforeRetry.history.length).toBeGreaterThan(failedState.history.length);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry 3D View' }));
+    expect(useGLTF.clear).toHaveBeenCalledTimes(3);
+    for (const model of Object.values(SCENE_3D.models)) {
+      expect(useGLTF.clear).toHaveBeenCalledWith(import.meta.env.BASE_URL + model.file);
+    }
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(readSimulation()).toEqual(beforeRetry);
+    expect(screen.getByRole('button', { name: 'Inspect BESS' })).toBeInTheDocument();
   });
 
   it('suppresses equipment previews under Metrics and closes Metrics on explicit inspection', () => {
