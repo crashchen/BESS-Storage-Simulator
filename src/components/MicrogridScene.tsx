@@ -6,7 +6,9 @@
 
 import { memo, useRef, useMemo, Suspense } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
-import { Clone, OrbitControls, Text, Grid, Line, useGLTF } from '@react-three/drei';
+import { Text, Grid, Line, useGLTF } from '@react-three/drei';
+import { EquipmentModel } from './EquipmentModel';
+import { SceneCameraControls } from './SceneCameraControls';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
 import { SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
@@ -122,18 +124,11 @@ function createAssetInteraction(
 // so the shadow flags reach every mesh. Highlight/overload feedback lives on
 // separate overlay meshes — GLB materials are never mutated, keeping the cached
 // GLTF pristine across canvas remounts.
-type EquipmentModelSpec = (typeof SCENE_3D.models)[keyof typeof SCENE_3D.models];
-
-function EquipmentModel({ model }: { model: EquipmentModelSpec }) {
-    const { scene } = useGLTF(equipmentModelUrl(model.file));
-    return <Clone object={scene} scale={model.scale} castShadow receiveShadow />;
-}
-
 // ── BESS Container ───────────────────────────────────────────
 const BESS_MODEL = SCENE_3D.models.bessContainer;
-const BESS_MODEL_WIDTH = BESS_MODEL.size[0] * BESS_MODEL.scale;
-const BESS_MODEL_HEIGHT = BESS_MODEL.size[1] * BESS_MODEL.scale;
-const BESS_MODEL_DEPTH = BESS_MODEL.size[2] * BESS_MODEL.scale;
+const BESS_MODEL_WIDTH = BESS_MODEL.size[0] * SCENE_3D.equipmentScale;
+const BESS_MODEL_HEIGHT = BESS_MODEL.size[1] * SCENE_3D.equipmentScale;
+const BESS_MODEL_DEPTH = BESS_MODEL.size[2] * SCENE_3D.equipmentScale;
 const BESS_PAD_TOP_Y = SCENE_3D.pads.bess.position[1] + SCENE_3D.pads.bess.size[1] / 2;
 const BESS_MODEL_URL = equipmentModelUrl(BESS_MODEL.file);
 
@@ -260,7 +255,7 @@ const BESSContainer = memo(function BESSContainer({
             {/* Label */}
             <Text
                 position={[0, BESS_MODEL_HEIGHT + 0.38, 0]}
-                fontSize={0.28}
+                fontSize={SCENE_3D.equipmentLabelSize}
                 color={interaction.isHighlighted ? interactionColor : '#e2e8f0'}
                 anchorX="center"
                 anchorY="bottom"
@@ -288,10 +283,10 @@ const SolarPanel = memo(function SolarPanel({
 
     return (
         <group position={position}>
-            <group rotation={[0.35, 0, 0]}>
+            <group rotation={[SCENE_3D.solarArray.panelTiltX, 0, 0]}>
                 {/* Panel frame */}
                 <mesh castShadow receiveShadow>
-                    <boxGeometry args={[1.65, 0.06, 1.08]} />
+                    <boxGeometry args={[...SCENE_3D.solarArray.panelSize]} />
                     <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.4} />
                 </mesh>
                 {/* Active surface */}
@@ -339,7 +334,7 @@ const SolarArray = memo(function SolarArray({ solarOutputMw, solarAcCapacityMw, 
             for (let col = 0; col < cols; col++) {
                 result.push([
                     startX + col * SCENE_3D.solarArray.spacingX,
-                    1.2,
+                    SCENE_3D.solarArray.panelHeight,
                     SCENE_3D.solarArray.baseStartZ + row * SCENE_3D.solarArray.spacingZ,
                 ]);
             }
@@ -381,32 +376,51 @@ const SolarArray = memo(function SolarArray({ solarOutputMw, solarAcCapacityMw, 
     );
 });
 
+const GRID_NODE_POSITION = SCENE_3D.gridNode.position;
+const SITE_LOAD_POSITION = SCENE_3D.pads.siteLoad.position;
+const TRANSFORMER_MODEL = SCENE_3D.models.mainTransformer;
+const TRANSFORMER_WIDTH = TRANSFORMER_MODEL.size[0] * SCENE_3D.equipmentScale;
+const TRANSFORMER_HEIGHT = TRANSFORMER_MODEL.size[1] * SCENE_3D.equipmentScale;
+const TRANSFORMER_DEPTH = TRANSFORMER_MODEL.size[2] * SCENE_3D.equipmentScale;
+const GRID_PYLON_HEIGHT = TRANSFORMER_HEIGHT + SCENE_3D.gridNode.pylonTopClearance;
+const GRID_PYLON_POSITION: [number, number, number] = [
+    GRID_NODE_POSITION[0],
+    0,
+    GRID_NODE_POSITION[2] - TRANSFORMER_DEPTH / 2 - SCENE_3D.gridNode.pylonRearClearance,
+];
+
+const PCS_SKID_MODEL = SCENE_3D.models.pcsMvSkid;
+const PCS_SKID_HEIGHT = PCS_SKID_MODEL.size[1] * SCENE_3D.equipmentScale;
+// Centre-ground GLB anchor: both the model and flow waypoint follow the pad.
+const PCS_PAD_TOP_Y = SCENE_3D.pads.substation.position[1] + SCENE_3D.pads.substation.size[1] / 2;
+const PCS_FLOW_HEIGHT = PCS_PAD_TOP_Y + PCS_SKID_HEIGHT + SCENE_3D.pads.substation.flowWaypointClearance;
+
 // ── Power Lines (using Drei Line) ────────────────────────────
 const POWER_LINE_POINTS: [number, number, number][] = [
     [-12.6, 3.1, -7.2],
     [-7.0, 3.9, -7.0],
     [-1.0, 4.0, -5.2],
-    [4.6, 3.6, -3.0],
-    [8.7, 3.7, -1.0],
+    [SCENE_3D.pads.substation.position[0], PCS_FLOW_HEIGHT, SCENE_3D.pads.substation.position[2] - 2.05],
+    [GRID_PYLON_POSITION[0], GRID_PYLON_HEIGHT, GRID_PYLON_POSITION[2]],
 ];
 
-const POWER_PYLONS: [number, number, number][] = [
-    [-12.6, 0, -7.2],
-    [-1.0, 0, -5.2],
-    [8.7, 0, -1.0],
+const POWER_PYLONS: { position: [number, number, number]; height: number }[] = [
+    { position: [-12.6, 0, -7.2], height: 4 },
+    { position: [-1.0, 0, -5.2], height: 4 },
+    { position: GRID_PYLON_POSITION, height: GRID_PYLON_HEIGHT },
 ];
 
 const PowerLines = memo(function PowerLines() {
     return (
         <group>
             {/* Pylons */}
-            {POWER_PYLONS.map((position, i) => (
+            {POWER_PYLONS.map(({ position, height }, i) => (
                 <group key={i} position={position}>
-                    <mesh position={[0, 2, 0]}>
-                        <cylinderGeometry args={[0.06, 0.08, 4]} />
+                    <mesh position={[0, height / 2, 0]}>
+                        <cylinderGeometry args={[0.06, 0.08, height]} />
                         <meshStandardMaterial color="#6b7280" metalness={0.7} roughness={0.4} />
                     </mesh>
-                    <mesh position={[0, 4, 0]}>
+                    <mesh position={[0, height, 0]}>
                         <boxGeometry args={[1.2, 0.08, 0.08]} />
                         <meshStandardMaterial color="#6b7280" metalness={0.7} roughness={0.4} />
                     </mesh>
@@ -418,14 +432,7 @@ const PowerLines = memo(function PowerLines() {
     );
 });
 
-// ── Grid Building (Load Consumer) ────────────────────────────
-const GRID_NODE_POSITION: [number, number, number] = [8.8, 0, 0.25];
-const SITE_LOAD_POSITION = SCENE_3D.pads.siteLoad.position;
-
-const TRANSFORMER_MODEL = SCENE_3D.models.mainTransformer;
-const TRANSFORMER_WIDTH = TRANSFORMER_MODEL.size[0] * TRANSFORMER_MODEL.scale;
-const TRANSFORMER_HEIGHT = TRANSFORMER_MODEL.size[1] * TRANSFORMER_MODEL.scale;
-const TRANSFORMER_DEPTH = TRANSFORMER_MODEL.size[2] * TRANSFORMER_MODEL.scale;
+// ── Grid Transformer ─────────────────────────────────────────
 
 const LoadBuilding = memo(function LoadBuilding({
     interaction,
@@ -459,7 +466,7 @@ const LoadBuilding = memo(function LoadBuilding({
             </Suspense>
             <Text
                 position={[0, TRANSFORMER_HEIGHT + 0.5, 0]}
-                fontSize={0.26}
+                fontSize={SCENE_3D.equipmentLabelSize}
                 color={isActive || overloaded ? highlightColor : '#e2e8f0'}
                 anchorX="center"
                 anchorY="bottom"
@@ -516,11 +523,6 @@ const SiteLoadMarker = memo(function SiteLoadMarker() {
     );
 });
 
-const PCS_SKID_MODEL = SCENE_3D.models.pcsMvSkid;
-const PCS_SKID_HEIGHT = PCS_SKID_MODEL.size[1] * PCS_SKID_MODEL.scale;
-// Skid sits on top of the substation pad (centre-ground GLB anchor).
-const PCS_PAD_TOP_Y = SCENE_3D.pads.substation.position[1] + SCENE_3D.pads.substation.size[1] / 2;
-
 const SitePads = memo(function SitePads({ pcsInteraction }: { pcsInteraction: AssetInteraction }) {
     const solarPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.solar.size], []);
     const bessPadSize = useMemo<[number, number, number]>(() => [...SCENE_3D.pads.bess.size], []);
@@ -572,7 +574,7 @@ const SitePads = memo(function SitePads({ pcsInteraction }: { pcsInteraction: As
                 <Line
                     points={[
                         [0, PCS_SKID_HEIGHT + 0.04, 0],
-                        [0, SCENE_3D.pads.substation.flowWaypointHeight - PCS_PAD_TOP_Y, 0],
+                        [0, PCS_FLOW_HEIGHT - PCS_PAD_TOP_Y, 0],
                     ]}
                     color={pcsHighlightColor}
                     lineWidth={pcsActive ? 4 : 2.5}
@@ -583,8 +585,9 @@ const SitePads = memo(function SitePads({ pcsInteraction }: { pcsInteraction: As
                     <EquipmentModel model={PCS_SKID_MODEL} />
                 </Suspense>
                 <Text
-                    position={[0, PCS_SKID_HEIGHT + 0.32, 0]}
-                    fontSize={0.14}
+                    // Offset from the central flow riser so it cannot bisect the label.
+                    position={[-PCS_SKID_MODEL.size[0] * SCENE_3D.equipmentScale / 4, PCS_SKID_HEIGHT + 0.5, 0]}
+                    fontSize={SCENE_3D.equipmentLabelSize}
                     color={pcsActive ? '#ffffff' : SCENE_3D.pads.substation.labelColor}
                     anchorX="center"
                     anchorY="bottom"
@@ -720,7 +723,7 @@ const REAR_BUS_POINT_A = new Vector3(-5.8, 3.45, -6.4);
 const REAR_BUS_POINT_B = new Vector3(-1.0, 3.55, -4.8);
 const PCS_MV_FLOW_POINT = new Vector3(
     SCENE_3D.pads.substation.position[0],
-    SCENE_3D.pads.substation.flowWaypointHeight,
+    PCS_FLOW_HEIGHT,
     SCENE_3D.pads.substation.position[2],
 );
 const BESS_FLOW_PORT = new Vector3(
@@ -728,14 +731,15 @@ const BESS_FLOW_PORT = new Vector3(
     2.55,
     SCENE_3D.pads.bess.position[2] - 1.25,
 );
+const BESS_BUS_POINT = new Vector3(BESS_FLOW_PORT.x, PCS_FLOW_HEIGHT, BESS_FLOW_PORT.z);
 const GRID_FLOW_PORT = new Vector3(
-    GRID_NODE_POSITION[0] - 1.35,
-    3.05,
-    GRID_NODE_POSITION[2] - 0.9,
+    GRID_NODE_POSITION[0] - TRANSFORMER_WIDTH / 2 - 0.25,
+    GRID_NODE_POSITION[1] + TRANSFORMER_HEIGHT + 0.2,
+    GRID_NODE_POSITION[2] - TRANSFORMER_DEPTH / 4,
 );
 const GRID_FLOW_POINT = new Vector3(
     GRID_NODE_POSITION[0],
-    3.0,
+    GRID_NODE_POSITION[1] + TRANSFORMER_HEIGHT + 0.2,
     GRID_NODE_POSITION[2],
 );
 const SITE_LOAD_FLOW_POINT = new Vector3(
@@ -743,6 +747,8 @@ const SITE_LOAD_FLOW_POINT = new Vector3(
     1.18,
     SITE_LOAD_POSITION[2],
 );
+// Keep local-load branches above the enlarged skid, then descend at the marker.
+const SITE_LOAD_BUS_POINT = new Vector3(SITE_LOAD_POSITION[0], PCS_FLOW_HEIGHT, SITE_LOAD_POSITION[2]);
 
 function flowPoint(point: Vector3) {
     return point.clone();
@@ -756,6 +762,7 @@ const FLOW_PATHS = {
             flowPoint(REAR_BUS_POINT_A),
             flowPoint(REAR_BUS_POINT_B),
             flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(BESS_BUS_POINT),
             flowPoint(BESS_FLOW_PORT),
         ],
         false,
@@ -781,6 +788,7 @@ const FLOW_PATHS = {
             flowPoint(REAR_BUS_POINT_A),
             flowPoint(REAR_BUS_POINT_B),
             flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(SITE_LOAD_BUS_POINT),
             flowPoint(SITE_LOAD_FLOW_POINT),
         ],
         false,
@@ -790,6 +798,7 @@ const FLOW_PATHS = {
     bessToGrid: new CatmullRomCurve3(
         [
             flowPoint(BESS_FLOW_PORT),
+            flowPoint(BESS_BUS_POINT),
             flowPoint(PCS_MV_FLOW_POINT),
             flowPoint(GRID_FLOW_PORT),
             flowPoint(GRID_FLOW_POINT),
@@ -801,7 +810,9 @@ const FLOW_PATHS = {
     bessToLoad: new CatmullRomCurve3(
         [
             flowPoint(BESS_FLOW_PORT),
+            flowPoint(BESS_BUS_POINT),
             flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(SITE_LOAD_BUS_POINT),
             flowPoint(SITE_LOAD_FLOW_POINT),
         ],
         false,
@@ -813,6 +824,7 @@ const FLOW_PATHS = {
             flowPoint(GRID_FLOW_POINT),
             flowPoint(GRID_FLOW_PORT),
             flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(BESS_BUS_POINT),
             flowPoint(BESS_FLOW_PORT),
         ],
         false,
@@ -824,6 +836,7 @@ const FLOW_PATHS = {
             flowPoint(GRID_FLOW_POINT),
             flowPoint(GRID_FLOW_PORT),
             flowPoint(PCS_MV_FLOW_POINT),
+            flowPoint(SITE_LOAD_BUS_POINT),
             flowPoint(SITE_LOAD_FLOW_POINT),
         ],
         false,
@@ -1022,6 +1035,7 @@ function EnergyFlowSystem({
 // ── Main Scene ───────────────────────────────────────────────
 export function MicrogridScene({
     gridState,
+    viewResetVersion = 0,
     hoveredAssetId,
     selectedAssetId,
     onAssetHover,
@@ -1139,15 +1153,7 @@ export function MicrogridScene({
             <CurtailmentEffect curtailedMw={solarCurtailedMw} maxSolarMw={solarAcCapacityMw} />
 
             {/* Camera controls */}
-            <OrbitControls
-                enablePan
-                enableZoom
-                enableRotate
-                minDistance={SCENE_3D.orbit.minDistance}
-                maxDistance={SCENE_3D.orbit.maxDistance}
-                maxPolarAngle={Math.PI / SCENE_3D.orbit.maxPolarAngleDivisor}
-                target={SCENE_3D.orbit.target}
-            />
+            <SceneCameraControls resetVersion={viewResetVersion} />
         </>
     );
 }

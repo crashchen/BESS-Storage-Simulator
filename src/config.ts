@@ -158,10 +158,18 @@ export const SIMULATION = {
 // ── 3D Scene Configuration ─────────────────────────────────────
 export const SCENE_3D = {
     camera: {
-        position: [15, 12, 18] as const,
+        position: [6, 12, 24] as const,
         fov: 50,
         near: 0.1,
         far: 500,
+    },
+    framing: {
+        // Curated site envelope: maximum 6×5 PV array, equipment, pylons and
+        // labels. Exclude the 200m decorative ground and moving particles.
+        min: [-15.8, -0.1, -8.1] as const,
+        max: [15.7, 5.6, 3.5] as const,
+        horizontalPaddingPx: 24,
+        verticalPaddingPx: 96,
     },
     dpr: {
         min: 1,
@@ -209,11 +217,23 @@ export const SCENE_3D = {
         spacingZ: 1.8,
         baseStartX: -12.5,
         baseStartZ: -6.1,
+        panelSize: [1.65, 0.06, 1.08] as const,
+        panelHeight: 1.2,
+        panelTiltX: 0.35,
     },
     particles: {
         maxEnergy: 12,
         maxCurtailment: 20,
         curtailmentBounds: { x: -6.5, z: -2, spread: 4 },
+    },
+    /** All metre-scale equipment shares this scale; change layout to make room,
+     * rather than independently shrinking one representative unit. */
+    equipmentScale: 0.9,
+    equipmentLabelSize: 0.34,
+    gridNode: {
+        position: [12.4, 0, 0.25] as const,
+        pylonRearClearance: 0.7,
+        pylonTopClearance: 0.8,
     },
     /** Equipment GLBs under public/models — metre-scale, centre-ground anchor,
      * no textures/decoders; see public/models/README.md for provenance and the
@@ -227,19 +247,16 @@ export const SCENE_3D = {
     models: {
         bessContainer: {
             file: 'models/generic-bess-5mwh-v1.glb',
-            scale: 0.9,
             size: [6.1, 2.9, 2.44] as const,
             unitEnergyMwh: 5,
         },
         pcsMvSkid: {
             file: 'models/generic-pcs-mv-skid-5mw-v1.glb',
-            scale: 0.3,
             size: [6, 3, 3] as const,
             unitRatingMw: 5,
         },
         mainTransformer: {
             file: 'models/generic-main-transformer-50mva-33-220kv-v1.glb',
-            scale: 0.64,
             size: [6, 5, 5] as const,
         },
     },
@@ -255,15 +272,15 @@ export const SCENE_3D = {
             color: '#172033',
         },
         substation: {
-            position: [4.8, 0.08, -1.65] as const,
-            size: [2.2, 0.16, 1.4] as const,
+            position: [5.65, 0.08, -1.65] as const,
+            size: [6.1, 0.16, 3.4] as const,
             color: '#4b5f7a',
             labelColor: '#e0f2fe',
             emissiveColor: '#38bdf8',
-            flowWaypointHeight: 1.65,
+            flowWaypointClearance: 0.85,
         },
         siteLoad: {
-            position: [6.05, 0.1, 1.35] as const,
+            position: [8.6, 0.1, 2.65] as const,
         },
     },
 } as const;

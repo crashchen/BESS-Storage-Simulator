@@ -102,6 +102,7 @@ export interface GridSnapshot {
 
 export interface MicrogridSceneProps {
     gridState: GridState;
+    viewResetVersion?: number;
     selectedAssetId?: SceneAssetId | null;
     hoveredAssetId?: SceneAssetId | null;
     onAssetHover?: (assetId: SceneAssetId | null) => void;

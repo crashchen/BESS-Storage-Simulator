@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import type { GridState, SceneAssetId } from '../types';
 import { getSceneAssetInfo } from '../utils/sceneAssetInfo';
 
@@ -6,6 +7,7 @@ interface SceneAssetInfoCardProps {
   gridState: GridState;
   pinned: boolean;
   onClose: () => void;
+  closeButtonRef?: Ref<HTMLButtonElement>;
 }
 
 const METER_TONE_CLASS = {
@@ -16,7 +18,7 @@ const METER_TONE_CLASS = {
   blue: 'from-blue-300 to-emerald-300',
 } as const;
 
-export function SceneAssetInfoCard({ assetId, gridState, pinned, onClose }: SceneAssetInfoCardProps) {
+export function SceneAssetInfoCard({ assetId, gridState, pinned, onClose, closeButtonRef }: SceneAssetInfoCardProps) {
   if (!assetId) return null;
 
   const info = getSceneAssetInfo(assetId, gridState);
@@ -25,9 +27,10 @@ export function SceneAssetInfoCard({ assetId, gridState, pinned, onClose }: Scen
   return (
     <aside
       role="region"
+      id="scene-asset-info"
       aria-label={`${info.title} live information`}
       data-testid="scene-asset-info-card"
-      className="pointer-events-auto absolute bottom-5 left-1/2 z-30 max-h-[calc(100dvh-2.5rem)] w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overflow-x-hidden overscroll-contain rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl md:left-auto md:right-5 md:top-24 md:bottom-auto md:max-h-[calc(100dvh-7rem)] md:translate-x-0"
+      className="pointer-events-auto absolute bottom-24 left-1/2 z-30 max-h-[calc(100dvh-12rem)] w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overflow-x-hidden overscroll-contain rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl lg:left-auto lg:right-5 lg:top-40 lg:bottom-auto lg:max-h-[calc(100dvh-16rem)] lg:translate-x-0"
     >
       <div className={`h-1.5 bg-gradient-to-r ${info.accent}`} />
       <div className="p-4">
@@ -41,6 +44,7 @@ export function SceneAssetInfoCard({ assetId, gridState, pinned, onClose }: Scen
         </div>
         {pinned && (
           <button
+            ref={closeButtonRef}
             type="button"
             aria-label="Close equipment info card"
             onClick={onClose}
