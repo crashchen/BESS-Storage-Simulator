@@ -2,6 +2,7 @@ import { SCENE_3D } from '../config';
 import type { GridState, SceneAssetId } from '../types';
 import { getVisibleEnergyFlows } from './energyFlowTelemetry';
 import { selectGridConnectionTotalMw } from './gridSelectors';
+import { selectBessDisplay } from './bessDisplay';
 
 export interface InfoRow {
     label: string;
@@ -14,6 +15,7 @@ export interface SceneAssetInfo {
     status: string;
     accent: string;
     description: string;
+    readingNote?: string | null;
     primary: InfoRow;
     meter: {
         label: string;
@@ -42,12 +44,6 @@ function formatEurMwh(value: number): string {
     return `EUR ${Math.round(value)}/MWh`;
 }
 
-function batteryModeLabel(mode: GridState['batteryMode']): string {
-    if (mode === 'charging') return 'Charging';
-    if (mode === 'discharging') return 'Discharging';
-    return 'Idle';
-}
-
 function clampPercent(value: number): number {
     return Math.max(0, Math.min(100, value));
 }
@@ -55,25 +51,26 @@ function clampPercent(value: number): number {
 export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): SceneAssetInfo {
     const visibleFlows = getVisibleEnergyFlows(state);
     const bessDischargeTotalMw = state.batteryDischargeToLoadMw + state.batteryDischargeToExportMw;
-    const bessNetPower = bessDischargeTotalMw - state.batteryChargeFromSolarMw - state.batteryChargeFromGridMw;
     const stationThroughput = visibleFlows.grossRoutedMw;
     const bessChargeMw = state.batteryChargeFromSolarMw + state.batteryChargeFromGridMw;
     const gridConnectionMw = selectGridConnectionTotalMw(state);
     const stationCapacityMw = Math.max(gridConnectionMw, state.solarAcCapacityMw + state.gridBessConnectionMw, 1);
 
     if (assetId === 'bess') {
+        const bessDisplay = selectBessDisplay(state);
         const containerEnergyMwh = SCENE_3D.models.bessContainer.unitEnergyMwh;
         const containerEquivalents = Math.max(1, Math.ceil(state.batteryEnergyCapacityMwh / containerEnergyMwh));
         return {
             title: 'BESS Unit',
             eyebrow: 'Battery Energy Storage System',
-            status: batteryModeLabel(state.batteryMode),
-            accent: state.batteryMode === 'charging'
+            status: bessDisplay.statusLabel,
+            accent: bessDisplay.powerMode === 'charging'
                 ? 'from-emerald-400 to-cyan-300'
-                : state.batteryMode === 'discharging'
+                : bessDisplay.powerMode === 'discharging'
                     ? 'from-amber-300 to-orange-400'
                     : 'from-slate-400 to-blue-300',
             description: `Representative generic ${containerEnergyMwh} MWh liquid-cooled container standing in for the site BESS block — all figures are station-level aggregates.`,
+            readingNote: bessDisplay.readingNote,
             primary: {
                 label: 'State of charge',
                 value: formatPercent(state.batterySocPercent),
@@ -85,11 +82,13 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 tone: state.batterySocPercent < 20 ? 'red' : state.batterySocPercent < 50 ? 'amber' : 'green',
             },
             flowRows: [
-                { label: 'Net power', value: formatMw(bessNetPower) },
+                { label: 'Net power', value: formatMw(-bessDisplay.powerMw) },
                 { label: 'Charging input', value: formatMw(bessChargeMw) },
                 { label: 'Discharge output', value: formatMw(bessDischargeTotalMw) },
             ],
             rows: [
+                ...(state.simulationStatus !== 'running' ? [{ label: 'Sampled operation', value: bessDisplay.powerLabel }] : []),
+                { label: 'Selected dispatch', value: bessDisplay.dispatchLabel },
                 { label: 'Charge from solar', value: formatMw(state.batteryChargeFromSolarMw) },
                 { label: 'Charge from grid', value: formatMw(state.batteryChargeFromGridMw) },
                 { label: 'Discharge to local load', value: formatMw(state.batteryDischargeToLoadMw) },

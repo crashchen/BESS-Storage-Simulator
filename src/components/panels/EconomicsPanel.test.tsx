@@ -24,6 +24,39 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
+describe('EconomicsPanel cumulative valuation', () => {
+    it('keeps the restored-supply assumption visible after overload clears with the breakdown closed', () => {
+        const onCommand = vi.fn();
+        const overloaded = makeGridState({
+            gridOverloadMw: 32,
+            gridOverloadWarning: true,
+            batteryDischargeToLoadMw: 30,
+            cumulativeRevenueEur: 10500,
+            cumulativeBessMarginEur: 10500,
+            cumulativeBessDischargeRevenueEur: 10500,
+        });
+        const { rerender } = render(<EconomicsPanel
+            simulationResetVersion={0}
+            gridState={overloaded}
+            onCommand={onCommand}
+        />);
+        const breakdown = screen.getByText('Settlement Breakdown (auditable)').closest('details');
+        const assumption = screen.getByText(/Cumulative demo values may include BESS supply to otherwise unserved load/);
+        expect(breakdown).not.toHaveAttribute('open');
+        expect(assumption).toBeVisible();
+        expect(assumption).toHaveTextContent('assumed value, not reduced imports or export revenue');
+
+        // Current flows no longer reveal the restored-supply value still in the totals.
+        rerender(<EconomicsPanel
+            simulationResetVersion={0}
+            gridState={{ ...overloaded, gridOverloadMw: 0, gridOverloadWarning: false, batteryDischargeToLoadMw: 0 }}
+            onCommand={onCommand}
+        />);
+        expect(breakdown).not.toHaveAttribute('open');
+        expect(assumption).toBeVisible();
+    });
+});
+
 describe('EconomicsPanel tariff inputs', () => {
     it('clears an invalid draft on every Reset even when the applied rate and timestamp stay unchanged', async () => {
         vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);

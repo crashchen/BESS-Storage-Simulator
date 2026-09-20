@@ -2,7 +2,7 @@
 
 日期：2026-09-08（Europe/Berlin）\
 基线：main `033cedd7896696e4f6e8c09efcd8a9f0df7184b4`\
-状态：本地实现与验收完成，用户转交的 CC 最终复审未发现新问题。交付分支：`codex/audit-batch-1-demo-ux`；本次范围为一个本地提交，尚未创建 PR 或部署。提交号由 Git 历史和 vault 迭代记录承载。范围来自用户批准的第一批演示体验修复及 housekeeping。
+状态（2026-09-19 更新）：用户转交的 CC 最终复审未发现新问题。交付分支 `codex/audit-batch-1-demo-ux` 的提交 `01ae625` 已通过 [PR #4](https://github.com/crashchen/BESS-Storage-Simulator/pull/4) 合并至 main `053c82cd23298391f0a0e400c2324d051241988d`；[同提交 CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35449398794) 和 [Pages 发布](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35449398727) 均成功。范围来自用户批准的第一批演示体验修复及 housekeeping。
 
 ## 已完成
 
@@ -19,6 +19,7 @@
 
 ## 验证
 
+- 2026-09-19 发布后在真实浏览器打开 Pages 子路径，确认三台 GLB 与贴合的太阳板正常显示、Metrics 可用，以及峰段输入 2000 被拒绝并提示实际电价仍为 350；该次检查未记录 console error。此发布 smoke 不替代下述本地完整验收，也未做 GPU 故障注入。
 - 最新 `npm run lint`、`npm test`、`npm run build` 全部通过：**146 个测试 / 15 个文件**（首轮交付为 145 / 15，随后新增同值 Reset 回归）。
 - 真实浏览器检查本地 Vite 页面，覆盖 1280×720 桌面、390×844 手机及往返调整窗口尺寸：太阳板可见面、抽屉互斥与焦点、电价 1000→2000 的 Enter/失焦错误反馈、时间轴刻度，以及固定设备卡与 Metrics 的双向切换。
 - Metrics 入口用实际坐标点击验证，且 DOM 命中检查确认未被设备卡遮挡。

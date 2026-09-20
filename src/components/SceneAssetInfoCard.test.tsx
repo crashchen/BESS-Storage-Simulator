@@ -4,11 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { SceneAssetInfoCard } from './SceneAssetInfoCard';
 import { getSceneAssetInfo } from '../utils/sceneAssetInfo';
 import { makeGridState } from '../test/fixtures';
+import { applyCommand } from '../utils/gridReducer';
+import { createInitialGridState } from '../utils/tickEngine';
 
 describe('SceneAssetInfoCard', () => {
     it('renders live BESS values for the selected asset', () => {
         const state = makeGridState({
             batteryMode: 'charging',
+            batteryPowerMw: 102,
             batterySocPercent: 38.4,
             batteryChargeFromSolarMw: 90,
             batteryChargeFromGridMw: 12,
@@ -30,6 +33,26 @@ describe('SceneAssetInfoCard', () => {
         expect(screen.getByText('-102.0 MW')).toBeInTheDocument();
         expect(screen.getByText('Usable energy fill')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Close equipment info card' })).toBeInTheDocument();
+    });
+
+    it('labels paused power as a snapshot and follows a zeroed sample after an edit', () => {
+        const preset = applyCommand(createInitialGridState(), {
+            type: 'APPLY_SCENARIO_PRESET', payload: 'negative-price-charge',
+        }, 1).next;
+        const { rerender } = render(<SceneAssetInfoCard assetId="bess" gridState={preset} pinned onClose={vi.fn()} />);
+        expect(screen.getByText('Paused snapshot')).toBeInTheDocument();
+        expect(screen.getByText('Charging')).toBeInTheDocument();
+        expect(screen.getByText('Manual charge')).toBeInTheDocument();
+        expect(screen.getByText('-70.0 MW')).toBeInTheDocument();
+
+        const edited = applyCommand(preset, { type: 'SET_BESS_POWER_RATING', payload: 120 }, 2).next;
+        expect(edited.batteryMode).toBe('charging');
+        rerender(<SceneAssetInfoCard assetId="bess" gridState={edited} pinned onClose={vi.fn()} />);
+        expect(screen.getByText('Paused snapshot')).toBeInTheDocument();
+        expect(screen.getByText('Idle')).toBeInTheDocument();
+        expect(screen.queryByText('Charging')).not.toBeInTheDocument();
+        expect(screen.getByText('Manual charge')).toBeInTheDocument();
+        expect(screen.getByText(/time and earnings are frozen/)).toBeInTheDocument();
     });
 
     it('exposes PCS/MV throughput as a derived routed-flow value', () => {

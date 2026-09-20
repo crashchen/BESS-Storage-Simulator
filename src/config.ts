@@ -25,7 +25,7 @@ export const SOLAR = {
     minAcCapacityMw: 5,
     /** Maximum configurable AC capacity (MW) */
     maxAcCapacityMw: 500,
-    /** Annual yield assumption (kWh/kWp/year) */
+    /** Annual reference (kWh/kWp/year); does not calibrate the illustrative daily curve. */
     yieldKwhPerKwYear: 1380,
     /** Sunrise hour (solar output starts) */
     sunriseHour: 5.5,

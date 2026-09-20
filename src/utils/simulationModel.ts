@@ -5,9 +5,9 @@ export interface HybridProjectSettlement {
     batteryPowerMw: number;
     batteryChargeFromSolarMw: number;
     batteryChargeFromGridMw: number;
-    /** BESS energy serving local site demand (offsets grid import). */
+    /** BESS power serving local demand: reduces imports or restores otherwise unserved load. */
     batteryDischargeToLoadMw: number;
-    /** BESS energy flowing through the PCC out to the grid (counts as revenue). */
+    /** BESS power exported through the PCC, valued at the settlement tariff. */
     batteryDischargeToExportMw: number;
     solarExportMw: number;
     solarCurtailedMw: number;
@@ -174,10 +174,11 @@ export function settleHybridProjectTick({
     const projectNetExportMw = gridExportMw - gridImportMw;
     const baselineSolarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
 
-    // BESS revenue continues to value ALL discharge at the current tariff —
-    // serving local load is valued the same as exporting, since it offsets
-    // an avoided import cost at the same price. The two new fields are for
-    // visualization + audit; the economic formula sums them.
+    // The demo values ALL discharge at the settlement-time tariff. Local supply
+    // can reduce imports or restore load left unserved by the PCC import cap.
+    // Restored supply carries an assumed value at the same tariff (including
+    // negative prices); it is not an import saving or export revenue. The
+    // cumulative discharge value combines these uses without separate subtotals.
     const batteryDischargeTotalMw = batteryDischargeToLoadMw + batteryDischargeToExportMw;
     const solarExportMwh = solarExportMw * dtHours;
     const batteryChargeFromGridMwh = batteryChargeFromGridMw * dtHours;

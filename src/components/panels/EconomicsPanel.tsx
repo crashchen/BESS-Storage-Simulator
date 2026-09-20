@@ -203,6 +203,11 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
                     </div>
                 </div>
 
+                <p className="text-[11px] leading-relaxed text-slate-400">
+                    Cumulative demo values may include BESS supply to otherwise unserved load, valued at the tariff.
+                    {' '}That portion is an assumed value, not reduced imports or export revenue.
+                </p>
+
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                         <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Solar → Grid</p>
@@ -218,7 +223,7 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
                     </div>
                     {/* Single BESS discharge tile (avoids the 10th-tile orphan at xl:grid-cols-3)
                         and visually pairs the two destinations of BESS energy so the user can
-                        see avoided-import vs export at a glance. */}
+                        see local supply vs export at a glance. */}
                     <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                         <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">BESS Discharge</p>
                         <p className="mt-1 font-mono text-base font-bold text-amber-300">
@@ -271,7 +276,9 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
                         {' '}
                         <span className="font-semibold text-sky-300">BESS Margin</span> = BESS discharge value − grid-paid charging cost − <span className="italic">Solar → BESS</span> opportunity cost (delayed sale value).
                         {' '}
-                        <span className="italic">BESS discharge value</span> sums real export revenue and avoided-import value when BESS serves local demand — both are priced at the current tariff because they offset each other one-for-one at the PCC.
+                        <span className="italic">BESS discharge value</span> prices exported energy and all local supply at each settlement-time tariff.
+                        {' '}Local supply combines import savings with an assumed value for restoring demand that would otherwise be unserved at the PCC import limit.
+                        {' '}The restored-supply portion does not reduce grid imports, and its assumed value can be negative at negative tariffs.
                     </p>
                     <div className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 font-mono text-[11px] tabular-nums">
                         <span className="text-slate-400">Solar → Grid revenue</span>

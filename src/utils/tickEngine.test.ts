@@ -5,7 +5,7 @@ import { selectGridConnectionTotalMw } from './gridSelectors';
 import { createInitialGridState, simulateTick } from './tickEngine';
 
 describe('tickEngine', () => {
-    it('produces deterministic output with an injected random source', () => {
+    it('produces deterministic output for identical inputs', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
@@ -69,7 +69,7 @@ describe('tickEngine', () => {
         expect(overdischarge.batterySocPercent).toBeGreaterThanOrEqual(0);
     });
 
-    it('settles the terminal charge tick before the next tick clamps to idle', () => {
+    it('settles charging before full SoC and the idle remainder of a crossing tick', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
@@ -85,9 +85,9 @@ describe('tickEngine', () => {
         const next = simulateTick(initial, 1, 1);
 
         expect(next.batterySocPercent).toBe(100);
-        expect(next.batteryMode).toBe('charging');
-        expect(next.batteryPowerMw).toBeGreaterThan(0);
-        expect(next.batteryChargeFromSolarMw + next.batteryChargeFromGridMw).toBeGreaterThan(0);
+        expect(next.batteryMode).toBe('idle');
+        expect(next.batteryPowerMw).toBe(0);
+        expect(next.batteryChargeFromSolarMw + next.batteryChargeFromGridMw).toBe(0);
         expect(next.cumulativeRevenueEur).not.toBe(initial.cumulativeRevenueEur);
 
         const afterClamp = simulateTick(next, 1, 2);
@@ -95,7 +95,7 @@ describe('tickEngine', () => {
         expect(afterClamp.batteryPowerMw).toBe(0);
     });
 
-    it('settles the terminal discharge tick before the next tick clamps to idle', () => {
+    it('settles discharge before empty SoC and the idle remainder of a crossing tick', () => {
         const initial = {
             ...createInitialGridState(0),
             simulationStatus: 'running' as const,
@@ -110,9 +110,12 @@ describe('tickEngine', () => {
         const next = simulateTick(initial, 1, 1);
 
         expect(next.batterySocPercent).toBeCloseTo(0, 10);
-        expect(next.batteryMode).toBe('discharging');
-        expect(next.batteryPowerMw).toBeLessThan(0);
-        expect(next.batteryDischargeToLoadMw + next.batteryDischargeToExportMw).toBeGreaterThan(0);
+        expect(next.batteryMode).toBe('idle');
+        expect(next.batteryPowerMw).toBe(0);
+        expect(next.batteryDischargeToLoadMw + next.batteryDischargeToExportMw).toBe(0);
+        expect(next.cumulativeBessDischargeRevenueEur).toBeCloseTo(
+            0.01 * initial.batteryEnergyCapacityMwh * BESS.dischargeEfficiency * initial.tariffRatesEurMwh.peak, 6,
+        );
         expect(next.cumulativeRevenueEur).not.toBe(initial.cumulativeRevenueEur);
 
         const afterClamp = simulateTick(next, 1, 2);

@@ -11,6 +11,7 @@ import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mes
 import { SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
 import { getVisibleEnergyFlows } from '../utils/energyFlowTelemetry';
+import { selectBessPower } from '../utils/bessDisplay';
 
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
@@ -1026,7 +1027,6 @@ export function MicrogridScene({
     onAssetSelect,
 }: MicrogridSceneProps) {
     const {
-        batteryMode,
         batterySocPercent,
         solarOutputMw,
         solarAcCapacityMw,
@@ -1114,7 +1114,7 @@ export function MicrogridScene({
 
             {/* Dynamic scene objects */}
             <BESSContainer
-                mode={batteryMode}
+                mode={selectBessPower(gridState).powerMode}
                 soc={batterySocPercent}
                 interaction={bessInteraction}
             />

@@ -79,8 +79,13 @@ function normalizeTimeOfDay(timeOfDay: number): number {
     return normalized;
 }
 
+const TIME_EPSILON_HOURS = 1e-12;
+const SOC_EPSILON = 1e-9;
+
 function getTickBoundaryHours(): number[] {
     return [...new Set([
+        0, // The demand curve wraps at midnight, independently of tariff changes.
+        AUTO_ARB.peakEndHour - AUTO_ARB.peakPacingMinRemainingHours,
         TARIFF.periods.offPeakEnd,
         TARIFF.periods.midPeakEnd,
         TARIFF.periods.peakEnd,
@@ -90,7 +95,7 @@ function getTickBoundaryHours(): number[] {
 }
 
 function getNextBoundaryDeltaHours(timeOfDay: number, remainingHours: number, boundaryHours: number[]): number | null {
-    const epsilon = 1e-9;
+    const epsilon = TIME_EPSILON_HOURS;
     let nextBoundaryDeltaHours: number | null = null;
 
     for (const boundaryHour of boundaryHours) {
@@ -116,29 +121,11 @@ function getBatteryModeFromPower(powerMw: number): BatteryMode {
     return 'idle';
 }
 
-function clampBatteryPowerToEnergy(state: GridState, desiredPowerMw: number, dtHours: number): number {
-    const transferLimitMw = getBatteryTransferLimitMw(state);
-    let batteryPowerMw = clamp(desiredPowerMw, -transferLimitMw, transferLimitMw);
-
-    if (batteryPowerMw > 0) {
-        const remainingEnergyMwh = ((100 - state.batterySocPercent) / 100) * state.batteryEnergyCapacityMwh;
-        const maxChargeMw = remainingEnergyMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
-        batteryPowerMw = Math.min(batteryPowerMw, maxChargeMw);
-    } else if (batteryPowerMw < 0) {
-        const availableEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
-        const maxDischargeMw = (availableEnergyMwh * BESS.dischargeEfficiency) / Math.max(dtHours, 1e-9);
-        batteryPowerMw = Math.max(batteryPowerMw, -maxDischargeMw);
-    }
-
-    return batteryPowerMw;
-}
-
 function getAutoDesiredBatteryPowerMw(
     state: GridState,
     solarOutputMw: number,
     gridDemandMw: number,
     tariffPeriod: GridState['tariffPeriod'],
-    dtHours: number,
     timeOfDay: number,
 ): number {
     const transferLimitMw = getBatteryTransferLimitMw(state);
@@ -174,9 +161,9 @@ function getAutoDesiredBatteryPowerMw(
     if (tariffPeriod === 'off-peak') {
         if (state.batterySocPercent >= 100) return 0;
         if (currentEnergyMwh < nightTargetEnergyMwh) {
-            const reserveGapMwh = nightTargetEnergyMwh - currentEnergyMwh;
-            const reserveChargeMw = reserveGapMwh / Math.max(dtHours * BESS.chargeEfficiency, 1e-9);
-            return Math.min(transferLimitMw, Math.max(solarSurplusMw, reserveChargeMw));
+            // Request physical power until the target event. Averaging the
+            // remaining reserve energy over dt changes PV/grid attribution.
+            return transferLimitMw;
         }
         return solarSurplusMw > 0 ? Math.min(solarSurplusMw, transferLimitMw) : 0;
     }
@@ -197,14 +184,13 @@ function getDesiredBatteryPowerMw(
     solarOutputMw: number,
     gridDemandMw: number,
     tariffPeriod: GridState['tariffPeriod'],
-    dtHours: number,
     timeOfDay: number,
 ): number {
     const transferLimitMw = getBatteryTransferLimitMw(state);
 
     switch (state.dispatchMode) {
         case 'auto':
-            return getAutoDesiredBatteryPowerMw(state, solarOutputMw, gridDemandMw, tariffPeriod, dtHours, timeOfDay);
+            return getAutoDesiredBatteryPowerMw(state, solarOutputMw, gridDemandMw, tariffPeriod, timeOfDay);
         case 'manual-charge':
             return transferLimitMw;
         case 'manual-discharge':
@@ -218,45 +204,115 @@ function getDesiredBatteryPowerMw(
     }
 }
 
+// Once the remaining peak horizon reaches its floor H, the existing pacing
+// rule is dU/dt = -min(cap / eta, U / H). Integrate its constant-cap part and
+// exponential tail, rather than holding the start rate for the whole frame.
+function peakFloorDischargeMw(usableEnergyMwh: number, capMw: number, dtHours: number): number {
+    if (usableEnergyMwh <= 0 || capMw <= 0) return 0;
+    const horizon = AUTO_ARB.peakPacingMinRemainingHours;
+    const usableOutputMwh = usableEnergyMwh * BESS.dischargeEfficiency;
+    if (dtHours === 0) return Math.min(capMw, usableOutputMwh / horizon);
+    const cappedHours = Math.min(dtHours, Math.max(0, usableOutputMwh / capMw - horizon));
+    const tailEnergyMwh = usableOutputMwh - capMw * cappedHours;
+    const outputMwh = capMw * cappedHours
+        + tailEnergyMwh * -Math.expm1(-(dtHours - cappedHours) / horizon);
+    return outputMwh / dtHours;
+}
+
+// Trial settlement uses dt=0: locate events from actual PCC-limited power,
+// without booking energy or money for rejected candidate durations.
+function sampleStep(prev: GridState, dtHours: number) {
+    const operationalTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours / 2);
+    const solarOutputMw = computeSolarOutputMw(
+        operationalTimeOfDay, prev.solarAcCapacityMw, prev.solarDcCapacityMwp,
+    );
+    const gridDemandMw = computeGridDemandMw(
+        operationalTimeOfDay, prev.dispatchScalePercent / 100, selectGridConnectionTotalMw(prev),
+    );
+    const tariffPeriod = getTariffPeriod(operationalTimeOfDay);
+    const currentPriceEurMwh = getElectricityPriceEurMwh(operationalTimeOfDay, prev.tariffRatesEurMwh);
+    // Midpoint quadrature approximates solar/demand, not their exact integral.
+    // Pacing intent uses the energy and remaining horizon at the segment start.
+    const desiredPowerMw = getDesiredBatteryPowerMw(
+        prev, solarOutputMw, gridDemandMw, tariffPeriod, prev.timeOfDay,
+    );
+    const transferLimitMw = getBatteryTransferLimitMw(prev);
+    let batteryPowerMw = clamp(desiredPowerMw, -transferLimitMw, transferLimitMw);
+    if (batteryPowerMw > 0 && prev.batterySocPercent >= 100) batteryPowerMw = 0;
+    if (batteryPowerMw < 0 && prev.batterySocPercent <= 0) batteryPowerMw = 0;
+    const input = {
+        solarOutputMw, gridDemandMw, batteryPowerMw,
+        gridPvEvacuationMw: prev.gridPvEvacuationMw,
+        gridConnectionLimitMw: selectGridConnectionTotalMw(prev),
+        currentPriceEurMwh,
+    };
+    if (prev.dispatchMode === 'auto' && tariffPeriod === 'peak'
+        && prev.timeOfDay >= AUTO_ARB.peakEndHour - AUTO_ARB.peakPacingMinRemainingHours) {
+        const capMw = -settleHybridProjectTick({ ...input, batteryPowerMw: -transferLimitMw, dtHours: 0 }).batteryPowerMw;
+        const usableEnergyMwh = Math.max(0, prev.batterySocPercent - AUTO_ARB.peakReserveSocPercent)
+            / 100 * prev.batteryEnergyCapacityMwh;
+        input.batteryPowerMw = -peakFloorDischargeMw(usableEnergyMwh, capMw, dtHours);
+    }
+    const powerMw = settleHybridProjectTick({ ...input, dtHours: 0 }).batteryPowerMw;
+    return { input, powerMw, tariffPeriod };
+}
+
+function storedEnergyRateMw(powerMw: number): number {
+    return powerMw >= 0 ? powerMw * BESS.chargeEfficiency : powerMw / BESS.dischargeEfficiency;
+}
+
+function getEnergyBoundarySoc(prev: GridState, sample: ReturnType<typeof sampleStep>): number {
+    if (sample.powerMw > 0) {
+        if (prev.dispatchMode === 'auto' && sample.tariffPeriod === 'off-peak'
+            && prev.batterySocPercent < AUTO_ARB.nightTargetSocPercent) {
+            return AUTO_ARB.nightTargetSocPercent;
+        }
+        return 100;
+    }
+    return prev.dispatchMode === 'auto' && sample.tariffPeriod === 'peak'
+        ? AUTO_ARB.peakReserveSocPercent : 0;
+}
+
+function findEnergyStep(prev: GridState, maxHours: number) {
+    let sample = sampleStep(prev, maxHours);
+    const boundarySoc = getEnergyBoundarySoc(prev, sample);
+    const direction = Math.sign(sample.powerMw);
+    const headroomMwh = Math.abs(boundarySoc - prev.batterySocPercent) / 100 * prev.batteryEnergyCapacityMwh;
+    if (direction === 0 || Math.abs(storedEnergyRateMw(sample.powerMw)) * maxHours < headroomMwh) {
+        return { hours: maxHours, sample, boundarySoc: null };
+    }
+
+    // Re-sample the midpoint as the event time changes. A single headroom / MW
+    // estimate using the original midpoint is wrong when PCC headroom varies.
+    let low = 0;
+    let high = maxHours;
+    for (let i = 0; i < 48 && high - low > TIME_EPSILON_HOURS; i++) {
+        const middle = (low + high) / 2;
+        const trial = sampleStep(prev, middle);
+        if (storedEnergyRateMw(trial.powerMw) * direction * middle >= headroomMwh) high = middle;
+        else low = middle;
+    }
+    sample = sampleStep(prev, high);
+    // Remove only the root solver's roundoff overshoot at this event. Do not
+    // average boundary-limited power over the remaining outer tick.
+    const boundaryPowerMw = (boundarySoc - prev.batterySocPercent) / 100 * prev.batteryEnergyCapacityMwh
+        / high * (direction > 0 ? 1 / BESS.chargeEfficiency : BESS.dischargeEfficiency);
+    sample.input.batteryPowerMw = direction > 0
+        ? Math.min(sample.input.batteryPowerMw, boundaryPowerMw)
+        : Math.max(sample.input.batteryPowerMw, boundaryPowerMw);
+    return { hours: high, sample, boundarySoc };
+}
+
 function simulateTickStep(
     prev: GridState,
     dtHours: number,
     now: number,
-    operationalTimeOfDay: number,
-    nextTimeOfDay: number,
+    sample: ReturnType<typeof sampleStep>,
+    boundarySoc: number | null,
 ): GridState {
-    const timeOfDay = normalizeTimeOfDay(nextTimeOfDay);
-
-    const solarOutputMw = computeSolarOutputMw(
-        operationalTimeOfDay,
-        prev.solarAcCapacityMw,
-        prev.solarDcCapacityMwp,
-    );
-    const gridDemandMw = computeGridDemandMw(
-        operationalTimeOfDay,
-        prev.dispatchScalePercent / 100,
-        selectGridConnectionTotalMw(prev),
-    );
-    const tariffPeriod = getTariffPeriod(operationalTimeOfDay);
-    const currentPriceEurMwh = getElectricityPriceEurMwh(operationalTimeOfDay, prev.tariffRatesEurMwh);
-    // Reference time for the pacing law is `prev.timeOfDay` because the energy
-    // state we're spreading (`prev.batterySocPercent`) is also at that snapshot.
-    // Other quantities (solar/demand/tariff) use `operationalTimeOfDay` because
-    // they're step-averaged continuous integrals; pacing is a control intent
-    // evaluated against the start-of-step state, so the two references
-    // diverge intentionally.
-    const desiredBatteryPowerMw = getDesiredBatteryPowerMw(prev, solarOutputMw, gridDemandMw, tariffPeriod, dtHours, prev.timeOfDay);
-    const requestedBatteryPowerMw = clampBatteryPowerToEnergy(prev, desiredBatteryPowerMw, dtHours);
-
-    const settlement = settleHybridProjectTick({
-        solarOutputMw,
-        gridDemandMw,
-        batteryPowerMw: requestedBatteryPowerMw,
-        gridPvEvacuationMw: prev.gridPvEvacuationMw,
-        gridConnectionLimitMw: selectGridConnectionTotalMw(prev),
-        currentPriceEurMwh,
-        dtHours,
-    });
+    const timeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours);
+    const { solarOutputMw, gridDemandMw } = sample.input;
+    const settlement = settleHybridProjectTick({ ...sample.input, dtHours });
     const settledBatteryPowerMw = settlement.batteryPowerMw;
 
     const storedEnergyDeltaMwh = settledBatteryPowerMw >= 0
@@ -264,8 +320,11 @@ function simulateTickStep(
         : (settledBatteryPowerMw * dtHours) / BESS.dischargeEfficiency;
     let batterySocPercent = prev.batterySocPercent + (storedEnergyDeltaMwh / prev.batteryEnergyCapacityMwh) * 100;
     batterySocPercent = clamp(batterySocPercent, 0, 100);
-    if (batterySocPercent <= 1e-9) batterySocPercent = 0;
-    if (batterySocPercent >= 100 - 1e-9) batterySocPercent = 100;
+    if (boundarySoc !== null && Math.abs(batterySocPercent - boundarySoc) <= SOC_EPSILON) {
+        batterySocPercent = boundarySoc;
+    }
+    if (batterySocPercent <= SOC_EPSILON) batterySocPercent = 0;
+    if (batterySocPercent >= 100 - SOC_EPSILON) batterySocPercent = 100;
 
     const batteryMode = getBatteryModeFromPower(settledBatteryPowerMw);
 
@@ -280,7 +339,7 @@ function simulateTickStep(
     const cumulativeSolarOpportunityCostEur =
         prev.cumulativeSolarOpportunityCostEur + settlement.solarOpportunityCostDeltaEur;
 
-    // Settlement uses the sub-step midpoint (correct for the integral over [t, t+dt]),
+    // Settlement approximates continuous inputs at the sub-step midpoint,
     // but the displayed period/price should reflect the clock the user actually sees
     // (the end of the sub-step). Otherwise a tick that lands exactly on a tariff
     // boundary (e.g. 18:00) shows "mid-peak" until the next tick fires past it.
@@ -323,30 +382,27 @@ export function simulateTick(
     dtReal: number,
     now: number,
 ): GridState {
-    const dtSim = dtReal * prev.timeSpeed;
-    const dtHours = dtSim / 3600;
-    const endTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours);
-    const sampleTimeOfDay = normalizeTimeOfDay(prev.timeOfDay + dtHours / 2);
-    const boundaryHours = getTickBoundaryHours();
-
-    if (getNextBoundaryDeltaHours(prev.timeOfDay, dtHours, boundaryHours) === null) {
-        return simulateTickStep(prev, dtHours, now, sampleTimeOfDay, endTimeOfDay);
+    const dtHours = dtReal * prev.timeSpeed / 3600;
+    if (dtHours <= 0) {
+        return simulateTickStep(prev, 0, now, sampleStep(prev, 0), null);
     }
-
+    const boundaryHours = getTickBoundaryHours();
     let state = prev;
     let remainingHours = dtHours;
-    let currentTimeOfDay = prev.timeOfDay;
 
-    while (remainingHours > 1e-9) {
-        const nextBoundaryDeltaHours = getNextBoundaryDeltaHours(currentTimeOfDay, remainingHours, boundaryHours);
-        const stepHours = nextBoundaryDeltaHours ?? remainingHours;
-        const stepEndTimeOfDay = normalizeTimeOfDay(currentTimeOfDay + stepHours);
-        const stepSampleTimeOfDay = normalizeTimeOfDay(currentTimeOfDay + stepHours / 2);
-
-        state = simulateTickStep(state, stepHours, now, stepSampleTimeOfDay, stepEndTimeOfDay);
-        remainingHours -= stepHours;
-        currentTimeOfDay = stepEndTimeOfDay;
+    // Each accepted segment consumes positive time. Landing on an energy event
+    // disables that transfer or changes its target before the next iteration;
+    // keep this progress invariant when adding strategies. Do not silently cap
+    // iterations: dropping the remainder would lose simulated time and bookings.
+    while (remainingHours > TIME_EPSILON_HOURS) {
+        const clockBoundary = getNextBoundaryDeltaHours(state.timeOfDay, remainingHours, boundaryHours);
+        const step = findEnergyStep(state, clockBoundary ?? remainingHours);
+        state = simulateTickStep(state, step.hours, now, step.sample, step.boundarySoc);
+        remainingHours = Math.max(0, remainingHours - step.hours);
     }
 
+    // Instantaneous telemetry remains the last settled segment (as it already
+    // did for tariff splits). Cumulative values include every segment. A tick
+    // crossing full/empty can therefore end idle after booking its transfer.
     return state;
 }

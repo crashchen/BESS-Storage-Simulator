@@ -76,6 +76,8 @@ export function SceneAssetInfoCard({ assetId, gridState, pinned, onClose }: Scen
         </div>
       </div>
 
+      {info.readingNote && <p className="mt-3 text-xs leading-5 text-slate-300">{info.readingNote}</p>}
+
       <dl className="mt-3 grid grid-cols-3 gap-2">
         {info.flowRows.map((row) => (
           <div key={row.label} className="rounded-2xl border border-slate-700/40 bg-slate-900/50 p-2">
