@@ -43,16 +43,16 @@ Everything flows from `src/hooks/useGridSimulation.ts`. Key points that aren't o
 
 `src/config.ts` centralises every tunable number (solar shape, BESS limits, tariff windows, active dispatch targets, 3D scene params). `useGridSimulation` and `simulationModel` both import from it — never hard-code magic numbers in components or hooks; add them to the appropriate `as const` block in `config.ts`.
 
-### Two P&L accumulators, intentionally different
+### Two demo-value accumulators, intentionally different
 
-`cumulativeRevenueEur` (Project P&L) and `cumulativeBessMarginEur` (BESS Margin) are computed separately by `settleHybridProjectTick` in `simulationModel.ts`:
+`cumulativeRevenueEur` (Project demo value) and `cumulativeBessMarginEur` (BESS demo margin) are computed separately by `settleHybridProjectTick` in `simulationModel.ts`:
 
-- **Project P&L** = direct PV exports + BESS discharge value − grid-paid BESS charging. It treats `Solar → BESS` as zero-cost.
-- **BESS Margin** = discharge value − grid charge cost − *opportunity cost of `Solar → BESS`* (solar that could have been sold now but was stored instead).
+- **Project demo value** = direct PV exports + BESS discharge value − grid-paid BESS charging. It treats `Solar → BESS` as zero-cost.
+- **BESS demo margin** = discharge value − grid charge cost − *opportunity cost of `Solar → BESS`* (solar that could have been sold now but was stored instead).
 
 This split is a product decision, not a bug. Don't "simplify" them into one number. The explanation is surfaced to users in `EconomicsPanel.tsx` and noted in the README — keep wording consistent if you touch it.
 
-All BESS discharge is valued at the settlement tariff, including local supply that restores otherwise unserved demand at the PCC limit. That portion is an assumed value, not an actual import saving; negative prices can make it negative. `gridOverloadMw` is unserved demand after capped actual imports. The existing cumulative fields do not distinguish exports, import savings, and restored-load value, so the caveat must remain visible outside the collapsed breakdown and after current overload returns to zero. Preserve the two existing formulas; an actual cumulative split is separate scope.
+All BESS discharge is valued at the settlement tariff, including local supply that restores otherwise unserved demand at the PCC limit. `cumulativeBessDischargeRevenueEur` is a legacy-named aggregate retained for historical result continuity; it equals the sum of `cumulativeBessExportRevenueEur`, `cumulativeBessAvoidedImportCostEur`, and `cumulativeBessRestoredLoadAssumedValueEur` within floating precision. Compute avoided imports by comparing capped actual imports with the same-tick no-BESS baseline; any local BESS supply beyond that reduction is restored load. `gridOverloadMw` is unserved demand after capped actual imports. The restored-load row is a tariff-based assumption, not revenue or an actual import saving; negative prices can make it negative. Both demo totals include it. Preserve the old total formulas and show the assumed amount even when current overload returns to zero. These totals are not realized cash flow or a full financial forecast.
 
 `SOLAR.yieldKwhPerKwYear` is an annual reference only. It does not calibrate the current daily cosine curve or create an annual forecast. Do not describe the curve as modelled from this reference or measured site data.
 

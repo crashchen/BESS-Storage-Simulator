@@ -153,6 +153,9 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
         cumulativeBessMarginEur,
         cumulativeSolarExportRevenueEur,
         cumulativeBessDischargeRevenueEur,
+        cumulativeBessExportRevenueEur,
+        cumulativeBessAvoidedImportCostEur,
+        cumulativeBessRestoredLoadAssumedValueEur,
         cumulativeBessGridChargeCostEur,
         cumulativeSolarOpportunityCostEur,
         batteryChargeFromSolarMw,
@@ -190,13 +193,13 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
 
                 <div className="grid gap-2 sm:grid-cols-2">
                     <div className="rounded-lg border border-emerald-900/40 bg-emerald-950/20 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-300">Project P&amp;L</p>
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-emerald-300">Project demo value</p>
                         <p className={`mt-1 font-mono text-xl font-bold ${cumulativeRevenueEur >= 0 ? 'text-green-300' : 'text-red-300'}`}>
                             {cumulativeRevenueEur >= 0 ? '+' : ''}€{cumulativeRevenueEur.toFixed(0)}
                         </p>
                     </div>
                     <div className="rounded-lg border border-sky-900/40 bg-sky-950/20 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-sky-300">BESS Margin</p>
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-sky-300">BESS demo margin</p>
                         <p className={`mt-1 font-mono text-xl font-bold ${cumulativeBessMarginEur >= 0 ? 'text-sky-200' : 'text-rose-300'}`}>
                             {cumulativeBessMarginEur >= 0 ? '+' : ''}€{cumulativeBessMarginEur.toFixed(0)}
                         </p>
@@ -204,8 +207,8 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
                 </div>
 
                 <p className="text-[11px] leading-relaxed text-slate-400">
-                    Cumulative demo values may include BESS supply to otherwise unserved load, valued at the tariff.
-                    {' '}That portion is an assumed value, not reduced imports or export revenue.
+                    Totals include {formatSignedEur(cumulativeBessRestoredLoadAssumedValueEur)} of assumed value for restoring otherwise unserved load.
+                    {' '}Export rows estimate revenue; avoided imports estimate cost savings. Restored load is neither. These demo totals are not realized cash flow.
                 </p>
 
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -272,29 +275,33 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
                         Settlement Breakdown (auditable)
                     </summary>
                     <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
-                        <span className="font-semibold text-emerald-300">Project P&amp;L</span> = direct PV sales + BESS discharge value − grid-paid charging cost.
+                        <span className="font-semibold text-emerald-300">Project demo value</span> = direct PV sales + BESS discharge value − grid-paid charging cost.
                         {' '}
-                        <span className="font-semibold text-sky-300">BESS Margin</span> = BESS discharge value − grid-paid charging cost − <span className="italic">Solar → BESS</span> opportunity cost (delayed sale value).
+                        <span className="font-semibold text-sky-300">BESS demo margin</span> = BESS discharge value − grid-paid charging cost − <span className="italic">Solar → BESS</span> opportunity cost (delayed sale value).
                         {' '}
-                        <span className="italic">BESS discharge value</span> prices exported energy and all local supply at each settlement-time tariff.
-                        {' '}Local supply combines import savings with an assumed value for restoring demand that would otherwise be unserved at the PCC import limit.
-                        {' '}The restored-supply portion does not reduce grid imports, and its assumed value can be negative at negative tariffs.
+                        <span className="italic">BESS discharge value</span> separates tariff-priced exports, actual avoided grid imports, and an assumed value for restoring demand beyond the PCC import cap. The last component can be negative at negative tariffs.
                     </p>
                     <div className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 font-mono text-[11px] tabular-nums">
                         <span className="text-slate-400">Solar → Grid revenue</span>
                         <span className="text-emerald-300">{formatSignedEur(cumulativeSolarExportRevenueEur)}</span>
-                        <span className="text-slate-400">BESS discharge value</span>
+                        <span className="text-slate-400">BESS → Grid export revenue</span>
+                        <span className="text-amber-300">{formatSignedEur(cumulativeBessExportRevenueEur)}</span>
+                        <span className="text-slate-400">BESS avoided import cost</span>
+                        <span className="text-amber-300">{formatSignedEur(cumulativeBessAvoidedImportCostEur)}</span>
+                        <span className="text-slate-400">Restored load (assumed)</span>
+                        <span className="text-amber-300">{formatSignedEur(cumulativeBessRestoredLoadAssumedValueEur)}</span>
+                        <span className="text-slate-300">BESS discharge value (sum of 3 rows)</span>
                         <span className="text-amber-300">{formatSignedEur(cumulativeBessDischargeRevenueEur)}</span>
                         <span className="text-slate-400">Grid → BESS cost</span>
                         <span className="text-rose-300">{formatSignedEur(-cumulativeBessGridChargeCostEur)}</span>
                         <span className="text-slate-400">Solar opportunity cost</span>
                         <span className="text-rose-300">{formatSignedEur(-cumulativeSolarOpportunityCostEur)}</span>
                         <span className="col-span-2 my-1 border-t border-slate-700/60" />
-                        <span className="text-slate-300">Project P&amp;L (= row 1 + 2 + 3)</span>
+                        <span className="text-slate-300">Project demo value (= Solar revenue + discharge value − grid charge cost)</span>
                         <span className={cumulativeRevenueEur >= 0 ? 'text-emerald-200' : 'text-rose-300'}>
                             {formatSignedEur(cumulativeRevenueEur)}
                         </span>
-                        <span className="text-slate-300">BESS Margin (= row 2 + 3 + 4)</span>
+                        <span className="text-slate-300">BESS demo margin (= discharge value − grid charge cost − solar opportunity cost)</span>
                         <span className={cumulativeBessMarginEur >= 0 ? 'text-sky-200' : 'text-rose-300'}>
                             {formatSignedEur(cumulativeBessMarginEur)}
                         </span>

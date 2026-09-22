@@ -68,6 +68,9 @@ export function createInitialGridState(timestamp = 0): GridState {
         cumulativeBessMarginEur: 0,
         cumulativeSolarExportRevenueEur: 0,
         cumulativeBessDischargeRevenueEur: 0,
+        cumulativeBessExportRevenueEur: 0,
+        cumulativeBessAvoidedImportCostEur: 0,
+        cumulativeBessRestoredLoadAssumedValueEur: 0,
         cumulativeBessGridChargeCostEur: 0,
         cumulativeSolarOpportunityCostEur: 0,
     };
@@ -334,6 +337,12 @@ function simulateTickStep(
         prev.cumulativeSolarExportRevenueEur + settlement.solarExportRevenueDeltaEur;
     const cumulativeBessDischargeRevenueEur =
         prev.cumulativeBessDischargeRevenueEur + settlement.bessDischargeRevenueDeltaEur;
+    const cumulativeBessExportRevenueEur =
+        prev.cumulativeBessExportRevenueEur + settlement.bessExportRevenueDeltaEur;
+    const cumulativeBessAvoidedImportCostEur =
+        prev.cumulativeBessAvoidedImportCostEur + settlement.bessAvoidedImportCostDeltaEur;
+    const cumulativeBessRestoredLoadAssumedValueEur =
+        prev.cumulativeBessRestoredLoadAssumedValueEur + settlement.bessRestoredLoadAssumedValueDeltaEur;
     const cumulativeBessGridChargeCostEur =
         prev.cumulativeBessGridChargeCostEur + settlement.bessGridChargeCostDeltaEur;
     const cumulativeSolarOpportunityCostEur =
@@ -372,6 +381,9 @@ function simulateTickStep(
         cumulativeBessMarginEur,
         cumulativeSolarExportRevenueEur,
         cumulativeBessDischargeRevenueEur,
+        cumulativeBessExportRevenueEur,
+        cumulativeBessAvoidedImportCostEur,
+        cumulativeBessRestoredLoadAssumedValueEur,
         cumulativeBessGridChargeCostEur,
         cumulativeSolarOpportunityCostEur,
     };

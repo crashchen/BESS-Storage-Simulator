@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EconomicsPanel } from './EconomicsPanel';
@@ -34,6 +34,7 @@ describe('EconomicsPanel cumulative valuation', () => {
             cumulativeRevenueEur: 10500,
             cumulativeBessMarginEur: 10500,
             cumulativeBessDischargeRevenueEur: 10500,
+            cumulativeBessRestoredLoadAssumedValueEur: 10500,
         });
         const { rerender } = render(<EconomicsPanel
             simulationResetVersion={0}
@@ -41,10 +42,13 @@ describe('EconomicsPanel cumulative valuation', () => {
             onCommand={onCommand}
         />);
         const breakdown = screen.getByText('Settlement Breakdown (auditable)').closest('details');
-        const assumption = screen.getByText(/Cumulative demo values may include BESS supply to otherwise unserved load/);
+        const assumption = screen.getByText(/Totals include \+€10500 of assumed value/);
         expect(breakdown).not.toHaveAttribute('open');
         expect(assumption).toBeVisible();
-        expect(assumption).toHaveTextContent('assumed value, not reduced imports or export revenue');
+        expect(assumption).toHaveTextContent('Restored load is neither');
+        expect(screen.getAllByText('Project demo value')[0]).toBeVisible();
+        fireEvent.click(within(breakdown as HTMLElement).getByText('Settlement Breakdown (auditable)'));
+        expect(within(breakdown as HTMLElement).getByText('Restored load (assumed)').nextElementSibling).toHaveTextContent('+€10500');
 
         // Current flows no longer reveal the restored-supply value still in the totals.
         rerender(<EconomicsPanel
@@ -52,8 +56,33 @@ describe('EconomicsPanel cumulative valuation', () => {
             gridState={{ ...overloaded, gridOverloadMw: 0, gridOverloadWarning: false, batteryDischargeToLoadMw: 0 }}
             onCommand={onCommand}
         />);
-        expect(breakdown).not.toHaveAttribute('open');
+        expect(breakdown).toHaveAttribute('open');
         expect(assumption).toBeVisible();
+    });
+
+    it('shows separate export, avoided-import and assumed-value cumulative rows', () => {
+        render(<EconomicsPanel
+            simulationResetVersion={0}
+            gridState={makeGridState({
+                cumulativeRevenueEur: 6000,
+                cumulativeBessMarginEur: 6000,
+                cumulativeBessDischargeRevenueEur: 6000,
+                cumulativeBessExportRevenueEur: 2000,
+                cumulativeBessAvoidedImportCostEur: 3000,
+                cumulativeBessRestoredLoadAssumedValueEur: 1000,
+            })}
+            onCommand={vi.fn()}
+        />);
+        const breakdown = screen.getByText('Settlement Breakdown (auditable)').closest('details') as HTMLElement;
+        fireEvent.click(within(breakdown).getByText('Settlement Breakdown (auditable)'));
+        for (const [label, value] of [
+            ['BESS → Grid export revenue', '+€2000'],
+            ['BESS avoided import cost', '+€3000'],
+            ['Restored load (assumed)', '+€1000'],
+            ['BESS discharge value (sum of 3 rows)', '+€6000'],
+        ]) {
+            expect(within(breakdown).getByText(label).nextElementSibling).toHaveTextContent(value);
+        }
     });
 });
 

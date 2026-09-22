@@ -88,7 +88,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
 
                 <div className="hidden h-4 w-px bg-slate-700 sm:block sm:h-5" />
 
-                <span className={`font-mono text-xs font-bold tabular-nums sm:text-sm ${cumulativeRevenueEur >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <span title="Project demo value, including assumed restored-load value" className={`font-mono text-xs font-bold tabular-nums sm:text-sm ${cumulativeRevenueEur >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {cumulativeRevenueEur >= 0 ? '+' : ''}€{cumulativeRevenueEur.toFixed(0)}
                 </span>
             </div>

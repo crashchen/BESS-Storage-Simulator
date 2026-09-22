@@ -2,9 +2,48 @@ import { describe, expect, it } from 'vitest';
 import { AUTO_ARB, BESS, SIMULATION } from '../config';
 import { computeGridDemandMw, computeSolarOutputMw } from './simulationModel';
 import { selectGridConnectionTotalMw } from './gridSelectors';
+import { applyCommand } from './gridReducer';
 import { createInitialGridState, simulateTick } from './tickEngine';
 
 describe('tickEngine', () => {
+    it('accumulates the three discharge uses and resets them with the historical totals', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            dispatchMode: 'manual-discharge' as const,
+            timeOfDay: 19,
+            timeSpeed: SIMULATION.maxTimeSpeed,
+            dispatchScalePercent: 150,
+            batterySocPercent: 80,
+        };
+        const first = simulateTick(initial, 0.1, 1);
+        const second = simulateTick(first, 0.1, 2);
+
+        expect(second.cumulativeBessRestoredLoadAssumedValueEur).toBeGreaterThan(0);
+        expect(second.cumulativeBessAvoidedImportCostEur).toBeGreaterThan(0);
+        expect(second.cumulativeBessDischargeRevenueEur).toBeCloseTo(
+            second.cumulativeBessExportRevenueEur
+            + second.cumulativeBessAvoidedImportCostEur
+            + second.cumulativeBessRestoredLoadAssumedValueEur,
+            7,
+        );
+        expect(second.cumulativeRevenueEur).toBeCloseTo(
+            second.cumulativeSolarExportRevenueEur
+            + second.cumulativeBessDischargeRevenueEur
+            - second.cumulativeBessGridChargeCostEur,
+            7,
+        );
+
+        const stopped = applyCommand(second, { type: 'STOP_SIMULATION' }, 3).next;
+        const reset = applyCommand(second, { type: 'RESET_SIMULATION' }, 3).next;
+        for (const state of [stopped, reset]) {
+            expect(state.cumulativeBessExportRevenueEur).toBe(0);
+            expect(state.cumulativeBessAvoidedImportCostEur).toBe(0);
+            expect(state.cumulativeBessRestoredLoadAssumedValueEur).toBe(0);
+            expect(state.cumulativeBessDischargeRevenueEur).toBe(0);
+        }
+    });
+
     it('produces deterministic output for identical inputs', () => {
         const initial = {
             ...createInitialGridState(0),

@@ -7,6 +7,8 @@ import { createInitialGridState, simulateTick } from './tickEngine';
 const moneyFields = [
     'cumulativeRevenueEur', 'cumulativeBessMarginEur', 'cumulativeSolarExportRevenueEur',
     'cumulativeBessDischargeRevenueEur', 'cumulativeBessGridChargeCostEur', 'cumulativeSolarOpportunityCostEur',
+    'cumulativeBessExportRevenueEur', 'cumulativeBessAvoidedImportCostEur',
+    'cumulativeBessRestoredLoadAssumedValueEur',
 ] as const;
 
 function initial(overrides: Partial<GridState> = {}): GridState {
@@ -26,7 +28,8 @@ function run(state: GridState, hours: number, maxRealStep: number): GridState {
 function runWithLedger(state: GridState, hours: number, maxRealStep: number) {
     const ledger = { hours: 0, solarCharge: 0, gridCharge: 0, dischargeLoad: 0, dischargeExport: 0,
         pvExport: 0, curtailment: 0, gridImport: 0, gridExport: 0, solar: 0, demand: 0, solarLoad: 0,
-        unserved: 0, pvRevenue: 0, dischargeValue: 0, gridCost: 0, opportunityCost: 0 };
+        unserved: 0, pvRevenue: 0, dischargeValue: 0, bessExportRevenue: 0,
+        avoidedImportCost: 0, restoredLoadAssumedValue: 0, gridCost: 0, opportunityCost: 0 };
     const settle = model.settleHybridProjectTick;
     const observer = vi.spyOn(model, 'settleHybridProjectTick').mockImplementation(input => {
         const result = settle(input);
@@ -47,6 +50,9 @@ function runWithLedger(state: GridState, hours: number, maxRealStep: number) {
             ledger.unserved += result.gridOverloadMw * h;
             ledger.pvRevenue += result.solarExportMw * h * input.currentPriceEurMwh;
             ledger.dischargeValue += (result.batteryDischargeToLoadMw + result.batteryDischargeToExportMw) * h * input.currentPriceEurMwh;
+            ledger.bessExportRevenue += result.bessExportRevenueDeltaEur;
+            ledger.avoidedImportCost += result.bessAvoidedImportCostDeltaEur;
+            ledger.restoredLoadAssumedValue += result.bessRestoredLoadAssumedValueDeltaEur;
             ledger.gridCost += result.batteryChargeFromGridMw * h * input.currentPriceEurMwh;
             const baselineExport = Math.min(Math.max(0, input.solarOutputMw - input.gridDemandMw), input.gridPvEvacuationMw, input.gridConnectionLimitMw!);
             ledger.opportunityCost += Math.max(0, baselineExport - result.solarExportMw) * h * input.currentPriceEurMwh;
@@ -64,6 +70,10 @@ function runWithLedger(state: GridState, hours: number, maxRealStep: number) {
         - (ledger.dischargeLoad + ledger.dischargeExport) / BESS.dischargeEfficiency, 7);
     expect(final.cumulativeSolarExportRevenueEur - state.cumulativeSolarExportRevenueEur).toBeCloseTo(ledger.pvRevenue, 7);
     expect(final.cumulativeBessDischargeRevenueEur - state.cumulativeBessDischargeRevenueEur).toBeCloseTo(ledger.dischargeValue, 7);
+    expect(final.cumulativeBessExportRevenueEur - state.cumulativeBessExportRevenueEur).toBeCloseTo(ledger.bessExportRevenue, 7);
+    expect(final.cumulativeBessAvoidedImportCostEur - state.cumulativeBessAvoidedImportCostEur).toBeCloseTo(ledger.avoidedImportCost, 7);
+    expect(final.cumulativeBessRestoredLoadAssumedValueEur - state.cumulativeBessRestoredLoadAssumedValueEur).toBeCloseTo(ledger.restoredLoadAssumedValue, 7);
+    expect(ledger.bessExportRevenue + ledger.avoidedImportCost + ledger.restoredLoadAssumedValue).toBeCloseTo(ledger.dischargeValue, 7);
     expect(final.cumulativeBessGridChargeCostEur - state.cumulativeBessGridChargeCostEur).toBeCloseTo(ledger.gridCost, 7);
     expect(final.cumulativeSolarOpportunityCostEur - state.cumulativeSolarOpportunityCostEur).toBeCloseTo(ledger.opportunityCost, 7);
     return { final, ledger };

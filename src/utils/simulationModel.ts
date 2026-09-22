@@ -18,10 +18,17 @@ export interface HybridProjectSettlement {
     projectNetExportMw: number;
     projectPnlDeltaEur: number;
     bessMarginDeltaEur: number;
-    // Auditable components — Project P&L and BESS Margin are derived from these
-    // so the EconomicsPanel can show "totals reconcile to the sum of parts".
+    // Auditable components of the project and BESS demo totals. The restored
+    // load assumption is included in both totals and shown separately in UI.
     solarExportRevenueDeltaEur: number;
+    /** Historical aggregate name: export + avoided imports + assumed restored load. */
     bessDischargeRevenueDeltaEur: number;
+    /** Settlement-tariff value of BESS energy exported through the PCC. */
+    bessExportRevenueDeltaEur: number;
+    /** Settlement-tariff value of the actual reduction in capped grid imports. */
+    bessAvoidedImportCostDeltaEur: number;
+    /** Assumed tariff value of demand served beyond the PCC import cap. */
+    bessRestoredLoadAssumedValueDeltaEur: number;
     bessGridChargeCostDeltaEur: number;
     solarOpportunityCostDeltaEur: number;
 }
@@ -174,19 +181,26 @@ export function settleHybridProjectTick({
     const projectNetExportMw = gridExportMw - gridImportMw;
     const baselineSolarExportMw = Math.min(pvSurplusAfterDemandMw, pvExportLimitMw);
 
-    // The demo values ALL discharge at the settlement-time tariff. Local supply
-    // can reduce imports or restore load left unserved by the PCC import cap.
-    // Restored supply carries an assumed value at the same tariff (including
-    // negative prices); it is not an import saving or export revenue. The
-    // cumulative discharge value combines these uses without separate subtotals.
+    // Compare imports with the no-BESS baseline at the same PV and demand.
+    // Once the PCC is saturated, discharge first restores otherwise unserved
+    // demand; only the remainder reduces actual imports. The restored portion
+    // keeps the demo's existing tariff-based assumption, including negative
+    // tariff values, but is neither an import saving nor export revenue.
+    const baselineGridImportMw = Math.min(pccLimitMw, unmetDemandAfterPvMw);
+    const avoidedGridImportMw = Math.max(0, baselineGridImportMw - gridImportMw);
+    const restoredLoadMw = Math.max(0, batteryDischargeToLoadMw - avoidedGridImportMw);
     const batteryDischargeTotalMw = batteryDischargeToLoadMw + batteryDischargeToExportMw;
     const solarExportMwh = solarExportMw * dtHours;
     const batteryChargeFromGridMwh = batteryChargeFromGridMw * dtHours;
-    const batteryDischargeTotalMwh = batteryDischargeTotalMw * dtHours;
     const solarOpportunityCostMwh = Math.max(0, baselineSolarExportMw - solarExportMw) * dtHours;
 
     const solarExportRevenueDeltaEur = solarExportMwh * currentPriceEurMwh;
-    const bessDischargeRevenueDeltaEur = batteryDischargeTotalMwh * currentPriceEurMwh;
+    const bessExportRevenueDeltaEur = batteryDischargeToExportMw * dtHours * currentPriceEurMwh;
+    const bessAvoidedImportCostDeltaEur = avoidedGridImportMw * dtHours * currentPriceEurMwh;
+    const bessRestoredLoadAssumedValueDeltaEur = restoredLoadMw * dtHours * currentPriceEurMwh;
+    // Preserve the original calculation/order for historical totals and
+    // convergence traces; the three parts reconcile within floating precision.
+    const bessDischargeRevenueDeltaEur = batteryDischargeTotalMw * dtHours * currentPriceEurMwh;
     const bessGridChargeCostDeltaEur = batteryChargeFromGridMwh * currentPriceEurMwh;
     const solarOpportunityCostDeltaEur = solarOpportunityCostMwh * currentPriceEurMwh;
 
@@ -209,6 +223,9 @@ export function settleHybridProjectTick({
             bessDischargeRevenueDeltaEur - bessGridChargeCostDeltaEur - solarOpportunityCostDeltaEur,
         solarExportRevenueDeltaEur,
         bessDischargeRevenueDeltaEur,
+        bessExportRevenueDeltaEur: normalizeZero(bessExportRevenueDeltaEur),
+        bessAvoidedImportCostDeltaEur: normalizeZero(bessAvoidedImportCostDeltaEur),
+        bessRestoredLoadAssumedValueDeltaEur: normalizeZero(bessRestoredLoadAssumedValueDeltaEur),
         bessGridChargeCostDeltaEur,
         solarOpportunityCostDeltaEur,
     };

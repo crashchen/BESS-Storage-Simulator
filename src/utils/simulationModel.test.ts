@@ -104,9 +104,68 @@ describe('simulationModel settlement', () => {
         expect(discharging.gridOverloadMw).toBe(32);
         expect(discharging.batteryDischargeToLoadMw).toBe(30);
         expect(discharging.batteryDischargeToExportMw).toBe(0);
+        expect(discharging.bessExportRevenueDeltaEur).toBe(0);
+        expect(discharging.bessAvoidedImportCostDeltaEur).toBe(0);
+        expect(discharging.bessRestoredLoadAssumedValueDeltaEur).toBe(assumedValueEur);
         expect(discharging.bessDischargeRevenueDeltaEur).toBe(assumedValueEur);
         expect(discharging.projectPnlDeltaEur).toBe(assumedValueEur);
         expect(discharging.bessMarginDeltaEur).toBe(assumedValueEur);
+    });
+
+    it('splits a discharge that crosses the PCC cap into restored load and actual avoided imports', () => {
+        const settlement = settleHybridProjectTick({
+            solarOutputMw: 0,
+            gridDemandMw: 300,
+            batteryPowerMw: -30,
+            gridPvEvacuationMw: 102,
+            gridConnectionLimitMw: 288,
+            currentPriceEurMwh: 350,
+            dtHours: 1,
+        });
+
+        expect(settlement.gridImportMw).toBe(270);
+        expect(settlement.gridOverloadMw).toBe(0);
+        expect(settlement.bessAvoidedImportCostDeltaEur).toBe(18 * 350);
+        expect(settlement.bessRestoredLoadAssumedValueDeltaEur).toBe(12 * 350);
+        expect(settlement.bessExportRevenueDeltaEur).toBe(0);
+        expect(settlement.bessDischargeRevenueDeltaEur).toBe(30 * 350);
+    });
+
+    it('separates export revenue from ordinary local import savings', () => {
+        const settlement = settleHybridProjectTick({
+            solarOutputMw: 0,
+            gridDemandMw: 10,
+            batteryPowerMw: -30,
+            gridPvEvacuationMw: 102,
+            gridConnectionLimitMw: 288,
+            currentPriceEurMwh: 100,
+            dtHours: 1,
+        });
+
+        expect(settlement.batteryDischargeToLoadMw).toBe(10);
+        expect(settlement.batteryDischargeToExportMw).toBe(20);
+        expect(settlement.bessAvoidedImportCostDeltaEur).toBe(1000);
+        expect(settlement.bessExportRevenueDeltaEur).toBe(2000);
+        expect(settlement.bessRestoredLoadAssumedValueDeltaEur).toBe(0);
+        expect(settlement.bessDischargeRevenueDeltaEur).toBe(3000);
+        expect(settlement.projectPnlDeltaEur).toBe(3000);
+    });
+
+    it('uses demand after PV when splitting partly restored load under a tight PCC', () => {
+        const settlement = settleHybridProjectTick({
+            solarOutputMw: 40,
+            gridDemandMw: 320,
+            batteryPowerMw: -50,
+            gridPvEvacuationMw: 102,
+            gridConnectionLimitMw: 250,
+            currentPriceEurMwh: 100,
+            dtHours: 1,
+        });
+
+        expect(settlement.gridImportMw).toBe(230);
+        expect(settlement.bessAvoidedImportCostDeltaEur).toBe(2000);
+        expect(settlement.bessRestoredLoadAssumedValueDeltaEur).toBe(3000);
+        expect(settlement.bessDischargeRevenueDeltaEur).toBe(5000);
     });
 
     it('tracks project P&L and BESS margin separately when solar charges the battery', () => {
