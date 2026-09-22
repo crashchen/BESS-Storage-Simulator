@@ -1,8 +1,8 @@
 # 第六批：resize 保留手动视角
 
-日期：2026-09-22（Europe/Berlin）。分支 `codex/audit-batch-6-camera-resize`，基线为第五批 `e345c1f8ac2a802b31ed38083d14e70e1b30b683`。用户安排的 [CC复审](cc-review.md)已通过主体版本；其后本代理完成小项收尾。功能提交`b9b2bd8`已添加GitHub识别的Codex共同作者署名，并推送为[PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8)，原目标为第五批分支；PR #7合并后已改为`main`。本代理未调用 CC。
+日期：2026-09-22（Europe/Berlin）。分支 `codex/audit-batch-6-camera-resize`，基线为第五批 `e345c1f8ac2a802b31ed38083d14e70e1b30b683`。用户安排的 [CC复审](cc-review.md)已通过主体版本；其后本代理完成小项收尾。功能提交`b9b2bd8`已添加GitHub识别的Codex共同作者署名；[PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8)随后改以`main`为目标并合并为`b5cdf58`。[main CI35780131524](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131524)与[Pages35780131948](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131948)均成功。本代理未调用 CC。
 
-第五批已按用户要求推送并创建 [PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)，[CI 35699339050](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35699339050) 成功。PR #7仅包含第五批，已合并为`29c81d7`；[main CI35779667669](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779667669)及[Pages35779668154](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779668154)通过，当前线上为第五批。
+第五批已按用户要求推送并创建 [PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)，[CI 35699339050](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35699339050) 成功。PR #7仅包含第五批，已合并为`29c81d7`；[main CI35779667669](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779667669)及[Pages35779668154](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779668154)通过。线上现包含第五、六批。
 
 ## 行为变化
 
@@ -47,6 +47,6 @@ CC复审指出旧版 `fitting`/`interacting` 引用对这条同步流程没有�
 
 ## 复审入口
 
-以 `git diff e345c1f -- src/components/SceneCameraControls.tsx src/components/SceneCameraControls.test.tsx` 查看功能与测试；其余改动是 README、CLAUDE、审计索引及复审记录。Vault 五篇笔记同步核验日期、第五批已推送提交/CI、第六批工作树状态与操作说明；`deployed_commit` 随第五批发布改为 `29c81d7`，仍与第六批待发布代码区分。
+以 `git diff e345c1f b5cdf58 -- src/components/SceneCameraControls.tsx src/components/SceneCameraControls.test.tsx` 查看功能与测试；其余改动是 README、CLAUDE、审计索引及复审记录。Vault 五篇笔记另行同步最终部署提交、两批CI/Pages及操作说明；历史开发状态不充作线上状态。
 
-重点检查实际 OrbitControls 事件转发、无移动点击、拖动中 resize、横竖屏距离限制，以及 Full site 后自动构图是否恢复。PR #8目标已改为main，提交本次状态文档会触发新基线的CI；其通过后再合并第六批。
+重点检查实际 OrbitControls 事件转发、无移动点击、拖动中 resize、横竖屏距离限制，以及 Full site 后自动构图是否恢复。PR #8以main为目标重新通过CI后合并，合并提交`b5cdf58`的main CI和Pages均通过。

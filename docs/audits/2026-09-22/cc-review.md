@@ -15,4 +15,4 @@ CC发现 `fitting` 与 `interacting` 两个ref的保护效果在同步构图结�
 
 CC还发现原测试未保护阻尼冲洗。扩展现有 Full site 用例，用真实 `setAzimuthalAngle()` 留残余阻尼，恢复后再 `controls.update()` 必须保持全景。临时删除阻尼冲洗时，测试因相机距离全景目标约3.205而失败，随后原文件逐字节恢复。用户提供的CC复审不覆盖这几行收尾代码；它们由本代理跑测试和变异检查。
 
-PR #7 仍仅包含第五批 `e345c1f`，CI35699339050成功，随后合并为`29c81d7`，main CI35779667669及Pages35779668154通过。第六批`b9b2bd8`已推送为[PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8)，目标已改为main；该提交的Codex共同作者已由GitHub识别为`codex`并显示头像。线上现为第五批`29c81d7`，第六批仍待合并。
+PR #7 仅包含第五批 `e345c1f`，CI35699339050成功，随后合并为`29c81d7`，main CI35779667669及Pages35779668154通过。第六批`b9b2bd8`推送为[PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8)，目标改为main；该提交的Codex共同作者已由GitHub识别为`codex`并显示头像。PR #8随后合并为`b5cdf58`，main CI35780131524和Pages35780131948通过；线上包含两批。CC结论覆盖的是合并前主体工作树，后续收尾与发布检查分别归本代理和CI。

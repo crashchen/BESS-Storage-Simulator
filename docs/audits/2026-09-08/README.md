@@ -5,7 +5,7 @@
 范围：数值结算、状态与交互、3D/响应式、性能及加载、测试/发布流程、仓库说明、vault 五篇项目笔记。\
 审核阶段只新增报告及复现附件；下文发现、行号与 135 个测试的结果均指上述提交基线。修订版纳入用户提供的 CC 独立复核，并新增正常工况对照；本代理未调用或调度 CC。
 
-**实施状态（2026-09-22）**：第一批 PR #4 已发布。第二、三批 PR #5 与第四批 PR #6 已通过用户安排的 CC 复审，并依次合并至 main `be9eb17`；[CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) 和 [Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) 均成功，线上已点检三 GLB、更新文案与运行图表。第五批在 `codex/audit-batch-5-scene-access` 本地完成手机全景/恢复全景、键盘设备入口及焦点返回，并补上用户指出的 PCS 比例问题（三设备共享0.9缩放、基座/间距/连接线联动），主体208/20经用户安排CC复审，收尾214/21、lint/Pages build通过，已推送`e345c1f`并创建[PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)，CI35699339050通过，随后合并为`29c81d7`，main CI35779667669及Pages35779668154通过，见 [第五批记录](../2026-09-20/batch-5.md)。第六批本地完成resize保持手动视角、Full site恢复自动构图，221/21、lint/Pages build通过，用户安排CC复审通过，阻尼回漂补测与守卫简化已验证；已推送并创建[PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8)（现以main为目标），见[第六批记录](../2026-09-22/batch-6.md)。累计价值拆分、加载占位、标签与能流图例仍开放；多日 AUTO 峰段无剩余电量是基线既有策略问题，单独决策。原始审计行号与各阶段验收证据保留。
+**实施状态（2026-09-22）**：第一批 PR #4、第二/三批 PR #5、第四批 PR #6 均已发布。第五批的PCS等设备统一尺度、手机全景和键盘入口经[PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)合并为`29c81d7`，[main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779667669)与[Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779668154)通过，详见[第五批记录](../2026-09-20/batch-5.md)。第六批的手动视角跨resize保持及Full site复位经[PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8)合并为`b5cdf58`，[main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131524)与[Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131948)通过；221/21、lint/Pages build及用户安排的CC主体复审详见[第六批记录](../2026-09-22/batch-6.md)。线上浏览器点检确认PCS比例、手动视角窄屏保持及Full site复位，无控制台error；不是实体手机或GPU故障注入。累计价值拆分、加载占位、标签与能流图例仍开放；多日 AUTO 峰段无剩余电量是基线既有策略问题，单独决策。原始审计行号与各阶段验收证据保留。
 
 **总体判断**
 
@@ -135,8 +135,8 @@ vault中的2026-07-17“9条audit全在dev”是历史记录，可以保留；�
 | 3：数值收敛（P2，已发布） | SoC及策略事件拆步；压力案例和正常工况回归 | 0.5–1天 | 见 [第三批记录](../2026-09-19/batch-3.md)：192/17、lint/build 通过；固定时段、多步长、逐来源能量和四项成本核对；保留午夜/08:00对照及中点近似误差 |
 | 4：加载与发布（已发布） | 图表局部错误边界及可用重试、根兜底；GLB失败清缓存；DPR接通或删除；兼容依赖升级、Node固定、同workflow质量门禁 | 1–2天，可并行 | 资产/图表暂时失败可恢复且不丢模拟；质量检查红时不发布；Pages子路径smoke通过；依赖告警按可达性记录 |
 | 5：场景访问（PR #7，已合并发布） | 手机/平板全景与恢复按钮；键盘设备选择、卡片焦点返回；卡片避让与深色滚动条；PCS等设备统一尺度及布局联动 | 本轮完成 | 214/21、lint/build通过；Close避让与交互/真实GLB及最大PV边界守卫补齐，见第五批记录 |
-| 6：resize视角保持（PR #8，待合并） | 手动视角跨尺寸变化保留；Full site恢复自动构图；无移动点击不关闭自动构图 | 本轮完成 | 221/21、lint/build；真实鼠标拖动/滚轮与响应式预览、CC复审及阻尼回漂补测见第六批记录 |
-| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第五批已合并发布；第六批PR #8已推送，待合并/发布；标签、能流图例与加载占位backlog | 随PR同步 | 文档记录核对日期、commit、检查与部署run；只修三处vault事实不足以宣称整体无drift；未完成项保留清单 |
+| 6：resize视角保持（PR #8，已合并发布） | 手动视角跨尺寸变化保留；Full site恢复自动构图；无移动点击不关闭自动构图 | 本轮完成 | 221/21、lint/build；真实鼠标拖动/滚轮与响应式预览、CC复审及阻尼回漂补测见第六批记录；main CI/Pages通过 |
+| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第五、六批已合并发布；标签、能流图例与加载占位backlog | 随PR同步 | 文档记录核对日期、commit、检查与部署run；只修三处vault事实不足以宣称整体无drift；未完成项保留清单 |
 
 修复后再考虑：配置保存/导出、对比两个运行场景、累计出口/进口价值图表、可解释的演示preset。年度真实电价/发电量、交易优化或FCR是新的产品范围，不把它们缺失算作本次缺陷。
 
