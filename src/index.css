@@ -36,7 +36,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 480px), (max-height: 430px) {
   .scene-label-mobile-lift {
     transform: translateY(-18px);
   }
