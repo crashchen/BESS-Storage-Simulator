@@ -1,6 +1,8 @@
 # 第二、三批：用户提供的 CC 复审与收尾
 
-日期：2026-09-19。基线 `053c82c`。收尾已提交为 `33ed745`，推送 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5)，CI run 35467702457 通过；未合并/部署。本代理没有调用或调度 CC。
+**发布更新（2026-09-20）**：PR #5 已合并为 `622f1e6`，PR #6 随后以 main 为目标合并为 `be9eb17`；[CI 35504681930](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) 和 [Pages 35504682035](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) 成功，当前线上包含第二至第四批。下文保留开发/复审时的阶段状态；第五批本地工作另见 [新批次记录](../2026-09-20/batch-5.md)。
+
+阶段记录（发布前）：2026-09-19。基线 `053c82c`。收尾已提交为 `33ed745`，推送 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5)，CI run 35467702457 通过；未合并/部署。本代理没有调用或调度 CC。
 
 ## 复审结论与证据归属
 

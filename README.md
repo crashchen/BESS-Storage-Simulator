@@ -31,6 +31,7 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 - **Overload Warnings**: PCC overload is surfaced in the economics panel and highlighted in the 3D grid/load area
 - **Collapsible UI**: Desktop slide-out drawers can be opened together; entering a narrow viewport keeps only the most recently opened drawer. Metrics, and either drawer on narrow screens, take priority over equipment cards; clicking equipment closes the drawers and opens its pinned card.
 - **Viewport Recovery**: Retry rebuilds the 3D viewport while preserving simulation configuration, SoC, accumulated results, and history
+- **Scene Navigation (batch 5)**: Full-site framing on canvas resize, a Full site restore button, and BESS / PCS-MV / Grid buttons for keyboard equipment inspection; all three equipment models share a common scale, with room for the full-size PCS-MV skid
 - **Accessibility**: ARIA support for screen readers (aria-pressed, aria-valuetext), keyboard navigation, and input validation feedback
 - **Efficiency Modeling**: BESS charge/discharge efficiency losses
 
@@ -66,15 +67,15 @@ npm run test
 npm run build
 ```
 
-Latest local verification on 2026-09-20: Node 24.21.0, lint, **197 tests across 18 files**, Pages-path build and actionlint passed; the clean install was verified on September 19. Batch 4 on `codex/audit-batch-4-recovery` adds chart/GLB recovery, root fallback, removes inactive DPR adaptation, updates compatible dependencies, and gates Pages deployment on quality checks. The user-arranged CC review found no blockers; follow-up coverage now exercises the production chart loader and rejects removal of its retry query. See the [batch 4 review and fault-injection guide](docs/audits/2026-09-19/batch-4.md) and [review closeout](docs/audits/2026-09-19/batch-4-review.md). The September 19 full/production npm audits each reported zero advisory entries; the 724.90 kB Three chunk warning remains.
+Latest local verification on 2026-09-20: Node 24.21.0, lint, **214 tests across 21 files**, and the Pages-path build passed. Batch 5 is committed locally on `codex/audit-batch-5-scene-access`: responsive full-site framing, a view-only restore action, keyboard equipment selection with focus return, card/toolbar spacing, and corrected equipment proportions. CC independently reviewed the 208/20 version; the final follow-up clears the Close button from the Metrics handle and adds interaction, actual-GLB scale/footprint and maximum-PV framing checks. Resize still restores the overview, including height-only changes; preserving a manually inspected view on resize remains a follow-up. BESS, PCS-MV and the transformer now share a 0.9 scale; pads, layout, flow routing and framing account for the enlarged equipment. See the [batch 5 review guide](docs/audits/2026-09-20/batch-5.md). The Three chunk warning remains at 724.91 kB; the September 19 full/production audit snapshots each reported zero advisory entries.
 
-Batches 2–3 passed the user-arranged CC review and are pushed as `33ed745` in [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5), with [CI passing](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35467702457). They clarify the yield/valuation assumptions and sampled state, and improve storage-boundary convergence. They are not merged or deployed; the [review outcome](docs/audits/2026-09-19/cc-review.md) separates the pre-existing multi-day AUTO policy issue.
+Batches 2–3 ([PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5)) and batch 4 ([PR #6](https://github.com/crashchen/BESS-Storage-Simulator/pull/6)) passed user-arranged CC review and were merged on September 20. Production is now `be9eb17`, with [CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) and [Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) successful. The Pages run exercised quality checks, same-run artifact download, and deployment. Live smoke checks confirmed the three models, updated yield/value wording, running telemetry and chart, with no console errors observed. The shipped suite has 197 tests / 18 files; batch 5 is not pushed or deployed.
 
-The first batch's visual, drawer, tariff, Reset, and viewport-retry fixes are deployed through [PR #4](https://github.com/crashchen/BESS-Storage-Simulator/pull/4), merged as `053c82c`. Its [CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35449398794) and [Pages run](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35449398727) succeeded. Those runs cover the first batch only; the second and third batches are not deployed.
+The first batch was released through [PR #4](https://github.com/crashchen/BESS-Storage-Simulator/pull/4) as `053c82c`; its original 146/15 checks and deployment evidence remain in the audit history.
 
 Real-browser checks cover desktop/phone layout and tariff input, including the first batch's 350 → invalid 2000 → Reset → 350 with cleared validation and retained Reset focus. Second-batch checks cover yield/valuation copy, stopped/manual intent, running power, paused snapshots, and idle readouts after paused edits at desktop and phone widths. Hover restoration is covered by App integration events. Retry uses the real App/hook/reducer with a simulated canvas context-loss event, rather than an actual GPU failure. Remaining product and experience work is tracked in the [audit and optimization plan](docs/audits/2026-09-08/README.md).
 
-Deploy calls the reusable CI workflow before uploading its verified artifact. Failed quality checks prevent downstream Pages jobs; this gate belongs to batch 4 and awaits merge/deployment. CI checks PRs against any base branch, including the batch 4 PR based on PR #5; pushes and Pages deployment remain scoped to `main`.
+Deploy calls the reusable CI workflow before uploading its verified artifact. The successful chain was verified in Pages run 35504682035; intentional remote failure injection has not been performed. CI checks PRs against any base branch, while pushes and automatic Pages deployment remain scoped to `main`.
 
 ## Project Structure
 
@@ -93,6 +94,8 @@ src/
     useDrawerLayout.ts           Shared responsive drawer state and equipment-overlay coordination
   components/
     SimulationViewport.tsx       Canvas wrapper with WebGL error boundary and asset hover/click
+    SceneCameraControls.tsx     Responsive full-site framing and view-only restore
+    EquipmentModel.tsx          Shared metre-scale equipment rendering
     MicrogridScene.tsx           3D scene: 7 energy-flow particle paths, BESS SoC, LOCAL LOAD node
     SceneAssetInfoCard.tsx       Hover/click info card for BESS / PCS-MV / Grid Node
     StatusHud.tsx                Compact live status bar
@@ -117,6 +120,7 @@ src/
     simulationModel.ts           Active-power settlement, solar/demand models, P&L math
     energyFlowTelemetry.ts       Display-only: GridState → 7 visible energy flows
     bessDisplay.ts               Display-only: sampled BESS action, run state, dispatch intent, known limits
+    sceneOverview.ts             Perspective fit for the curated site envelope
     sceneAssetInfo.ts            Structured asset info for the 3D info cards
     gridSelectors.ts             Derived state (battery duration, total grid connection)
     importTelemetryChart.ts      Native import transport; retry/cache logic stays in the chart boundary

@@ -23,11 +23,12 @@ export default function App() {
   const equipmentInfoEnabled = !drawerLayout.rightOpen && !(drawerLayout.compact && drawerLayout.leftOpen);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#0a0a0f]">
+    <div className="relative w-screen h-dvh overflow-hidden bg-[#0a0a0f]">
       {/* ── 3D Layer (@Agent-3D) ──────────────────────────── */}
       <SimulationViewport
         gridState={state}
         equipmentInfoEnabled={equipmentInfoEnabled}
+        sceneToolsVisible={!drawerLayout.leftOpen && !drawerLayout.rightOpen}
         onAssetInspect={drawerLayout.closeAll}
       />
 

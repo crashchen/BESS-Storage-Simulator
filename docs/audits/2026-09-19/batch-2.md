@@ -1,9 +1,11 @@
 # 第二批：模型口径与运行状态解释
 
+**发布更新（2026-09-20）**：PR #5 已合并为 `622f1e6`，PR #6 随后以 main 为目标合并为 `be9eb17`；[CI 35504681930](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) 和 [Pages 35504682035](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) 成功，当前线上包含第二至第四批。下文保留开发/复审时的阶段状态；第五批本地工作另见 [新批次记录](../2026-09-20/batch-5.md)。
+
 日期：2026-09-19（Europe/Berlin）  
 基线：main `053c82cd23298391f0a0e400c2324d051241988d`（PR #4）  
 分支：`codex/audit-batch-2-model-clarity`  
-状态：用户提供的 CC 组合复审通过，收尾已落实；已推送 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5) / `33ed745`，CI 已通过，未合并，未部署第二批。本代理未调用或调度 CC。见 [复审收尾](cc-review.md)。
+阶段状态（发布前）：用户提供的 CC 组合复审通过，收尾已落实；已推送 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5) / `33ed745`，CI 已通过，未合并，未部署第二批。本代理未调用或调度 CC。见 [复审收尾](cc-review.md)。
 
 > 后续状态：用户已要求第三批与本批一并复审。当前组合工作树的积分变更、192/17 验收及复审入口见 [第三批记录](batch-3.md)；下述“未改 tick/数学”和 175/16 指第二批单独完成时的范围。
 

@@ -1,6 +1,8 @@
 # 第四批：加载恢复与发布门禁
 
-日期：2026-09-19。分支：`codex/audit-batch-4-recovery`。基线：第二、三批提交 `33ed745fc990d67a6e73f03bbc91155cf641e74a`，对应 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5)；该 PR 的 [CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35467702457) 已通过，尚未合并或部署。第四批保持独立分支，以 PR #5 为依赖提交评审；2026-09-20 用户转交的 CC 报告无阻塞项，后续收尾见 [复审记录](batch-4-review.md)。本代理未调用或调度 CC。线上仍为 PR #4 / `053c82c`。
+**发布更新（2026-09-20）**：PR #5 已合并为 `622f1e6`，PR #6 随后以 main 为目标合并为 `be9eb17`；[CI 35504681930](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) 和 [Pages 35504682035](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) 成功，当前线上包含第二至第四批。下文保留开发/复审时的阶段状态；第五批本地工作另见 [新批次记录](../2026-09-20/batch-5.md)。
+
+阶段记录（发布前）：2026-09-19。分支：`codex/audit-batch-4-recovery`。基线：第二、三批提交 `33ed745fc990d67a6e73f03bbc91155cf641e74a`，对应 [PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5)；该 PR 的 [CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35467702457) 已通过，尚未合并或部署。第四批保持独立分支，以 PR #5 为依赖提交评审；2026-09-20 用户转交的 CC 报告无阻塞项，后续收尾见 [复审记录](batch-4-review.md)。本代理未调用或调度 CC。线上仍为 PR #4 / `053c82c`。
 
 ## 本批交付
 
@@ -67,9 +69,9 @@ printf '%s' '{"fail":"generic-bess-5mwh"}' > /tmp/bess-fault-mode.json
 
 ## 后续
 
-第四批已收到用户安排的 CC 无阻塞复审；生产加载器自动化覆盖和不依赖 nvm 的复现说明已补齐。第二、三批 PR #5 待合并；第四批以该分支为 PR 基线，CI 扩展到所有 PR 目标分支，main push/Pages 范围不变。本批未发布。多日 AUTO 自消纳/峰段留电目标仍单独决策，见 [复审记录](cc-review.md)。累计价值拆项、手机相机构图、键盘设备选择、加载占位和其他持续体验项保留，未宣称审计 backlog 已全部清零。
+第四批已通过 PR #6 合并并发布，第二、三批 PR #5 同样已合并；同 run 的产物交接已在 Pages 35504682035 成功验证，未做远端失败注入。第五批全景构图和键盘设备入口已在独立工作树完成，见 [第五批记录](../2026-09-20/batch-5.md)。多日 AUTO 留电目标、累计价值拆项、加载占位等仍独立排期。
 
 
 实现依据：[React.lazy 的 Promise 缓存与错误边界](https://react.dev/reference/react/lazy)、[Rollup emitFile / ROLLUP_FILE_URL](https://rollupjs.org/plugin-development/#this-emitfile)、[Node 24.21.0 官方发布](https://github.com/nodejs/node/releases/tag/v24.21.0)。drei 的清缓存键语义另核对了当前安装版 `Gltf.js` / R3F `useLoader`，未仅依据在线最新文档。
 
-Housekeeping：README、CLAUDE、审计状态和 vault 五篇随复审收尾同步；vault 分别记录已核验提交、工作树及线上 PR #4 / `053c82c`，不把未合并分支写成已部署。五篇写入前后均核对 SHA256，保留各批历史验收归属。
+Housekeeping：第四批合并时，README、CLAUDE、审计状态和vault五篇同步发布结果，已核验/已部署提交当时均为`be9eb17`。第五批随后单独提交本地，当前核验状态见[第五批记录](../2026-09-20/batch-5.md)；部署仍为`be9eb17`。五篇写入前后均核对SHA256，保留各批历史验收归属。

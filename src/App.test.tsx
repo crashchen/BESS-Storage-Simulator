@@ -1,5 +1,6 @@
 import { StrictMode, type ReactNode } from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ControlPanelProps, GridSnapshot, GridState, MicrogridSceneProps } from './types';
 import App from './App';
@@ -30,16 +31,16 @@ vi.mock('@react-three/drei', () => ({
 }));
 
 vi.mock('./components/MicrogridScene', () => ({
-  MicrogridScene: ({ onAssetHover, onAssetSelect }: MicrogridSceneProps) => {
+  MicrogridScene: ({ onAssetHover, onAssetSelect, viewResetVersion }: MicrogridSceneProps) => {
     if (modelCache.failed) throw new Error('Cached model download failure');
     return (
-    <button
+    <><output data-testid="view-reset-version">{viewResetVersion}</output><button
       onMouseEnter={() => onAssetHover?.('bess')}
       onMouseLeave={() => onAssetHover?.(null)}
       onClick={() => onAssetSelect?.('bess')}
     >
       Inspect BESS
-    </button>
+    </button></>
     );
   },
 }));
@@ -138,6 +139,9 @@ describe('App viewport integration', () => {
     fireEvent(lostCanvas, loss);
     expect(loss.defaultPrevented).toBe(true);
     expect(screen.getByRole('alert')).toHaveTextContent('The simulation kept running');
+    for (const button of within(screen.getByRole('navigation', { name: 'Scene tools' })).getAllByRole('button')) {
+      expect(button).toBeDisabled();
+    }
 
     advanceFrames(10);
     const beforeRetry = readSimulation();
@@ -151,6 +155,9 @@ describe('App viewport integration', () => {
     expect(replacementCanvas).not.toBe(lostCanvas);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(readSimulation()).toEqual(beforeRetry);
+    for (const button of within(screen.getByRole('navigation', { name: 'Scene tools' })).getAllByRole('button')) {
+      expect(button).toBeEnabled();
+    }
 
     const staleLoss = new Event('webglcontextlost', { cancelable: true });
     fireEvent(lostCanvas, staleLoss);
@@ -237,5 +244,75 @@ describe('App viewport integration', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Inspect BESS' }));
     expect(readDrawers().leftOpen).toBe(false);
     expect(screen.getByTestId('scene-asset-info-card')).toHaveTextContent('Pinned equipment');
+  });
+
+  it('offers all equipment through Tab/Enter/Space and returns focus after Escape or Close', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.tab(); // mocked canvas equipment
+    await user.tab();
+    for (const [name, key, title] of [
+      ['Inspect BESS equipment', '{Enter}', 'BESS Unit'],
+      ['Inspect PCS / MV equipment', ' ', 'PCS / MV Station'],
+      ['Inspect grid equipment', '{Enter}', 'Grid Node'],
+    ]) {
+      const trigger = screen.getByRole('button', { name });
+      expect(trigger).toHaveFocus();
+      await user.keyboard(key);
+      expect(screen.getByTestId('scene-asset-info-card')).toHaveTextContent(title);
+      expect(screen.getByRole('button', { name: 'Close equipment info card' })).toHaveFocus();
+      expect(trigger).toHaveAttribute('aria-pressed', 'true');
+      await user.keyboard('{Escape}');
+      expect(screen.queryByTestId('scene-asset-info-card')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+      await user.tab();
+    }
+    await user.click(screen.getByRole('button', { name: 'Inspect BESS equipment' }));
+    await user.click(screen.getByRole('button', { name: 'Close equipment info card' }));
+    expect(screen.getByRole('button', { name: 'Inspect BESS equipment' })).toHaveFocus();
+  });
+
+  it('hides scene tools under drawers and does not steal focus when a pinned card returns', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Inspect grid equipment' }));
+    await user.click(screen.getByRole('button', { name: 'Open metrics' }));
+    expect(screen.queryByRole('navigation', { name: 'Scene tools' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close metrics' }));
+    expect(screen.getByTestId('scene-asset-info-card')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close metrics' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('button', { name: 'Inspect grid equipment' })).toHaveFocus();
+  });
+
+  it('toggles a pinned card off when its equipment button is pressed again', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const before = readSimulation();
+    for (const name of ['Inspect BESS equipment', 'Inspect PCS / MV equipment', 'Inspect grid equipment']) {
+      const trigger = screen.getByRole('button', { name });
+      await user.click(trigger);
+      expect(trigger).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('scene-asset-info-card')).toBeInTheDocument();
+      await user.click(trigger);
+      expect(trigger).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.queryByTestId('scene-asset-info-card')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    }
+    expect(readSimulation()).toEqual(before);
+  });
+
+  it('restores only the view, preserving the canvas and complete simulation state', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Run custom simulation' }));
+    advanceFrames(10);
+    fireEvent.click(screen.getByRole('button', { name: 'Inspect BESS equipment' }));
+    const before = readSimulation();
+    const canvas = screen.getByTestId('webgl-canvas');
+    fireEvent.click(screen.getByRole('button', { name: 'Restore full site view' }));
+    expect(screen.getByTestId('view-reset-version')).toHaveTextContent('1');
+    expect(screen.getByTestId('webgl-canvas')).toBe(canvas);
+    expect(readSimulation()).toEqual(before);
+    expect(screen.queryByTestId('scene-asset-info-card')).not.toBeInTheDocument();
   });
 });

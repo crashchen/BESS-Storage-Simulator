@@ -34,6 +34,14 @@ equipment (the demo site runs up to 186 MW BESS interconnect / 288 MW PCC) —
 info cards frame all telemetry as station-level aggregates rather than
 single-unit ratings.
 
-Scene placement (scale, envelope, unit rating) is configured in
-`SCENE_3D.models` in `src/config.ts` — keep this README and that block in
-sync when adding models.
+All three metre-scale assets use the shared `SCENE_3D.equipmentScale` (0.9).
+Do not shrink an individual unit to fit an old placeholder's footprint; resize
+its pad and move neighbouring equipment instead. The PCS-MV skid is comparable
+in width and height to the BESS container. This preserves relative equipment
+proportions, not a 1:1 layout or capacity claim for the entire site.
+
+Files, planning envelopes and unit ratings are configured in `SCENE_3D.models`
+in `src/config.ts`; placement and framing are in the same config. Small trims
+can extend beyond the nominal planning envelope (the PCS GLB measures about
+6.10 × 3.00 × 3.114 m including details), so check the actual GLB bounds when
+fitting pads. Keep this README and the config in sync when adding models.

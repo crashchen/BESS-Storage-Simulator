@@ -1,4 +1,4 @@
-import { Component, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useLayoutEffect, useRef, useState, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { clearEquipmentModelCache } from '../utils/equipmentModels';
 import { MicrogridScene } from './MicrogridScene';
@@ -9,8 +9,15 @@ import type { GridState, SceneAssetId } from '../types';
 interface SimulationViewportProps {
   gridState: GridState;
   equipmentInfoEnabled?: boolean;
+  sceneToolsVisible?: boolean;
   onAssetInspect?: () => void;
 }
+
+const EQUIPMENT_CHOICES = [
+  { id: 'bess', label: 'BESS', name: 'Inspect BESS equipment' },
+  { id: 'pcs-mv', label: 'PCS / MV', name: 'Inspect PCS / MV equipment' },
+  { id: 'grid-node', label: 'Grid', name: 'Inspect grid equipment' },
+] as const;
 
 type ViewportFailure =
   | { kind: 'render-error'; error: Error }
@@ -72,13 +79,26 @@ function ViewportFallback({ failure, onRetry }: { failure: ViewportFailure; onRe
 export function SimulationViewport({
   gridState,
   equipmentInfoEnabled = true,
+  sceneToolsVisible = true,
   onAssetInspect,
 }: SimulationViewportProps) {
   const [failure, setFailure] = useState<ViewportFailure | null>(null);
   const [canvasKey, setCanvasKey] = useState(0);
+  const [viewResetVersion, setViewResetVersion] = useState(0);
   const [hoveredAssetId, setHoveredAssetId] = useState<SceneAssetId | null>(null);
   const [selectedAssetId, setSelectedAssetId] = useState<SceneAssetId | null>(null);
   const canvasListenerCleanup = useRef<(() => void) | null>(null);
+  const equipmentButtons = useRef<Partial<Record<SceneAssetId, HTMLButtonElement | null>>>({});
+  const selectionTrigger = useRef<SceneAssetId | null>(null);
+  const pendingCardFocus = useRef(false);
+  const cardCloseButton = useRef<HTMLButtonElement>(null);
+
+  useLayoutEffect(() => {
+    if (pendingCardFocus.current && selectedAssetId && equipmentInfoEnabled && cardCloseButton.current) {
+      cardCloseButton.current.focus();
+      pendingCardFocus.current = false;
+    }
+  }, [selectedAssetId, equipmentInfoEnabled]);
 
   const clearCanvasListener = useCallback(() => {
     canvasListenerCleanup.current?.();
@@ -121,12 +141,19 @@ export function SimulationViewport({
   }, [failure]);
 
   const handleAssetSelect = useCallback((assetId: SceneAssetId) => {
+    selectionTrigger.current = null;
+    pendingCardFocus.current = false;
     onAssetInspect?.();
     setSelectedAssetId(assetId);
   }, [onAssetInspect]);
 
   const handleClearSelection = useCallback(() => {
     setSelectedAssetId(null);
+    setHoveredAssetId(null);
+    pendingCardFocus.current = false;
+    const trigger = selectionTrigger.current && equipmentButtons.current[selectionTrigger.current];
+    if (trigger?.isConnected) trigger.focus();
+    selectionTrigger.current = null;
   }, []);
 
   const handleSceneMissed = useCallback(() => {
@@ -146,13 +173,12 @@ export function SimulationViewport({
       if (typeof document !== 'undefined' && document.querySelector('[role="region"][aria-hidden="false"]')) {
         return;
       }
-      setSelectedAssetId(null);
-      setHoveredAssetId(null);
+      handleClearSelection();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedAssetId]);
+  }, [selectedAssetId, handleClearSelection]);
 
   // Hide only the presentation; keep tracking pointer enter/leave behind drawers.
   const activeAssetId = equipmentInfoEnabled ? selectedAssetId ?? hoveredAssetId : null;
@@ -179,6 +205,7 @@ export function SimulationViewport({
           >
             <MicrogridScene
               gridState={gridState}
+              viewResetVersion={viewResetVersion}
               hoveredAssetId={equipmentInfoEnabled ? hoveredAssetId : null}
               selectedAssetId={equipmentInfoEnabled ? selectedAssetId : null}
               onAssetHover={setHoveredAssetId}
@@ -187,11 +214,46 @@ export function SimulationViewport({
           </Canvas>
         </CanvasErrorBoundary>
       )}
+      {sceneToolsVisible && (
+        <nav aria-label="Scene tools" className="absolute bottom-8 left-1/2 z-20 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 gap-1 rounded-xl border border-slate-600/50 bg-slate-950/85 p-1 shadow-xl backdrop-blur-md">
+          {EQUIPMENT_CHOICES.map(asset => (
+            <button key={asset.id} type="button"
+              ref={node => { equipmentButtons.current[asset.id] = node; }}
+              aria-label={asset.name}
+              aria-pressed={selectedAssetId === asset.id}
+              aria-controls={activeAssetId ? 'scene-asset-info' : undefined}
+              disabled={!!failure}
+              onClick={() => {
+                if (selectedAssetId === asset.id) { handleClearSelection(); return; }
+                selectionTrigger.current = asset.id;
+                pendingCardFocus.current = true;
+                onAssetInspect?.();
+                setHoveredAssetId(null);
+                setSelectedAssetId(asset.id);
+              }}
+              className="min-h-11 whitespace-nowrap rounded-lg px-2 text-xs font-semibold text-slate-200 hover:bg-slate-800 aria-pressed:bg-cyan-900 aria-pressed:text-cyan-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:opacity-40 sm:px-3">
+              {asset.label}
+            </button>
+          ))}
+          <button type="button" aria-label="Restore full site view" disabled={!!failure}
+            onClick={() => {
+              selectionTrigger.current = null;
+              pendingCardFocus.current = false;
+              setSelectedAssetId(null);
+              setHoveredAssetId(null);
+              setViewResetVersion(version => version + 1);
+            }}
+            className="min-h-11 whitespace-nowrap rounded-lg border-l border-slate-600/60 px-2 text-xs font-semibold text-cyan-200 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:opacity-40 sm:px-3">
+            Full site
+          </button>
+        </nav>
+      )}
       <SceneAssetInfoCard
         assetId={activeAssetId}
         gridState={gridState}
         pinned={selectedAssetId !== null}
         onClose={handleClearSelection}
+        closeButtonRef={cardCloseButton}
       />
     </div>
   );
