@@ -7,27 +7,29 @@
 import { memo, useRef, useMemo, Suspense } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { Text, Grid, Line, useGLTF } from '@react-three/drei';
-import { EquipmentModel } from './EquipmentModel';
+import { EquipmentModel, EquipmentModelPlaceholder } from './EquipmentModel';
+import { SceneLabel } from './SceneLabel';
 import { SceneCameraControls } from './SceneCameraControls';
 import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
 import { SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
 import { getVisibleEnergyFlows } from '../utils/energyFlowTelemetry';
+import { FLOW_COLORS } from '../utils/sceneFlowVisuals';
 import { selectBessPower } from '../utils/bessDisplay';
 import { equipmentModelUrl } from '../utils/equipmentModels';
 
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
-const COLOR_DISCHARGE = new Color('#f59e0b');
+const COLOR_DISCHARGE = new Color(FLOW_COLORS.bessToGrid);
 // Lighter amber for the BESS → local-load leg; both BESS legs share the same
 // upstream waypoints and would visually collide as identical amber streams.
-const COLOR_DISCHARGE_LOAD = new Color('#fcd34d');
+const COLOR_DISCHARGE_LOAD = new Color(FLOW_COLORS.bessToLoad);
 const COLOR_IDLE = new Color('#64748b');
 const COLOR_SOLAR_ON = new Color('#facc15');
 const COLOR_SOLAR_OFF = new Color('#1e293b');
-const COLOR_SOLAR_FLOW = new Color('#fbbf24');
-const COLOR_GRID_FLOW = new Color('#3b82f6');
-const COLOR_CURTAIL = new Color('#ef4444');
+const COLOR_SOLAR_FLOW = new Color(FLOW_COLORS.solar);
+const COLOR_GRID_FLOW = new Color(FLOW_COLORS.grid);
+const COLOR_CURTAIL = new Color(FLOW_COLORS.curtailed);
 
 // SoC health gradient: red (0%) → amber (50%) → green (100%)
 const SOC_COLOR_LOW = new Color('#ef4444');
@@ -134,15 +136,6 @@ const BESS_MODEL_URL = equipmentModelUrl(BESS_MODEL.file);
 
 useGLTF.preload(BESS_MODEL_URL);
 
-function BessModelPlaceholder() {
-    return (
-        <mesh position={[0, BESS_MODEL_HEIGHT / 2, 0]} castShadow receiveShadow>
-            <boxGeometry args={[BESS_MODEL_WIDTH, BESS_MODEL_HEIGHT, BESS_MODEL_DEPTH]} />
-            <meshStandardMaterial color="#334155" metalness={0.45} roughness={0.55} />
-        </mesh>
-    );
-}
-
 // The detailed GLB remains fixed-scale: capacity edits describe the aggregate
 // site, not a physically stretched representative container. Dynamic SoC,
 // operating-state glow, and interaction feedback live in separate overlays.
@@ -200,7 +193,7 @@ const BESSContainer = memo(function BESSContainer({
                 </mesh>
             )}
 
-            <Suspense fallback={<BessModelPlaceholder />}>
+            <Suspense fallback={<EquipmentModelPlaceholder model={BESS_MODEL} />}>
                 <EquipmentModel model={BESS_MODEL} />
             </Suspense>
 
@@ -252,16 +245,9 @@ const BESSContainer = memo(function BESSContainer({
                 />
             </mesh>
 
-            {/* Label */}
-            <Text
-                position={[0, BESS_MODEL_HEIGHT + 0.38, 0]}
-                fontSize={SCENE_3D.equipmentLabelSize}
-                color={interaction.isHighlighted ? interactionColor : '#e2e8f0'}
-                anchorX="center"
-                anchorY="bottom"
-            >
+            <SceneLabel position={[0, BESS_MODEL_HEIGHT + 0.38, 0]} highlighted={interaction.isHighlighted}>
                 BESS UNIT
-            </Text>
+            </SceneLabel>
         </group>
     );
 });
@@ -363,15 +349,9 @@ const SolarArray = memo(function SolarArray({ solarOutputMw, solarAcCapacityMw, 
                     emissiveIntensity={emissiveIntensity}
                 />
             ))}
-            <Text
-                position={[-9.2, 2.65, -6.95]}
-                fontSize={0.26}
-                color="#e2e8f0"
-                anchorX="center"
-                anchorY="bottom"
-            >
+            <SceneLabel position={[-9.2, 2.65, -6.95]}>
                 SOLAR ARRAY
-            </Text>
+            </SceneLabel>
         </group>
     );
 });
@@ -461,18 +441,12 @@ const LoadBuilding = memo(function LoadBuilding({
                     />
                 </mesh>
             )}
-            <Suspense fallback={null}>
+            <Suspense fallback={<EquipmentModelPlaceholder model={TRANSFORMER_MODEL} />}>
                 <EquipmentModel model={TRANSFORMER_MODEL} />
             </Suspense>
-            <Text
-                position={[0, TRANSFORMER_HEIGHT + 0.5, 0]}
-                fontSize={SCENE_3D.equipmentLabelSize}
-                color={isActive || overloaded ? highlightColor : '#e2e8f0'}
-                anchorX="center"
-                anchorY="bottom"
-            >
+            <SceneLabel position={[1.5, TRANSFORMER_HEIGHT + 0.1, 0]} highlighted={isActive} alert={overloaded}>
                 GRID NODE
-            </Text>
+            </SceneLabel>
         </group>
     );
 });
@@ -510,15 +484,9 @@ const SiteLoadMarker = memo(function SiteLoadMarker() {
                     metalness={0.35}
                 />
             </mesh>
-            <Text
-                position={[0, 1.62, 0]}
-                fontSize={0.18}
-                color="#dbeafe"
-                anchorX="center"
-                anchorY="bottom"
-            >
+            <SceneLabel position={[0, 1.62, 0]} secondary>
                 LOCAL LOAD
-            </Text>
+            </SceneLabel>
         </group>
     );
 });
@@ -581,19 +549,17 @@ const SitePads = memo(function SitePads({ pcsInteraction }: { pcsInteraction: As
                     transparent
                     opacity={pcsActive ? 1 : 0.75}
                 />
-                <Suspense fallback={null}>
+                <Suspense fallback={<EquipmentModelPlaceholder model={PCS_SKID_MODEL} />}>
                     <EquipmentModel model={PCS_SKID_MODEL} />
                 </Suspense>
-                <Text
+                <SceneLabel
                     // Offset from the central flow riser so it cannot bisect the label.
-                    position={[-PCS_SKID_MODEL.size[0] * SCENE_3D.equipmentScale / 4, PCS_SKID_HEIGHT + 0.5, 0]}
-                    fontSize={SCENE_3D.equipmentLabelSize}
-                    color={pcsActive ? '#ffffff' : SCENE_3D.pads.substation.labelColor}
-                    anchorX="center"
-                    anchorY="bottom"
+                    position={[-PCS_SKID_MODEL.size[0] * SCENE_3D.equipmentScale / 6, PCS_SKID_HEIGHT + 0.5, 0]}
+                    highlighted={pcsActive}
+                    mobileLift
                 >
                     PCS / MV
-                </Text>
+                </SceneLabel>
             </group>
         </group>
     );

@@ -7,7 +7,7 @@ import App from './App';
 import { SCENE_3D } from './config';
 import { useGLTF } from '@react-three/drei';
 
-const modelCache = vi.hoisted(() => ({ failed: false }));
+const modelCache = vi.hoisted(() => ({ failed: false, loading: false }));
 
 vi.mock('@react-three/fiber', async () => {
   const { useLayoutEffect, useRef } = await import('react');
@@ -28,6 +28,7 @@ vi.mock('@react-three/fiber', async () => {
 
 vi.mock('@react-three/drei', () => ({
   useGLTF: { clear: vi.fn(() => { modelCache.failed = false; }) },
+  useProgress: () => modelCache.loading,
 }));
 
 vi.mock('./components/MicrogridScene', () => ({
@@ -85,6 +86,7 @@ describe('App viewport integration', () => {
 
   beforeEach(() => {
     modelCache.failed = false;
+    modelCache.loading = false;
     vi.mocked(useGLTF.clear).mockClear();
     frameCallback = null;
     nowMs = 1000;
@@ -275,14 +277,27 @@ describe('App viewport integration', () => {
   it('hides scene tools under drawers and does not steal focus when a pinned card returns', async () => {
     const user = userEvent.setup();
     render(<App />);
+    expect(screen.getByRole('complementary', { name: 'Energy flow legend' })).toHaveTextContent('Red sparks = curtailed solar');
     await user.click(screen.getByRole('button', { name: 'Inspect grid equipment' }));
     await user.click(screen.getByRole('button', { name: 'Open metrics' }));
     expect(screen.queryByRole('navigation', { name: 'Scene tools' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('complementary', { name: 'Energy flow legend' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close metrics' }));
+    expect(screen.getByRole('complementary', { name: 'Energy flow legend' })).toBeInTheDocument();
     expect(screen.getByTestId('scene-asset-info-card')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Close metrics' })).toHaveFocus();
     await user.keyboard('{Escape}');
     expect(screen.getByRole('button', { name: 'Inspect grid equipment' })).toHaveFocus();
+  });
+
+  it('announces pending 3D assets without replacing simulation controls', () => {
+    modelCache.loading = true;
+    const view = render(<App />);
+    expect(screen.getByRole('status', { name: 'Loading 3D equipment' })).toHaveTextContent('Loading 3D equipment');
+    expect(screen.getByRole('button', { name: 'Run custom simulation' })).toBeEnabled();
+    modelCache.loading = false;
+    view.rerender(<App />);
+    expect(screen.queryByRole('status', { name: 'Loading 3D equipment' })).not.toBeInTheDocument();
   });
 
   it('toggles a pinned card off when its equipment button is pressed again', async () => {

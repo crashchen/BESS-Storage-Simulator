@@ -23,6 +23,13 @@ const history: GridSnapshot[] = [8, 9, 10].map(t => ({
 }));
 
 describe('loading and render recovery', () => {
+    it('explains a pending telemetry chunk while keeping the chart area reserved', () => {
+        const pending = new Promise<{ default: typeof Chart }>(() => {});
+        const view = render(<RecoverableTelemetryChart history={history} load={() => pending} />);
+        expect(screen.getByRole('status', { name: 'Loading telemetry chart' })).toHaveTextContent('Loading telemetry chart…');
+        view.unmount();
+    });
+
     it('uses fresh production loader URLs after each failure and reuses success across remounts', async () => {
         vi.spyOn(console, 'error').mockImplementation(() => {});
         const transport = vi.mocked(importTelemetryChart)

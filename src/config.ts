@@ -229,7 +229,6 @@ export const SCENE_3D = {
     /** All metre-scale equipment shares this scale; change layout to make room,
      * rather than independently shrinking one representative unit. */
     equipmentScale: 0.9,
-    equipmentLabelSize: 0.34,
     gridNode: {
         position: [12.4, 0, 0.25] as const,
         pylonRearClearance: 0.7,
@@ -275,7 +274,6 @@ export const SCENE_3D = {
             position: [5.65, 0.08, -1.65] as const,
             size: [6.1, 0.16, 3.4] as const,
             color: '#4b5f7a',
-            labelColor: '#e0f2fe',
             emissiveColor: '#38bdf8',
             flowWaypointClearance: 0.85,
         },

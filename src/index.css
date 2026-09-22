@@ -35,3 +35,17 @@
     scrollbar-color: #475569 transparent;
   }
 }
+
+@media (max-width: 480px) {
+  .scene-label-mobile-lift {
+    transform: translateY(-18px);
+  }
+}
+
+@media (max-width: 420px) and (max-height: 600px) {
+  .energy-flow-legend {
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
