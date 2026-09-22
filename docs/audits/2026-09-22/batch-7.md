@@ -24,6 +24,8 @@ CC复审后本地真实浏览器再次点检：PCS标签的CSS `pointer-events`�
 
 另用临时本地Pages子路径服务器将GLB和图表分包分别延迟8秒：先看到三台简化轮廓及3D加载文字；运行模拟积累历史后打开Metrics，看到图表加载文字与骨架。资源完成后两种加载状态消失，三GLB和图表正常出现，控制台error为空。该检查是**慢响应注入**，不是断网、503恢复或真实GPU故障注入；临时服务器未加入仓库。
 
+**发布验收（2026-09-22）**：PR #10以`29894525c4df6f35f00f0add29078d05e6dc962b`合并main，[CI 35789638276](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35789638276)与[Pages 35789638697](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35789638697)在同一提交上成功。线上浏览器可见标签、图例和加载后的三台设备；640×360视口下BESS/PCS标签不相交，CSS `pointer-events: none`生效，控制台error为空。图例仍遮住部分Solar标签，属于下文已知事项。此线上检查没有重做所有故障注入或实体手机触摸验收。
+
 ## 复审入口与边界
 
 用户安排的CC已两轮复审：初版的图例、三GLB占位和图表骨架通过；指出标签实际拦截点击，以及HUD层级、421–455px标签交叠和Grid过载标签失去红色四项。第二轮在真实浏览器复测，确认四项均修复，并将竖屏抽样扩到320–768px。之后CC发现640–812px矮横屏存在同类BESS/PCS标签交叠；本次加≤430px高度规则，本地五档横屏复验无标签矩形相交。该最后一行CSS尚未经CC第三次复审。后续仍需处理手动相机角度下的标签碰撞、`useProgress`在GLB加载失败与重试时的状态；原有`App.test.tsx`、`Recovery.test.tsx`为回归入口，点击标签需要真实浏览器验收。
