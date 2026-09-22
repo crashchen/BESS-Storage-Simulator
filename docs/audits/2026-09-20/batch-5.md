@@ -1,6 +1,8 @@
 # 第五批：全景构图、设备比例与键盘访问
 
-日期：2026-09-20（Europe/Berlin）。分支 `codex/audit-batch-5-scene-access`，基线 `be9eb1778638a8c24aa98252d716eaa9ab98ca4b`。本批已本地提交，未推送/未部署。用户安排的CC复审覆盖208/20主体版本；以下最后的收尾验收为214/21。本代理未调用或调度CC。
+日期：2026-09-20（Europe/Berlin）。分支 `codex/audit-batch-5-scene-access`，基线 `be9eb1778638a8c24aa98252d716eaa9ab98ca4b`。本批于2026-09-22推送提交`e345c1f`，创建[PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)，[CI 35699339050](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35699339050)通过；未合并/未部署。用户安排的CC复审覆盖208/20主体版本；以下最后的收尾验收为214/21。本代理未调用或调度CC。
+
+> 下文描述第五批自身的实现和验收。resize保持手动视角由[第六批](../2026-09-22/batch-6.md)单独处理，未混入PR #7。
 
 ## 已完成的合并与发布
 
