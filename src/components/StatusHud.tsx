@@ -37,7 +37,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
     const tariff = tariffBadge[tariffPeriod];
 
     return (
-        <div className="pointer-events-none absolute top-0 left-0 right-0 select-none">
+        <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 select-none">
             <div className="mx-auto mt-2 flex w-fit max-w-[98vw] flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-slate-700/50 bg-slate-900/80 px-3 py-1.5 shadow-2xl backdrop-blur-xl sm:mt-3 sm:gap-x-3 sm:px-5 sm:py-2.5">
                 <div className="flex items-center gap-1">
                     <span className="text-[10px] text-slate-400 sm:text-xs">🕐</span>

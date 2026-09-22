@@ -1,8 +1,10 @@
 import { Component, useCallback, useEffect, useLayoutEffect, useRef, useState, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { useProgress } from '@react-three/drei';
 import { clearEquipmentModelCache } from '../utils/equipmentModels';
 import { MicrogridScene } from './MicrogridScene';
 import { SceneAssetInfoCard } from './SceneAssetInfoCard';
+import { EnergyFlowLegend } from './EnergyFlowLegend';
 import { SCENE_3D } from '../config';
 import type { GridState, SceneAssetId } from '../types';
 
@@ -87,6 +89,7 @@ export function SimulationViewport({
   const [viewResetVersion, setViewResetVersion] = useState(0);
   const [hoveredAssetId, setHoveredAssetId] = useState<SceneAssetId | null>(null);
   const [selectedAssetId, setSelectedAssetId] = useState<SceneAssetId | null>(null);
+  const loading3d = useProgress(progress => progress.active);
   const canvasListenerCleanup = useRef<(() => void) | null>(null);
   const equipmentButtons = useRef<Partial<Record<SceneAssetId, HTMLButtonElement | null>>>({});
   const selectionTrigger = useRef<SceneAssetId | null>(null);
@@ -214,6 +217,12 @@ export function SimulationViewport({
           </Canvas>
         </CanvasErrorBoundary>
       )}
+      {!failure && loading3d && (
+        <div role="status" aria-label="Loading 3D equipment" aria-live="polite" className="pointer-events-none absolute bottom-24 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-lg border border-sky-400/50 bg-slate-950/90 px-3 py-2 text-xs font-semibold text-sky-100 shadow-lg">
+          Loading 3D equipment…
+        </div>
+      )}
+      {sceneToolsVisible && !failure && <EnergyFlowLegend />}
       {sceneToolsVisible && (
         <nav aria-label="Scene tools" className="absolute bottom-8 left-1/2 z-20 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 gap-1 rounded-xl border border-slate-600/50 bg-slate-950/85 p-1 shadow-xl backdrop-blur-md">
           {EQUIPMENT_CHOICES.map(asset => (

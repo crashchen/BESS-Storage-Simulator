@@ -38,7 +38,16 @@ export function RecoverableTelemetryChart({ history, load = loadChart }: {
                 <p>If retry still fails after an app update, reload the page. Reload starts a new simulation and clears this run.</p>
             </div>
         }>
-            <Suspense fallback={<div role="status" aria-label="Loading telemetry chart" className="h-[170px] animate-pulse rounded-lg bg-slate-800/60" />}>
+            <Suspense fallback={
+                <div role="status" aria-label="Loading telemetry chart" className="h-[170px] rounded-lg border border-slate-700/60 bg-slate-900/70 p-4 text-xs text-slate-300">
+                    <p className="font-semibold text-sky-200">Loading telemetry chart…</p>
+                    <div aria-hidden="true" className="mt-4 flex h-24 animate-pulse items-end gap-2 border-b border-slate-700/70 pb-2 motion-reduce:animate-none">
+                        {[36, 62, 48, 82, 66, 92, 72, 55, 76, 60].map((height, index) => (
+                            <span key={index} className="min-w-0 flex-1 rounded-t bg-sky-500/25" style={{ height: `${height}%` }} />
+                        ))}
+                    </div>
+                </div>
+            }>
                 <Chart history={history} />
             </Suspense>
         </ErrorBoundary>
