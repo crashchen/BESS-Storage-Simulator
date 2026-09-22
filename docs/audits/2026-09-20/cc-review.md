@@ -25,4 +25,4 @@ CC未能改变实际2320px宽的浏览器视口，其280/320/390等构图证据�
 
 ## 提交与发布
 
-第五批提交到本地`codex/audit-batch-5-scene-access`，未推送/未部署。线上保持`be9eb17`；本地提交可通过`git log -1`确认，避免文档嵌入自身提交哈希。CC的复审结论覆盖收尾前主体，本节新增修复和测试为本代理验收，不冒称CC已复审新增代码。
+2026-09-22第五批`e345c1f`已推送到`codex/audit-batch-5-scene-access`，创建[PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)，[CI 35699339050](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35699339050)通过。随后PR #7合并为`29c81d7`，main CI35779667669及Pages35779668154通过。resize反馈由[第六批](../2026-09-22/batch-6.md)另行实现，不改变本报告的第五批验收归属。CC的复审结论覆盖收尾前主体，本节新增修复和测试为本代理验收，不冒称CC已复审新增代码。
