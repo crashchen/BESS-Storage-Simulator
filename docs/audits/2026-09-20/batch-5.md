@@ -1,14 +1,14 @@
 # 第五批：全景构图、设备比例与键盘访问
 
-日期：2026-09-20（Europe/Berlin）。分支 `codex/audit-batch-5-scene-access`，基线 `be9eb1778638a8c24aa98252d716eaa9ab98ca4b`。本批于2026-09-22推送提交`e345c1f`，创建[PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)，[CI 35699339050](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35699339050)通过；未合并/未部署。用户安排的CC复审覆盖208/20主体版本；以下最后的收尾验收为214/21。本代理未调用或调度CC。
+日期：2026-09-20（Europe/Berlin）。分支 `codex/audit-batch-5-scene-access`，基线 `be9eb1778638a8c24aa98252d716eaa9ab98ca4b`。本批于2026-09-22推送提交`e345c1f`，创建[PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)，[CI 35699339050](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35699339050)通过；随后合并为`29c81d7`，[main CI35779667669](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779667669)及[Pages35779668154](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779668154)成功。用户安排的CC复审覆盖208/20主体版本；以下最后的收尾验收为214/21。本代理未调用或调度CC。
 
 > 下文描述第五批自身的实现和验收。resize保持手动视角由[第六批](../2026-09-22/batch-6.md)单独处理，未混入PR #7。
 
 ## 已完成的合并与发布
 
 - 用户授权后，PR #5 以 merge commit 合并为 `622f1e6221ff336f7f6e19f5729d333a88ddbfdd`，保留其提交作为 PR #6 的祖先；#6 随后切换目标到 main，合并为 `be9eb1778638a8c24aa98252d716eaa9ab98ca4b`。没有重写已审核提交。
-- 当前 main 的 [CI 35504681930](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) 与 [Pages 35504682035](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) 成功。Pages 的 `quality / lint-test-build`、`Download verified build`、上传及部署均完成，补上了第四批此前未实跑的同 run 产物交接证据；仍未故意制造远端红色 quality。
-- 真实访问线上 Pages：三台设备正常显示；Start 后时钟、SoC、累计变化；Metrics 中 reference yield、累计估值限定和图表正常，未记录 console error。线上是第二至第四批的 197/18 版本，下面第五批不在其中。
+- 当时 main 的 [CI 35504681930](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) 与 [Pages 35504682035](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) 成功。Pages 的 `quality / lint-test-build`、`Download verified build`、上传及部署均完成，补上了第四批此前未实跑的同 run 产物交接证据；仍未故意制造远端红色 quality。
+- 真实访问线上 Pages：三台设备正常显示；Start 后时钟、SoC、累计变化；Metrics 中 reference yield、累计估值限定和图表正常，未记录 console error。当时线上是第二至第四批的197/18版本；本节记录的是发布前验证。
 
 ## 本批变化
 
@@ -57,7 +57,7 @@ CC复审前尺寸修正构建：应用入口 97.09 kB，图表 352.94 kB，Three
 - 对源文件中的七条实际CatmullRom曲线各取2001点，与PCS/主变实测包围盒再外扩0.15比较，无采样点进入。第一次检查发现Solar→BESS曲线在PCS左上角有一个采样点进入约0.0024；补BESS高位转接点后复验通过。此为路径采样检查，不是连续曲线与所有设备网格的碰撞证明，也不覆盖全部粒子尺寸/任意相机下的遮挡。
 - 开发构建实际检查1280×720、768×1024、390×844、320×640；最大750MWp（6×5）阵列与三设备完整入镜。PCS键盘按钮打开正确卡片，Escape返回其按钮。
 - 尺寸修正阶段Pages子路径生产构建在1280×720验证三模型、PCS标签偏离立线、直接点击柜体打开PCS/MV卡片；拖动检查俯视与接近平视比例，Full site恢复默认构图。在390×844再次设置750MWp，实读Canvas390×844，阵列和设备完整。未记录console error。
-- README、模型资产README、CLAUDE、审计状态与vault五篇同步本次追加修正；当时未提交/发布；目前已本地提交，线上`be9eb17`仍保留旧比例。更系统的标签屏幕尺寸/遮挡管理仍是后续项，手机全景下世界坐标文字仍较小。
+- README、模型资产README、CLAUDE、审计状态与vault五篇同步本次追加修正；当时未提交/发布；随后第五批以PR #7合并并发布，线上已包含新比例。更系统的标签屏幕尺寸/遮挡管理仍是后续项，手机全景下世界坐标文字仍较小。
 
 ## CC复审后的最终收尾（214/21，本地提交）
 
@@ -97,4 +97,4 @@ git ls-files --others --exclude-standard
 
 重点看：共享设备尺度、真实GLB包围盒与基座/间距是否匹配；转接曲线是否避开PCS；透视 fit 与真实站区范围是否匹配；resize 与模拟 tick 的职责是否隔离；Full site 是否仅修改视图；键盘焦点在抽屉、卡片隐藏/重显时是否正确；768/1024 临界布局是否遮挡工具栏。新增文件需要一起审，不能只看 tracked diff。
 
-README、CLAUDE、原审计实施状态、各批次发布指针及 vault 五篇随本轮同步。vault 的 verified/deployed commit 为 `be9eb17`，工作树状态与已发布commit分别记录。多日 AUTO 的留电目标、累计价值拆分、加载占位、标签和能流图例仍保留后续计划。
+README、CLAUDE、原审计实施状态、各批次发布指针及 vault 五篇随本轮同步。该阶段vault把工作树状态与已发布commit分别记录；最新提交和部署指针见vault当前frontmatter。多日 AUTO 的留电目标、累计价值拆分、加载占位、标签和能流图例仍保留后续计划。
