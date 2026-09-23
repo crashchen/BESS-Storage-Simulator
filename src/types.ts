@@ -60,11 +60,16 @@ export interface GridState {
     currentPriceEurMwh: number;
     cumulativeRevenueEur: number;
     cumulativeBessMarginEur: number;
-    // Auditable breakdowns:
-    //   Project P&L = solarExportRevenue + bessDischargeRevenue − bessGridChargeCost
-    //   BESS Margin = bessDischargeRevenue − bessGridChargeCost − solarOpportunityCost
+    // Demo totals include a tariff-based assumption for restoring otherwise
+    // unserved load; they are not statements of realized project cash flow.
+    //   Project value = solarExportRevenue + dischargeValue − gridChargeCost
+    //   BESS margin = dischargeValue − gridChargeCost − solarOpportunityCost
     cumulativeSolarExportRevenueEur: number;
+    /** Historical aggregate: export + avoided imports + assumed restored load. */
     cumulativeBessDischargeRevenueEur: number;
+    cumulativeBessExportRevenueEur: number;
+    cumulativeBessAvoidedImportCostEur: number;
+    cumulativeBessRestoredLoadAssumedValueEur: number;
     cumulativeBessGridChargeCostEur: number;
     cumulativeSolarOpportunityCostEur: number;
 }

@@ -147,6 +147,9 @@ describe('S1 — auditable P&L breakdown', () => {
         const s = createInitialGridState(0);
         expect(s.cumulativeSolarExportRevenueEur).toBe(0);
         expect(s.cumulativeBessDischargeRevenueEur).toBe(0);
+        expect(s.cumulativeBessExportRevenueEur).toBe(0);
+        expect(s.cumulativeBessAvoidedImportCostEur).toBe(0);
+        expect(s.cumulativeBessRestoredLoadAssumedValueEur).toBe(0);
         expect(s.cumulativeBessGridChargeCostEur).toBe(0);
         expect(s.cumulativeSolarOpportunityCostEur).toBe(0);
     });
@@ -157,6 +160,9 @@ describe('S1 — auditable P&L breakdown', () => {
             cumulativeBessMarginEur: 567,
             cumulativeSolarExportRevenueEur: 1000,
             cumulativeBessDischargeRevenueEur: 500,
+            cumulativeBessExportRevenueEur: 100,
+            cumulativeBessAvoidedImportCostEur: 200,
+            cumulativeBessRestoredLoadAssumedValueEur: 200,
             cumulativeBessGridChargeCostEur: 200,
             cumulativeSolarOpportunityCostEur: 50,
         });
@@ -165,6 +171,9 @@ describe('S1 — auditable P&L breakdown', () => {
         expect(next.cumulativeBessMarginEur).toBe(0);
         expect(next.cumulativeSolarExportRevenueEur).toBe(0);
         expect(next.cumulativeBessDischargeRevenueEur).toBe(0);
+        expect(next.cumulativeBessExportRevenueEur).toBe(0);
+        expect(next.cumulativeBessAvoidedImportCostEur).toBe(0);
+        expect(next.cumulativeBessRestoredLoadAssumedValueEur).toBe(0);
         expect(next.cumulativeBessGridChargeCostEur).toBe(0);
         expect(next.cumulativeSolarOpportunityCostEur).toBe(0);
     });
@@ -209,6 +218,11 @@ describe('H6 — 24h auto-arb smoke run stays finite and reconciles', () => {
             - state.cumulativeBessGridChargeCostEur
             - state.cumulativeSolarOpportunityCostEur,
         ).toBeCloseTo(state.cumulativeBessMarginEur, 4);
+        expect(
+            state.cumulativeBessExportRevenueEur
+            + state.cumulativeBessAvoidedImportCostEur
+            + state.cumulativeBessRestoredLoadAssumedValueEur,
+        ).toBeCloseTo(state.cumulativeBessDischargeRevenueEur, 4);
     });
 });
 

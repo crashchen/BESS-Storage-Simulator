@@ -26,7 +26,7 @@ An interactive utility-scale solar PV + BESS simulator for a Romania project bas
 - **Project Capacity Setup**: Edit solar AC/DC capacity, PV evacuation, and BESS interconnection live to model any project, not just the Romania baseline
 - **Price Scenarios**: Edit wholesale price windows, including negative-price scenarios
 - **Live Metrics**: Track SoC, solar output, grid demand, BESS power, grid import/export, and PCC overload
-- **P&L Tracking**: Project P&L, BESS margin, curtailment, import/export, and energy flow analysis
+- **Demo Value Tracking**: Project and BESS demo totals, cumulative export revenue, avoided import cost, assumed restored-load value, curtailment, and energy flow analysis
 - **3D Visualization**: Interactive Three.js scene with animated energy flow particles through PV, BESS, PCS/MV, and Grid Node assets; the BESS container, PCS-MV skid, and grid transformer render from supplier-neutral GLB equipment models
 - **Overload Warnings**: PCC overload is surfaced in the economics panel and highlighted in the 3D grid/load area
 - **Collapsible UI**: Desktop slide-out drawers can be opened together; entering a narrow viewport keeps only the most recently opened drawer. Metrics, and either drawer on narrow screens, take priority over equipment cards; clicking equipment closes the drawers and opens its pinned card.
@@ -119,13 +119,13 @@ src/
                                  evacuation), and DispatchParameters (grid dispatch scale)
       ScenarioPresetsPanel.tsx   Demo preset launcher (currently disabled in ControlPanel)
       MetricsPanel.tsx           Project specifications
-      EconomicsPanel.tsx         Tariff editor + P&L / settlement breakdown
+      EconomicsPanel.tsx         Tariff editor + demo-value settlement breakdown
     ui/
       PanelPrimitives.tsx        Reusable UI (Gauge, ActionButton, NumericField, PanelCard)
   utils/
     gridReducer.ts               Pure BESSCommand reducer; emits ReducerResult with side-effects
     tickEngine.ts                Deterministic tick: clock/energy events + AUTO pacing integration
-    simulationModel.ts           Active-power settlement, solar/demand models, P&L math
+    simulationModel.ts           Active-power settlement, solar/demand models, demo-value math
     energyFlowTelemetry.ts       Display-only: GridState → 7 visible energy flows
     sceneFlowVisuals.ts          Shared scene/legend flow colors
     bessDisplay.ts               Display-only: sampled BESS action, run state, dispatch intent, known limits
@@ -139,10 +139,10 @@ src/
 ## Notes
 
 - The baseline numbers intentionally follow the provided project screenshot, including the displayed `188 MW / 744 MWh` BESS configuration.
-- `Project P&L` and `BESS Margin` are intentionally separated:
-  - `Project P&L` = direct PV sales + BESS discharge value − grid-paid charging cost.
-  - `BESS Margin` = BESS discharge value − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
-  - `BESS discharge value` prices exports and all local supply at the tariff when settled. Local supply can reduce actual grid imports or serve demand that would otherwise remain unserved at the PCC limit. The latter is an assumed value at that tariff, not avoided imports or export revenue; it can be negative at negative prices. The cumulative totals do not separate these contributions, so this limitation stays visible even after an overload ends.
+- `Project demo value` and `BESS demo margin` retain the earlier arithmetic but are labelled as modelled values, not realized project cash flow:
+  - `Project demo value` = direct PV sales + BESS discharge value − grid-paid charging cost.
+  - `BESS demo margin` = BESS discharge value − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
+  - `BESS discharge value` now has three cumulative parts: BESS export revenue, cost avoided by **actual** lower grid imports, and assumed value for restoring load that the PCC import cap would otherwise leave unserved. All three use the settlement-time tariff, including negative prices. The last part is an illustrative assumption, not export revenue or an avoided import; both totals include it. Export and avoided-cost rows are tariff-based estimates, not a complete financial forecast.
 - The current dispatch model intentionally focuses on **Energy Arbitrage + Self-consumption** using active power only. It does not model FCR, frequency response, voltage control, protection trips, or AC transient dynamics.
 - Local supply/demand gaps are represented as grid import/export at the PCC. Actual imports are capped at the configured PCC limit; `PCC Overload` is the remaining unserved demand, not actual imports above that limit.
 - The annual yield reference is a baseline project input for context. The current daily solar curve is illustrative, has no annual calibration, and does not provide an annual forecast.
