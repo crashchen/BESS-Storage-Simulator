@@ -168,6 +168,26 @@ describe('simulationModel settlement', () => {
         expect(settlement.bessDischargeRevenueDeltaEur).toBe(5000);
     });
 
+    it('allows export, avoided-import and restored-load values to be negative at a negative tariff', () => {
+        const input = {
+            solarOutputMw: 0,
+            gridPvEvacuationMw: 102,
+            gridConnectionLimitMw: 288,
+            batteryPowerMw: -30,
+            currentPriceEurMwh: -25,
+            dtHours: 1,
+        };
+        const mixedOverload = settleHybridProjectTick({ ...input, gridDemandMw: 300 });
+        const exportAndSavings = settleHybridProjectTick({ ...input, gridDemandMw: 10 });
+
+        expect(mixedOverload.bessAvoidedImportCostDeltaEur).toBe(-450);
+        expect(mixedOverload.bessRestoredLoadAssumedValueDeltaEur).toBe(-300);
+        expect(mixedOverload.bessDischargeRevenueDeltaEur).toBe(-750);
+        expect(exportAndSavings.bessExportRevenueDeltaEur).toBe(-500);
+        expect(exportAndSavings.bessAvoidedImportCostDeltaEur).toBe(-250);
+        expect(exportAndSavings.bessDischargeRevenueDeltaEur).toBe(-750);
+    });
+
     it('tracks project P&L and BESS margin separately when solar charges the battery', () => {
         const settlement = settleHybridProjectTick({
             solarOutputMw: 80,

@@ -119,13 +119,13 @@ src/
                                  evacuation), and DispatchParameters (grid dispatch scale)
       ScenarioPresetsPanel.tsx   Demo preset launcher (currently disabled in ControlPanel)
       MetricsPanel.tsx           Project specifications
-      EconomicsPanel.tsx         Tariff editor + P&L / settlement breakdown
+      EconomicsPanel.tsx         Tariff editor + demo-value settlement breakdown
     ui/
       PanelPrimitives.tsx        Reusable UI (Gauge, ActionButton, NumericField, PanelCard)
   utils/
     gridReducer.ts               Pure BESSCommand reducer; emits ReducerResult with side-effects
     tickEngine.ts                Deterministic tick: clock/energy events + AUTO pacing integration
-    simulationModel.ts           Active-power settlement, solar/demand models, P&L math
+    simulationModel.ts           Active-power settlement, solar/demand models, demo-value math
     energyFlowTelemetry.ts       Display-only: GridState → 7 visible energy flows
     sceneFlowVisuals.ts          Shared scene/legend flow colors
     bessDisplay.ts               Display-only: sampled BESS action, run state, dispatch intent, known limits

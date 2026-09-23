@@ -1,5 +1,5 @@
 // ============================================================
-// Economics Panel - Tariffs, P&L, and energy flows
+// Economics Panel - Tariffs, demo value, and energy flows
 // ============================================================
 
 import { useState } from 'react';
@@ -208,7 +208,7 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
 
                 <p className="text-[11px] leading-relaxed text-slate-400">
                     Totals include {formatSignedEur(cumulativeBessRestoredLoadAssumedValueEur)} of assumed value for restoring otherwise unserved load.
-                    {' '}Export rows estimate revenue; avoided imports estimate cost savings. Restored load is neither. These demo totals are not realized cash flow.
+                    {' '}All three use the settlement tariff and can be negative. Export and avoided-import rows are estimates; restored load is an assumption, not cash flow. These demo totals are not realized cash flow.
                 </p>
 
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -279,14 +279,14 @@ export function EconomicsPanel({ gridState, onCommand, simulationResetVersion }:
                         {' '}
                         <span className="font-semibold text-sky-300">BESS demo margin</span> = BESS discharge value − grid-paid charging cost − <span className="italic">Solar → BESS</span> opportunity cost (delayed sale value).
                         {' '}
-                        <span className="italic">BESS discharge value</span> separates tariff-priced exports, actual avoided grid imports, and an assumed value for restoring demand beyond the PCC import cap. The last component can be negative at negative tariffs.
+                        <span className="italic">BESS discharge value</span> separates tariff-priced exports, actual avoided grid imports, and an assumed value for restoring demand beyond the PCC import cap. All three use the settlement tariff and can be negative at negative prices; restored load is an assumption, not realized revenue.
                     </p>
                     <div className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 font-mono text-[11px] tabular-nums">
                         <span className="text-slate-400">Solar → Grid revenue</span>
                         <span className="text-emerald-300">{formatSignedEur(cumulativeSolarExportRevenueEur)}</span>
                         <span className="text-slate-400">BESS → Grid export revenue</span>
                         <span className="text-amber-300">{formatSignedEur(cumulativeBessExportRevenueEur)}</span>
-                        <span className="text-slate-400">BESS avoided import cost</span>
+                        <span className="text-slate-400">BESS avoided import value</span>
                         <span className="text-amber-300">{formatSignedEur(cumulativeBessAvoidedImportCostEur)}</span>
                         <span className="text-slate-400">Restored load (assumed)</span>
                         <span className="text-amber-300">{formatSignedEur(cumulativeBessRestoredLoadAssumedValueEur)}</span>

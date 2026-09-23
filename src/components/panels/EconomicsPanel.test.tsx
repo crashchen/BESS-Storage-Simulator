@@ -45,7 +45,8 @@ describe('EconomicsPanel cumulative valuation', () => {
         const assumption = screen.getByText(/Totals include \+€10500 of assumed value/);
         expect(breakdown).not.toHaveAttribute('open');
         expect(assumption).toBeVisible();
-        expect(assumption).toHaveTextContent('Restored load is neither');
+        expect(assumption).toHaveTextContent('All three use the settlement tariff and can be negative');
+        expect(assumption).toHaveTextContent('restored load is an assumption, not cash flow');
         expect(screen.getAllByText('Project demo value')[0]).toBeVisible();
         fireEvent.click(within(breakdown as HTMLElement).getByText('Settlement Breakdown (auditable)'));
         expect(within(breakdown as HTMLElement).getByText('Restored load (assumed)').nextElementSibling).toHaveTextContent('+€10500');
@@ -77,7 +78,7 @@ describe('EconomicsPanel cumulative valuation', () => {
         fireEvent.click(within(breakdown).getByText('Settlement Breakdown (auditable)'));
         for (const [label, value] of [
             ['BESS → Grid export revenue', '+€2000'],
-            ['BESS avoided import cost', '+€3000'],
+            ['BESS avoided import value', '+€3000'],
             ['Restored load (assumed)', '+€1000'],
             ['BESS discharge value (sum of 3 rows)', '+€6000'],
         ]) {

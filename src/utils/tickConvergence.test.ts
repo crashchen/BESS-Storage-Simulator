@@ -29,12 +29,29 @@ function runWithLedger(state: GridState, hours: number, maxRealStep: number) {
     const ledger = { hours: 0, solarCharge: 0, gridCharge: 0, dischargeLoad: 0, dischargeExport: 0,
         pvExport: 0, curtailment: 0, gridImport: 0, gridExport: 0, solar: 0, demand: 0, solarLoad: 0,
         unserved: 0, pvRevenue: 0, dischargeValue: 0, bessExportRevenue: 0,
-        avoidedImportCost: 0, restoredLoadAssumedValue: 0, gridCost: 0, opportunityCost: 0 };
+        avoidedImportCost: 0, restoredLoadAssumedValue: 0, gridCost: 0, opportunityCost: 0,
+        overloadDischargeDays: new Set<number>(), pureRestoredSegments: 0 };
     const settle = model.settleHybridProjectTick;
     const observer = vi.spyOn(model, 'settleHybridProjectTick').mockImplementation(input => {
         const result = settle(input);
         const h = input.dtHours;
         if (h > 0) {
+            // Derive the economic split independently from baseline import and
+            // unserved-load deltas. Do not reuse the three fields under test.
+            const pccLimitMw = Math.max(0, input.gridConnectionLimitMw ?? input.gridPvEvacuationMw);
+            const unmetAfterSolarMw = Math.max(0, input.gridDemandMw - input.solarOutputMw);
+            const baselineImportMw = Math.min(pccLimitMw, unmetAfterSolarMw);
+            const baselineOverloadMw = Math.max(0, unmetAfterSolarMw - pccLimitMw);
+            const avoidedImportMw = Math.max(0, baselineImportMw - result.gridImportMw);
+            const restoredLoadMw = Math.max(0, baselineOverloadMw - result.gridOverloadMw);
+            expect(avoidedImportMw + restoredLoadMw).toBeCloseTo(result.batteryDischargeToLoadMw, 7);
+            expect(result.bessExportRevenueDeltaEur).toBeCloseTo(result.batteryDischargeToExportMw * h * input.currentPriceEurMwh, 7);
+            expect(result.bessAvoidedImportCostDeltaEur).toBeCloseTo(avoidedImportMw * h * input.currentPriceEurMwh, 7);
+            expect(result.bessRestoredLoadAssumedValueDeltaEur).toBeCloseTo(restoredLoadMw * h * input.currentPriceEurMwh, 7);
+            if (baselineOverloadMw > 1e-9 && result.batteryDischargeToLoadMw > 1e-9) {
+                ledger.overloadDischargeDays.add(Math.floor((state.timeOfDay + ledger.hours) / 24));
+                if (avoidedImportMw < 1e-9 && restoredLoadMw > 1e-9) ledger.pureRestoredSegments += 1;
+            }
             ledger.hours += h;
             ledger.solarCharge += result.batteryChargeFromSolarMw * h;
             ledger.gridCharge += result.batteryChargeFromGridMw * h;
@@ -50,9 +67,9 @@ function runWithLedger(state: GridState, hours: number, maxRealStep: number) {
             ledger.unserved += result.gridOverloadMw * h;
             ledger.pvRevenue += result.solarExportMw * h * input.currentPriceEurMwh;
             ledger.dischargeValue += (result.batteryDischargeToLoadMw + result.batteryDischargeToExportMw) * h * input.currentPriceEurMwh;
-            ledger.bessExportRevenue += result.bessExportRevenueDeltaEur;
-            ledger.avoidedImportCost += result.bessAvoidedImportCostDeltaEur;
-            ledger.restoredLoadAssumedValue += result.bessRestoredLoadAssumedValueDeltaEur;
+            ledger.bessExportRevenue += result.batteryDischargeToExportMw * h * input.currentPriceEurMwh;
+            ledger.avoidedImportCost += avoidedImportMw * h * input.currentPriceEurMwh;
+            ledger.restoredLoadAssumedValue += restoredLoadMw * h * input.currentPriceEurMwh;
             ledger.gridCost += result.batteryChargeFromGridMw * h * input.currentPriceEurMwh;
             const baselineExport = Math.min(Math.max(0, input.solarOutputMw - input.gridDemandMw), input.gridPvEvacuationMw, input.gridConnectionLimitMw!);
             ledger.opportunityCost += Math.max(0, baselineExport - result.solarExportMw) * h * input.currentPriceEurMwh;
@@ -87,6 +104,24 @@ function expectClose(actual: GridState, reference: GridState, euros: number, soc
 }
 
 describe('energy-event integration', () => {
+    it('reconciles independently derived value across three days with overload on multiple days', () => {
+        const start = initial({
+            timeOfDay: 18,
+            dispatchMode: 'manual-discharge',
+            batterySocPercent: 100,
+            batteryPowerRatingMw: 20,
+            gridBessConnectionMw: 20,
+            dispatchScalePercent: 150,
+        });
+        const { final, ledger } = runWithLedger(start, 72, 0.1);
+
+        expect(final.timeOfDay).toBeCloseTo(18, 7);
+        expect(ledger.overloadDischargeDays.size).toBeGreaterThanOrEqual(2);
+        expect(ledger.pureRestoredSegments).toBeGreaterThan(0);
+        expect(ledger.restoredLoadAssumedValue).toBeGreaterThan(0);
+        expect(ledger.avoidedImportCost).toBeGreaterThan(0);
+    });
+
     it.each([150, -25])('settles the small-battery charge boundary consistently at %s EUR/MWh', price => {
         const start = initial({ timeOfDay: 12, dispatchMode: 'manual-charge', gridPvEvacuationMw: 5,
             batteryEnergyCapacityMwh: 10, batterySocPercent: 80, dispatchScalePercent: 50,
