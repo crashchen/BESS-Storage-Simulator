@@ -9,7 +9,7 @@
 
 **第九批（CC两轮复审完成，已发布）**：用户倾向晚高峰优先；[PR #14](https://github.com/crashchen/BESS-Storage-Simulator/pull/14)合并为`dd3df1d`，仅在晚峰价差覆盖充放电效率、12%保留和峰段配速余量的估计价值时，才将夜间40%目标延续至白天肩段。CC首轮指出弱价差反而亏损；第二轮确认闭式门槛与独立三日对照。[main CI 35976088474](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35976088474)与[Pages 35976088804](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35976088804)成功，线上Controls的40%目标与价差说明已点检。同初末SoC对照、过载时的假设价值取舍和20 MW限幅例外见[第九批记录](../2026-09-23/batch-9.md)。原审计及已发布批次的证据不因该发布而改写。
 
-**第十批（待复审候选）**：Controls 显示与 AUTO 判断共用公式的晚峰临界价，并对超出可编辑价格范围的情形作出提示。当前仅完成本地测试和浏览器点检，尚未合并或部署；见[第十批记录](../2026-09-24/batch-10.md)。
+**第十批（已发布）**：Controls 显示与 AUTO 判断共用公式的晚峰临界价，并对无法在可编辑价格范围内越过门槛的情形作出提示。用户安排的CC复审无阻塞；四处小修正后[PR #16](https://github.com/crashchen/BESS-Storage-Simulator/pull/16)合并为`c4a467a`，[main CI 35982356235](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356235)与[Pages 35982356587](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356587)成功。线上Controls默认约€178.78/MWh及PCC限定语已点检，未观察到console error；见[第十批记录](../2026-09-24/batch-10.md)。
 
 **总体判断**
 
@@ -143,8 +143,8 @@ vault中的2026-07-17“9条audit全在dev”是历史记录，可以保留；�
 | 7：场景辨识与加载反馈（PR #10，已发布） | 固定屏幕字号的设备标签、能流图例、三GLB轮廓占位及图表加载骨架；修复CC发现的标签点击、HUD层级、竖屏/矮横屏重叠及Grid过载颜色 | 本轮完成 | 223/21、lint/build；PCS标签点击、过载红色、竖横屏宽度及慢速资产加载见第七批记录；main CI/Pages通过 |
 | 8：累计价值拆分（PR #12，已发布） | BESS出口、实际避免进口和恢复未供负荷的假设价值逐子步累计；旧总额不改；两张主卡明确为演示价值 | 收尾完成 | 230/21、lint/Pages build；独立拆分不变式和72h过载回归；CC另核8场景及浏览器金额；`20dadaf`同提交main CI/Pages成功，线上明细点检通过，详见[第八批记录](../2026-09-23/batch-8.md) |
 | 9：多日AUTO晚峰留电（PR #14，已发布） | 夜间40%目标仅在价差覆盖效率、12%保留与峰段余量时延续到肩段；手动及结算不变 | 已发布 | 257/22、Node24 lint/Pages build；CC二次复审、main CI/Pages、同初末SoC三日对照及局限见[第九批记录](../2026-09-23/batch-9.md)；演示值增量不能视为现金收入 |
-| 10：晚峰留电临界价显示（待复审） | Controls从AUTO同一函数显示约数；超出可编辑电价范围时提示；策略与结算不变 | 本轮候选 | Node24 lint/260个测试/Pages build；默认价、临界价两侧和极端电价测试见[第十批记录](../2026-09-24/batch-10.md) |
-| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第八批PR #12、第九批PR #14已发布；横屏图例、Grid标签点击、NumericField Reset列为独立待办 | 随批次同步 | 文档记录核对日期、commit、检查与部署run；历史drift清单不等于当前全部未修；未完成项保留清单 |
+| 10：晚峰留电临界价显示（PR #16，已发布） | Controls从AUTO同一函数显示约数；无法越过可编辑电价上限时提示；策略与结算不变 | 已发布 | Node24 lint/260个测试/Pages build；用户安排CC复审、main CI/Pages成功及线上默认价点检见[第十批记录](../2026-09-24/batch-10.md) |
+| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第八至十批均已发布；横屏图例、Grid标签点击、NumericField Reset列为独立待办 | 随批次同步 | 文档记录核对日期、commit、检查与部署run；历史drift清单不等于当前全部未修；未完成项保留清单 |
 
 第七批后续待办独立于本次合并：640/667px矮横屏图例遮挡SOLAR ARRAY（P3）、Grid标签横移后点标签不能选中设备（P3）、`NumericField`容量草稿在Reset后可回填并于失焦重新提交旧值（P2）。复现、影响与验收入口见[第七批记录](../2026-09-22/batch-7.md)；最后一项是既有功能缺陷，应在独立改动中配“改值→Reset→失焦”测试。
 
