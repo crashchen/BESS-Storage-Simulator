@@ -27,6 +27,8 @@ describe('BessDispatchControl active-power copy', () => {
         expect(screen.getByText('Dispatch status')).toBeInTheDocument();
         expect(screen.getByText(`Peak entry target ${AUTO_ARB.peakEntryTargetSocPercent.toFixed(0)}%`)).toBeInTheDocument();
         expect(screen.getByText(/auto discharge is locked out/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('AUTO evening hold threshold')).toHaveTextContent('peak tariff above about €178.78/MWh');
+        expect(screen.getByLabelText('AUTO evening hold threshold')).toHaveTextContent('Tariff-only estimate');
     });
 
     it('labels the overnight target without promising peak entry when the price gate is off', () => {
@@ -38,6 +40,26 @@ describe('BessDispatchControl active-power copy', () => {
 
         expect(screen.getByText('Night charge target 40%')).toBeInTheDocument();
         expect(screen.queryByText('Peak entry target 40%')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('AUTO evening hold threshold')).toHaveTextContent('peak tariff above about €178.78/MWh');
+    });
+
+    it('updates the estimated crossover with tariffs and explains when it is unreachable', () => {
+        const { rerender } = renderDispatchControl({
+            tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 150, peak: 178.5 },
+        });
+        expect(screen.getByText('Night charge target 40%')).toBeInTheDocument();
+
+        rerender(<BessDispatchControl gridState={makeGridState({
+            tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 150, peak: 178.8 },
+        })} onCommand={vi.fn()} />);
+        expect(screen.getByText('Peak entry target 40%')).toBeInTheDocument();
+        expect(screen.getByLabelText('AUTO evening hold threshold')).toHaveTextContent('peak tariff above about €178.78/MWh');
+
+        rerender(<BessDispatchControl gridState={makeGridState({
+            tariffRatesEurMwh: { 'off-peak': -500, 'mid-peak': 1000, peak: 1000 },
+        })} onCommand={vi.fn()} />);
+        expect(screen.getByText('Night charge target 40%')).toBeInTheDocument();
+        expect(screen.getByLabelText('AUTO evening hold threshold')).toHaveTextContent('No editable peak tariff clears this threshold');
     });
 
     it('surfaces peak export priority copy instead of peak-ready forecast text', () => {
@@ -86,6 +108,7 @@ describe('BessDispatchControl active-power copy', () => {
         expect(screen.getByLabelText('BESS operating status')).toHaveTextContent('Paused snapshot · Idle · 0.0 MW');
         expect(screen.getByText('Selected dispatch: Manual charge')).toBeInTheDocument();
         expect(screen.queryByText(/Peak entry target 40%/)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('AUTO evening hold threshold')).not.toBeInTheDocument();
         expect(screen.getByText(/time and earnings are frozen/)).toBeInTheDocument();
     });
 });
