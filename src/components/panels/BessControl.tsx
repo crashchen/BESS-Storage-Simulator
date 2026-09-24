@@ -7,6 +7,7 @@ import { AUTO_ARB, BESS, GRID, SIMULATION, SOLAR } from '../../config';
 import type { BESSCommand, GridState } from '../../types';
 import { selectBatteryDurationHours, selectGridConnectionTotalMw } from '../../utils/gridSelectors';
 import { selectBessDisplay } from '../../utils/bessDisplay';
+import { shouldHoldForEveningPeak } from '../../utils/autoPolicy';
 import { getBatteryTransferLimitMw } from '../../utils/simulationModel';
 import { ActionButton, Gauge, NumericField, PanelCard } from '../ui/PanelPrimitives';
 
@@ -51,7 +52,7 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
                     <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-300">Dispatch status</p>
                     {dispatchMode === 'auto' && (
                         <span className="font-mono text-xs font-bold text-sky-200">
-                            Night reserve {AUTO_ARB.nightTargetSocPercent.toFixed(0)}%
+                            {shouldHoldForEveningPeak(gridState.tariffRatesEurMwh) ? 'Peak entry target' : 'Night charge target'} {AUTO_ARB.peakEntryTargetSocPercent.toFixed(0)}%
                         </span>
                     )}
                 </div>

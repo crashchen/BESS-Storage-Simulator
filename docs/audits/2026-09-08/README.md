@@ -7,6 +7,8 @@
 
 **实施状态（2026-09-23）**：第一批 PR #4、第二/三批 PR #5、第四批 PR #6 均已发布。第五批的PCS等设备统一尺度、手机全景和键盘入口经[PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7)合并为`29c81d7`，[main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779667669)与[Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779668154)通过，详见[第五批记录](../2026-09-20/batch-5.md)。第六批的手动视角跨resize保持及Full site复位经[PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8)合并为`b5cdf58`，[main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131524)与[Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131948)通过；221/21、lint/Pages build及用户安排的CC主体复审详见[第六批记录](../2026-09-22/batch-6.md)。线上浏览器点检确认PCS比例、手动视角窄屏保持及Full site复位，无控制台error；不是实体手机或GPU故障注入。第七批标签、能流图例与加载占位经[PR #10](https://github.com/crashchen/BESS-Storage-Simulator/pull/10)合并为`2989452`，[main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35789638276)与[Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35789638697)通过；223/21、lint/Pages build、用户安排的CC两轮复审及线上640×360点检见[第七批记录](../2026-09-22/batch-7.md)。第八批累计价值拆分经用户安排的CC复审，收尾后230/21、lint/Pages build通过，[PR #12](https://github.com/crashchen/BESS-Storage-Simulator/pull/12)合并为`20dadaf`，[同提交main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35915896134)与[Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35915896531)成功，线上明细点检通过，见[第八批记录](../2026-09-23/batch-8.md)；多日 AUTO 峰段无剩余电量是基线既有策略问题，单独决策。原始审计行号与各阶段验收证据保留。
 
+**第九批候选（CC首轮复审后收尾，未发布）**：用户倾向晚高峰优先；本地分支`codex/audit-batch-9-peak-priority`仅在晚峰价差覆盖充放电效率、12%保留和峰段配速余量的估计价值时，才将夜间40%目标延续至白天肩段。CC首轮确认原实现但指出弱价差反而亏损；收尾版用闭式门槛并加临界价、负价回归，尚未经CC二次复审。同初末SoC对照及过载时的假设价值取舍见[第九批记录](../2026-09-23/batch-9.md)。原审计及已发布批次的证据不因该候选而改写。
+
 **总体判断**
 
 项目已有清晰的 reducer → tick → settlement 分层和回归测试基础，作为交互演示具备可用性。结合用户提供的 CC 复核与新增正常工况对照，将 SoC 步长问题由 P1 调整为 P2。下一轮优先修太阳板朝向、状态恢复、输入回显与遮挡等直接影响演示的问题，再澄清口径、修数值边界、完善工程韧性。模型定位为视觉演示，收益应按已声明的简化假设理解。
@@ -138,7 +140,8 @@ vault中的2026-07-17“9条audit全在dev”是历史记录，可以保留；�
 | 6：resize视角保持（PR #8，已合并发布） | 手动视角跨尺寸变化保留；Full site恢复自动构图；无移动点击不关闭自动构图 | 本轮完成 | 221/21、lint/build；真实鼠标拖动/滚轮与响应式预览、CC复审及阻尼回漂补测见第六批记录；main CI/Pages通过 |
 | 7：场景辨识与加载反馈（PR #10，已发布） | 固定屏幕字号的设备标签、能流图例、三GLB轮廓占位及图表加载骨架；修复CC发现的标签点击、HUD层级、竖屏/矮横屏重叠及Grid过载颜色 | 本轮完成 | 223/21、lint/build；PCS标签点击、过载红色、竖横屏宽度及慢速资产加载见第七批记录；main CI/Pages通过 |
 | 8：累计价值拆分（PR #12，已发布） | BESS出口、实际避免进口和恢复未供负荷的假设价值逐子步累计；旧总额不改；两张主卡明确为演示价值 | 收尾完成 | 230/21、lint/Pages build；独立拆分不变式和72h过载回归；CC另核8场景及浏览器金额；`20dadaf`同提交main CI/Pages成功，线上明细点检通过，详见[第八批记录](../2026-09-23/batch-8.md) |
-| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第八批PR #12已发布；横屏图例、Grid标签点击及NumericField Reset列为独立待办；多日AUTO策略单独决策 | 随批次同步 | 文档记录核对日期、commit、检查与部署run；历史drift清单不等于当前全部未修；未完成项保留清单 |
+| 9：多日AUTO晚峰留电（CC首轮复审后收尾） | 夜间40%目标仅在价差覆盖效率、12%保留与峰段余量时延续到肩段；手动及结算不变 | 本轮已实现，待二次复审 | 257/22、Node24 lint/Pages build；同初末SoC三日对照、178.5/178.8临界价、负价、40%事件拆步与三日收敛见[第九批记录](../2026-09-23/batch-9.md)；演示值增量不能视为现金收入 |
+| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第八批PR #12已发布，第九批本地待复审；横屏图例、Grid标签点击及NumericField Reset列为独立待办 | 随批次同步 | 文档记录核对日期、commit、检查与部署run；历史drift清单不等于当前全部未修；未完成项保留清单 |
 
 第七批后续待办独立于本次合并：640/667px矮横屏图例遮挡SOLAR ARRAY（P3）、Grid标签横移后点标签不能选中设备（P3）、`NumericField`容量草稿在Reset后可回填并于失焦重新提交旧值（P2）。复现、影响与验收入口见[第七批记录](../2026-09-22/batch-7.md)；最后一项是既有功能缺陷，应在独立改动中配“改值→Reset→失焦”测试。
 

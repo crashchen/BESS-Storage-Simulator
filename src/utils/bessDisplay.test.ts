@@ -115,11 +115,25 @@ describe('BESS display policy and known constraints', () => {
         [{ dispatchMode: 'manual-discharge', batterySocPercent: 0 }, /Battery empty/],
         [{ dispatchMode: 'manual-idle', batterySocPercent: 100 }, /Manual idle selected/],
         [{ dispatchMode: 'auto', tariffPeriod: 'peak', batterySocPercent: AUTO_ARB.peakReserveSocPercent }, /peak reserve/],
-        [{ dispatchMode: 'auto', tariffPeriod: 'off-peak', batterySocPercent: 40, solarOutputMw: 0 }, /Night reserve target met/],
+        [{ dispatchMode: 'auto', tariffPeriod: 'off-peak', batterySocPercent: 40, solarOutputMw: 0 }, /Off-peak charge target met/],
+        [{ dispatchMode: 'auto', tariffPeriod: 'mid-peak', batterySocPercent: 40,
+            solarOutputMw: 0, gridDemandMw: 100 }, /no shoulder discharge/],
         [{ dispatchMode: 'auto', tariffPeriod: 'mid-peak', batterySocPercent: 100, solarOutputMw: 200, gridDemandMw: 100 }, /Battery full/],
         [{ dispatchMode: 'manual-charge', gridBessConnectionMw: 0 }, /transfer capacity is 0 MW/],
     ] satisfies [Partial<GridState>, RegExp][])('describes a known zero-power condition: %j', (overrides, note) => {
         expect(selectBessDisplay(runningState(overrides)).readingNote).toMatch(note);
+    });
+
+    it('explains the conditional shoulder hold', () => {
+        const state = runningState({ dispatchMode: 'auto', tariffPeriod: 'mid-peak',
+            batterySocPercent: AUTO_ARB.peakEntryTargetSocPercent, solarOutputMw: 0, gridDemandMw: 100 });
+        expect(selectBessDisplay(state).policyText).toMatch(/hold 40% SoC for the evening peak/);
+        const reversed = { ...state, tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 350, peak: 150 } };
+        expect(selectBessDisplay(reversed).policyText).toMatch(/no daytime peak hold/);
+        expect(selectBessDisplay(reversed).readingNote).not.toMatch(/no shoulder discharge/);
+        const insufficientSpread = { ...state, tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 150, peak: 175 } };
+        expect(selectBessDisplay(insufficientSpread).policyText).toMatch(/spread does not clear/);
+        expect(selectBessDisplay(insufficientSpread).readingNote).not.toMatch(/no shoulder discharge/);
     });
 
     it.each([

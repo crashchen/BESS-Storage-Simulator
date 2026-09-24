@@ -1,6 +1,7 @@
 import { AUTO_ARB } from '../config';
 import type { BatteryMode, DispatchMode, GridState } from '../types';
 import { getBatteryTransferLimitMw } from './simulationModel';
+import { shouldHoldForEveningPeak } from './autoPolicy';
 
 // Match the existing one-decimal MW readouts and visible-flow deadband. This
 // affects presentation only; the engine retains its full-precision sample.
@@ -33,9 +34,12 @@ function getPolicyText(state: GridState): string {
                 return `AUTO policy: pace discharge across the peak window, retaining a ${AUTO_ARB.peakReserveSocPercent}% SoC reserve. PV export has priority at the PCC.`;
             }
             if (state.tariffPeriod === 'off-peak') {
-                return `AUTO policy: charge toward ${AUTO_ARB.nightTargetSocPercent}% SoC from PV/grid; auto discharge is locked out. Above the target, only PV surplus requests charging.`;
+                return `AUTO policy: charge toward ${AUTO_ARB.peakEntryTargetSocPercent}% SoC from PV/grid; auto discharge is locked out. Above the target, only PV surplus requests charging.`;
             }
-            return 'AUTO policy: charge from PV surplus or discharge to serve local demand; otherwise hold idle.';
+            if (shouldHoldForEveningPeak(state.tariffRatesEurMwh)) {
+                return `AUTO policy: charge from PV surplus and hold ${AUTO_ARB.peakEntryTargetSocPercent}% SoC for the evening peak; the tariff spread clears the estimated efficiency and reserve hurdle. Only energy above the target serves local demand.`;
+            }
+            return 'AUTO policy: charge from PV surplus or discharge to serve local demand; no daytime peak hold because the tariff spread does not clear the estimated efficiency and reserve hurdle.';
     }
 }
 
@@ -58,11 +62,14 @@ function getReadingNote(state: GridState, displayedPowerMw: number): string | nu
     const isAuto = state.dispatchMode === 'auto';
     const requestsCharge = state.dispatchMode === 'manual-charge' || (isAuto && (
         state.tariffPeriod === 'off-peak'
-            ? state.batterySocPercent < AUTO_ARB.nightTargetSocPercent || solarSurplusMw > 0
+            ? state.batterySocPercent < AUTO_ARB.peakEntryTargetSocPercent || solarSurplusMw > 0
             : state.tariffPeriod === 'mid-peak' && solarSurplusMw > 0
     ));
+    const holdForPeak = isAuto && state.tariffPeriod === 'mid-peak'
+        && shouldHoldForEveningPeak(state.tariffRatesEurMwh);
     const requestsDischarge = state.dispatchMode === 'manual-discharge' || (isAuto && (
-        state.tariffPeriod === 'peak' || (state.tariffPeriod === 'mid-peak' && loadDeficitMw > 0)
+        state.tariffPeriod === 'peak' || (state.tariffPeriod === 'mid-peak' && loadDeficitMw > 0
+            && (!holdForPeak || state.batterySocPercent > AUTO_ARB.peakEntryTargetSocPercent))
     ));
 
     if (requestsCharge && state.batterySocPercent >= 100 - SOC_EPSILON) {
@@ -74,8 +81,12 @@ function getReadingNote(state: GridState, displayedPowerMw: number): string | nu
     if (isAuto && state.tariffPeriod === 'peak' && state.batterySocPercent <= AUTO_ARB.peakReserveSocPercent) {
         return `At or below the ${AUTO_ARB.peakReserveSocPercent}% peak reserve; AUTO requests no further discharge.`;
     }
-    if (isAuto && state.tariffPeriod === 'off-peak' && state.batterySocPercent >= AUTO_ARB.nightTargetSocPercent && solarSurplusMw === 0) {
-        return 'Night reserve target met; AUTO discharge is locked out.';
+    if (isAuto && state.tariffPeriod === 'off-peak' && state.batterySocPercent >= AUTO_ARB.peakEntryTargetSocPercent && solarSurplusMw === 0) {
+        return 'Off-peak charge target met; AUTO discharge is locked out overnight.';
+    }
+    if (holdForPeak && loadDeficitMw > 0 && solarSurplusMw === 0
+        && state.batterySocPercent <= AUTO_ARB.peakEntryTargetSocPercent) {
+        return `At or below the ${AUTO_ARB.peakEntryTargetSocPercent}% evening target; AUTO requests no shoulder discharge.`;
     }
     if (isAuto && state.tariffPeriod === 'mid-peak' && solarSurplusMw === 0 && loadDeficitMw === 0) {
         return 'Solar output and local demand are balanced.';
