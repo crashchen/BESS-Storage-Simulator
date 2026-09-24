@@ -16,6 +16,10 @@ interface BessControlProps {
     onCommand: (cmd: BESSCommand) => void;
 }
 
+const thresholdCurrencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2,
+});
+
 export function BessDispatchControl({ gridState, onCommand }: BessControlProps) {
     const {
         batterySocPercent,
@@ -31,9 +35,7 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
     const gridConnectionTotalMw = selectGridConnectionTotalMw(gridState);
     const bessDisplay = selectBessDisplay(gridState);
     const eveningHoldThreshold = getEveningPeakHoldThresholdEurMwh(gridState.tariffRatesEurMwh);
-    const formattedThreshold = new Intl.NumberFormat('en-US', {
-        style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2,
-    }).format(eveningHoldThreshold);
+    const formattedThreshold = thresholdCurrencyFormatter.format(eveningHoldThreshold);
 
     const batteryTransferLimitMw = getBatteryTransferLimitMw(gridState);
 
@@ -71,12 +73,12 @@ export function BessDispatchControl({ gridState, onCommand }: BessControlProps) 
                     {bessDisplay.policyText}
                 </p>
                 {dispatchMode === 'auto' && (
-                    <p aria-label="AUTO evening hold threshold" className="mt-2 text-[11px] leading-relaxed text-sky-200/80">
+                    <p data-testid="auto-evening-hold-threshold" className="mt-2 text-[11px] leading-relaxed text-sky-200/80">
                         Evening hold needs a peak tariff above about {formattedThreshold}/MWh at current night and shoulder tariffs.
                         {eveningHoldThreshold >= TARIFF.maxRateEurMwh && (
                             <> No editable peak tariff clears this threshold (max €{TARIFF.maxRateEurMwh}/MWh).</>
                         )}
-                        {' '}Tariff-only estimate; load, PV and transfer limits can change demo value.
+                        {' '}Tariff-only estimate; load, PV, PCC and transfer limits can change demo value.
                     </p>
                 )}
                 <div className="mt-2 grid gap-1 text-[11px] text-slate-400">
