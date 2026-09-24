@@ -1,6 +1,6 @@
 # 第十批：AUTO 晚峰留电临界价显示
 
-日期：2026-09-24（Europe/Berlin）。基线为第九批已发布的 main `002ec6f037b51094a3d5d3fd8857a6c52844bd61`；本批是待用户安排复审的候选，尚未合并或部署。本代理没有调用 CC。
+日期：2026-09-24（Europe/Berlin）。基线为第九批已发布的 main `002ec6f037b51094a3d5d3fd8857a6c52844bd61`；第十批经[PR #16](https://github.com/crashchen/BESS-Storage-Simulator/pull/16)合并为`c4a467aa85e0f94ca771bb77577e38738bcea094`并发布。本代理没有调用 CC。
 
 第九批已在 `autoPolicy.ts` 以夜间、肩段和晚峰电价判断是否保留 40% SoC 到晚高峰，但 Controls 只说明“价差未达估算门槛”，用户看不到需要调到多少。本批把原不等式反算为 `getEveningPeakHoldThresholdEurMwh`，AUTO 决策和 Controls 使用同一个函数。默认夜间 €80/MWh、肩段 €150/MWh 时，晚峰需严格高于约 **€178.78/MWh**；界面显示两位小数和“about”，决策仍用未四舍五入的值。反算也包含晚峰价必须高于肩段价的旧条件。
 
@@ -11,3 +11,5 @@ Controls 只在 AUTO 下显示这条解释；手动模式不显示。当反算�
 本地 Pages 子路径预览中，默认 Controls 显示约 €178.78/MWh；将晚峰改为 €178.5/MWh 后，徽章切为“Night charge target 40%”，显示的门槛保持相同。夜间 −€500、肩段/晚峰均 €1000/MWh 时，Controls 显示约 €1,702.38/MWh，并明确提示当前可编辑价格无法触发留电。在真实 320×640 CSS 视口中，较长的极端价格说明正常换行，页面滚动宽度仍为 320px；浏览器 console error 为空。未测实体手机或触摸。浏览器点检只覆盖展示和输入，不等同于多日收益对照；第九批对照脚本和局限仍以[第九批记录](../2026-09-23/batch-9.md)为准。
 
 用户安排的 CC 复审确认 PR #16、CI、默认门槛、共享函数及五篇 vault 笔记的第九批发布状态；还将旧/新决策对拍约 3000 万组价格。差异仅在晚峰价浮点数恰好等于门槛时的乘除法舍入点，按 UI 可输入的 €0.01 粒度未发现行为差异。CC 指出的 PCC 措辞、千位分隔符和格式化器开销已在本分支收尾；新增段落改用测试定位属性，避免给普通段落设置不合规范的 ARIA 名称。该收尾尚未经过 CC 再次浏览器复测。
+
+发布核对：本批两次功能提交`7e117a7`和`8b3a2d9`均带Codex共同作者署名；合并提交`c4a467a`的[main CI 35982356235](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356235)与[Pages 35982356587](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356587)均成功。线上Controls显示默认约€178.78/MWh和包含PCC的限定说明，本次点检期间console error为空。该线上检查没有重做极端电价、触摸或多日运行；这些证据边界不变。
