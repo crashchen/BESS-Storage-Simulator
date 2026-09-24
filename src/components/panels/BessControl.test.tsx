@@ -16,7 +16,7 @@ function renderDispatchControl(overrides = {}) {
 }
 
 describe('BessDispatchControl active-power copy', () => {
-    it('shows AUTO dispatch and the configured night reserve target', () => {
+    it('shows AUTO dispatch and the configured evening entry target', () => {
         renderDispatchControl({
             dispatchMode: 'auto',
             tariffPeriod: 'off-peak',
@@ -25,8 +25,19 @@ describe('BessDispatchControl active-power copy', () => {
 
         expect(screen.getByRole('button', { name: /^auto$/i })).toHaveAttribute('aria-pressed', 'true');
         expect(screen.getByText('Dispatch status')).toBeInTheDocument();
-        expect(screen.getByText(`Night reserve ${AUTO_ARB.nightTargetSocPercent.toFixed(0)}%`)).toBeInTheDocument();
+        expect(screen.getByText(`Peak entry target ${AUTO_ARB.peakEntryTargetSocPercent.toFixed(0)}%`)).toBeInTheDocument();
         expect(screen.getByText(/auto discharge is locked out/i)).toBeInTheDocument();
+    });
+
+    it('labels the overnight target without promising peak entry when the price gate is off', () => {
+        renderDispatchControl({
+            dispatchMode: 'auto',
+            tariffPeriod: 'off-peak',
+            tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 150, peak: 175 },
+        });
+
+        expect(screen.getByText('Night charge target 40%')).toBeInTheDocument();
+        expect(screen.queryByText('Peak entry target 40%')).not.toBeInTheDocument();
     });
 
     it('surfaces peak export priority copy instead of peak-ready forecast text', () => {
@@ -74,7 +85,7 @@ describe('BessDispatchControl active-power copy', () => {
 
         expect(screen.getByLabelText('BESS operating status')).toHaveTextContent('Paused snapshot · Idle · 0.0 MW');
         expect(screen.getByText('Selected dispatch: Manual charge')).toBeInTheDocument();
-        expect(screen.queryByText(/Night reserve 40%/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Peak entry target 40%/)).not.toBeInTheDocument();
         expect(screen.getByText(/time and earnings are frozen/)).toBeInTheDocument();
     });
 });

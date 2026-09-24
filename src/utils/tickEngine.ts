@@ -10,6 +10,7 @@ import {
     settleHybridProjectTick,
 } from './simulationModel';
 import { selectGridConnectionTotalMw } from './gridSelectors';
+import { shouldHoldForEveningPeak } from './autoPolicy';
 
 export function createInitialGridState(timestamp = 0): GridState {
     const gridConnectionTotalMw = GRID.pvEvacuationMw + GRID.bessConnectionMw;
@@ -135,7 +136,7 @@ function getAutoDesiredBatteryPowerMw(
     const solarSurplusMw = Math.max(0, solarOutputMw - gridDemandMw);
     const loadDeficitMw = Math.max(0, gridDemandMw - solarOutputMw);
     const currentEnergyMwh = (state.batterySocPercent / 100) * state.batteryEnergyCapacityMwh;
-    const nightTargetEnergyMwh = (AUTO_ARB.nightTargetSocPercent / 100) * state.batteryEnergyCapacityMwh;
+    const peakEntryTargetEnergyMwh = (AUTO_ARB.peakEntryTargetSocPercent / 100) * state.batteryEnergyCapacityMwh;
 
     if (tariffPeriod === 'peak') {
         // Pace discharge across the remaining peak window instead of dumping
@@ -163,7 +164,7 @@ function getAutoDesiredBatteryPowerMw(
 
     if (tariffPeriod === 'off-peak') {
         if (state.batterySocPercent >= 100) return 0;
-        if (currentEnergyMwh < nightTargetEnergyMwh) {
+        if (currentEnergyMwh < peakEntryTargetEnergyMwh) {
             // Request physical power until the target event. Averaging the
             // remaining reserve energy over dt changes PV/grid attribution.
             return transferLimitMw;
@@ -175,7 +176,11 @@ function getAutoDesiredBatteryPowerMw(
         return Math.min(solarSurplusMw, transferLimitMw);
     }
 
-    if (loadDeficitMw > 0 && currentEnergyMwh > 0) {
+    // Preserve the overnight target only when the estimated peak price spread
+    // pays for efficiency losses and the bottom reserve's lost shoulder value.
+    const holdForPeak = shouldHoldForEveningPeak(state.tariffRatesEurMwh);
+    const shoulderFloorMwh = holdForPeak ? peakEntryTargetEnergyMwh : 0;
+    if (loadDeficitMw > 0 && currentEnergyMwh > shoulderFloorMwh) {
         return -Math.min(loadDeficitMw, transferLimitMw);
     }
 
@@ -267,13 +272,18 @@ function storedEnergyRateMw(powerMw: number): number {
 function getEnergyBoundarySoc(prev: GridState, sample: ReturnType<typeof sampleStep>): number {
     if (sample.powerMw > 0) {
         if (prev.dispatchMode === 'auto' && sample.tariffPeriod === 'off-peak'
-            && prev.batterySocPercent < AUTO_ARB.nightTargetSocPercent) {
-            return AUTO_ARB.nightTargetSocPercent;
+            && prev.batterySocPercent < AUTO_ARB.peakEntryTargetSocPercent) {
+            return AUTO_ARB.peakEntryTargetSocPercent;
         }
         return 100;
     }
-    return prev.dispatchMode === 'auto' && sample.tariffPeriod === 'peak'
-        ? AUTO_ARB.peakReserveSocPercent : 0;
+    if (prev.dispatchMode === 'auto') {
+        if (sample.tariffPeriod === 'peak') return AUTO_ARB.peakReserveSocPercent;
+        if (sample.tariffPeriod === 'mid-peak' && shouldHoldForEveningPeak(prev.tariffRatesEurMwh)) {
+            return AUTO_ARB.peakEntryTargetSocPercent;
+        }
+    }
+    return 0;
 }
 
 function findEnergyStep(prev: GridState, maxHours: number) {

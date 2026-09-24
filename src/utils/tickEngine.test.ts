@@ -162,7 +162,7 @@ describe('tickEngine', () => {
         expect(afterClamp.batteryPowerMw).toBe(0);
     });
 
-    it('auto off-peak charges toward the configured night reserve instead of discharging', () => {
+    it('auto off-peak charges toward the evening entry target instead of discharging', () => {
         const initial = createInitialGridState(0);
         const lowSocNightState = {
             ...initial,
@@ -170,7 +170,7 @@ describe('tickEngine', () => {
             dispatchMode: 'auto' as const,
             timeOfDay: 2,
             dispatchScalePercent: 100,
-            batterySocPercent: AUTO_ARB.nightTargetSocPercent - 10,
+            batterySocPercent: AUTO_ARB.peakEntryTargetSocPercent - 10,
             batteryMode: 'idle' as const,
             batteryPowerMw: 0,
         };
@@ -200,6 +200,87 @@ describe('tickEngine', () => {
         expect(next.batteryMode).toBe('idle');
         expect(next.gridOverloadWarning).toBe(true);
         expect(next.gridOverloadMw).toBeGreaterThan(0);
+    });
+
+    it('holds the evening target through the shoulder window, then discharges at 18:00', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 12,
+            timeSpeed: 1440,
+            batterySocPercent: AUTO_ARB.peakEntryTargetSocPercent,
+            solarAcCapacityMw: 0,
+            solarDcCapacityMwp: 0,
+        };
+        const held = simulateTick(initial, 0.1, 1);
+        expect(held.batteryPowerMw).toBe(0);
+        expect(held.batterySocPercent).toBe(AUTO_ARB.peakEntryTargetSocPercent);
+        const manual = simulateTick({ ...initial, dispatchMode: 'manual-discharge' }, 0.1, 1);
+        expect(manual.batteryPowerMw).toBeLessThan(0);
+        expect(manual.batterySocPercent).toBeLessThan(AUTO_ARB.peakEntryTargetSocPercent);
+
+        const peak = simulateTick({ ...held, timeOfDay: 17.99 }, 0.1, 2);
+        expect(peak.tariffPeriod).toBe('peak');
+        expect(peak.batteryPowerMw).toBeLessThan(0);
+        expect(peak.batterySocPercent).toBeLessThan(AUTO_ARB.peakEntryTargetSocPercent);
+    });
+
+    it('settles energy above the shoulder hold target and idles for the rest of a crossing tick', () => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 12,
+            timeSpeed: 1440,
+            batterySocPercent: AUTO_ARB.peakEntryTargetSocPercent + 0.1,
+            solarAcCapacityMw: 0,
+            solarDcCapacityMwp: 0,
+        };
+        const next = simulateTick(initial, 0.1, 1);
+        expect(next.batterySocPercent).toBe(AUTO_ARB.peakEntryTargetSocPercent);
+        expect(next.batteryPowerMw).toBe(0);
+        expect(next.cumulativeBessAvoidedImportCostEur).toBeGreaterThan(0);
+    });
+
+    it.each([
+        { peak: 175, hold: false },
+        { peak: 178, hold: false },
+        { peak: 179, hold: true },
+        { peak: 180, hold: true },
+        { peak: 200, hold: true },
+    ])('applies the profitability hurdle in the shoulder at peak €$peak/MWh', ({ peak, hold }) => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 12,
+            timeSpeed: 1440,
+            batterySocPercent: AUTO_ARB.peakEntryTargetSocPercent,
+            solarAcCapacityMw: 0,
+            solarDcCapacityMwp: 0,
+            tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 150, peak },
+        };
+        const next = simulateTick(initial, 0.1, 1);
+        expect(next.batterySocPercent === AUTO_ARB.peakEntryTargetSocPercent).toBe(hold);
+        expect(next.batteryPowerMw === 0).toBe(hold);
+    });
+
+    it.each([150, 350])('does not hold shoulder energy when the peak tariff is %s and no higher', peak => {
+        const initial = {
+            ...createInitialGridState(0),
+            simulationStatus: 'running' as const,
+            dispatchMode: 'auto' as const,
+            timeOfDay: 12,
+            timeSpeed: 1440,
+            batterySocPercent: AUTO_ARB.peakEntryTargetSocPercent,
+            solarAcCapacityMw: 0,
+            solarDcCapacityMwp: 0,
+            tariffRatesEurMwh: { 'off-peak': 80, 'mid-peak': 350, peak },
+        };
+        const next = simulateTick(initial, 0.1, 1);
+        expect(next.batteryPowerMw).toBeLessThan(0);
+        expect(next.batterySocPercent).toBeLessThan(AUTO_ARB.peakEntryTargetSocPercent);
     });
 
     // AUTO peak pacing: at peak entry with multi-hour window remaining, the

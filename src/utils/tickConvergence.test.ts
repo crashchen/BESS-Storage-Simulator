@@ -232,6 +232,29 @@ describe('peak pacing horizon floor', () => {
 });
 
 describe('representative fixed-horizon convergence', () => {
+    it.each([100, 150])('keeps the 40%% evening target through three AUTO days at %s%% demand', dispatchScalePercent => {
+        const start = initial({ timeOfDay: 6, batterySocPercent: AUTO_ARB.peakEntryTargetSocPercent,
+            dispatchScalePercent });
+        let state = start;
+        for (let day = 0; day < 3; day++) {
+            state = run(state, 12, 0.1);
+            expect(state.timeOfDay).toBeCloseTo(18, 8);
+            expect(state.batterySocPercent).toBeCloseTo(AUTO_ARB.peakEntryTargetSocPercent, 8);
+            const dischargeBeforePeak = state.cumulativeBessDischargeRevenueEur;
+            state = run(state, 5, 0.1);
+            expect(state.cumulativeBessDischargeRevenueEur).toBeGreaterThan(dischargeBeforePeak);
+            state = run(state, 7, 0.1);
+            expect(state.batterySocPercent).toBeCloseTo(AUTO_ARB.peakEntryTargetSocPercent, 8);
+        }
+        const fine = run(start, 72, 1 / 60);
+        expectClose(state, fine, 6);
+        if (dispatchScalePercent === 150) {
+            expect(state.cumulativeBessRestoredLoadAssumedValueEur).toBeGreaterThan(0);
+        } else {
+            expect(state.cumulativeBessRestoredLoadAssumedValueEur).toBe(0);
+        }
+    });
+
     it.each([
         [0, 744], [8, 744], [0, 10], [8, 10],
     ])('converges across a full day from %sh with %s MWh', (timeOfDay, batteryEnergyCapacityMwh) => {

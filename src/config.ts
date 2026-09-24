@@ -128,8 +128,9 @@ export const AUTO_ARB = {
     peakPacingMinRemainingHours: 0.25,
     /** Reserve SoC to keep during peak discharge (%) */
     peakReserveSocPercent: 12,
-    /** Night reserve target SoC (%) */
-    nightTargetSocPercent: 40.0,
+    /** SoC target charged overnight and held through the shoulder window when
+     * the peak tariff clears the estimated efficiency/reserve value hurdle. */
+    peakEntryTargetSocPercent: 40.0,
 } as const;
 
 // ── Simulation Engine ────────────────────────────────────────
