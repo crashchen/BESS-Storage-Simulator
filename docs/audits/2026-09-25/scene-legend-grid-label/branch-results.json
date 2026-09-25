@@ -1,0 +1,3380 @@
+{
+  "url": "http://127.0.0.1:4302/BESS-Storage-Simulator/",
+  "chromium": "141.0.7390.37",
+  "stubbedRequests": [
+    "<font-data>/codepoint-index/plane0/0-ff.json",
+    "<font-data>/font-files/latin/sans-serif.normal.400.woff",
+    "<font-data>/font-meta/latin.json"
+  ],
+  "note": "Viewports were split across two concurrent runs of browser-check.mjs; results are merged in this order.",
+  "results": [
+    {
+      "viewport": "branch-320x640",
+      "chrome": {
+        "hud": {
+          "x": 3.2,
+          "y": 8,
+          "w": 313.6,
+          "h": 51.5,
+          "r": 316.8,
+          "b": 59.5
+        },
+        "controls": {
+          "x": 0,
+          "y": 72,
+          "w": 36.2,
+          "h": 46,
+          "r": 36.2,
+          "b": 118
+        },
+        "metrics": {
+          "x": 275,
+          "y": 72,
+          "w": 45,
+          "h": 46,
+          "r": 320,
+          "b": 118
+        },
+        "tools": {
+          "x": 39,
+          "y": 554,
+          "w": 242,
+          "h": 54,
+          "r": 281,
+          "b": 608
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          163.4,
+          292.1,
+          229.6,
+          313.1
+        ],
+        "LOCAL LOAD": "hidden",
+        "GRID NODE": [
+          232,
+          312.9,
+          308.4,
+          333.9
+        ],
+        "BESS UNIT": [
+          112.9,
+          314.5,
+          186.4,
+          335.5
+        ],
+        "SOLAR ARRAY": [
+          55.3,
+          291.9,
+          148.3,
+          312.9
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 128,
+          "w": 230,
+          "h": 154,
+          "r": 242,
+          "b": 282
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 153,
+          "w": 228,
+          "h": 128,
+          "r": 241,
+          "b": 281,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 128,
+          "w": 214.1,
+          "h": 26,
+          "r": 226.1,
+          "b": 154
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          232,
+          312.9,
+          308.4,
+          333.9
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            149.7,
+            325
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            196.5,
+            302.6
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            149.7,
+            337.5
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            203.3,
+            334.9
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            256.4,
+            340.4
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        160,
+        71.5
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-390x844",
+      "chrome": {
+        "hud": {
+          "x": 18,
+          "y": 8,
+          "w": 353.9,
+          "h": 31.5,
+          "r": 371.9,
+          "b": 39.5
+        },
+        "controls": {
+          "x": 0,
+          "y": 72,
+          "w": 36.2,
+          "h": 46,
+          "r": 36.2,
+          "b": 118
+        },
+        "metrics": {
+          "x": 345,
+          "y": 72,
+          "w": 45,
+          "h": 46,
+          "r": 390,
+          "b": 118
+        },
+        "tools": {
+          "x": 74,
+          "y": 758,
+          "w": 242,
+          "h": 54,
+          "r": 316,
+          "b": 812
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          207.9,
+          394.3,
+          274.1,
+          415.3
+        ],
+        "LOCAL LOAD": "hidden",
+        "GRID NODE": [
+          295.1,
+          415.7,
+          371.6,
+          436.7
+        ],
+        "BESS UNIT": [
+          145.2,
+          417.7,
+          218.7,
+          438.7
+        ],
+        "SOLAR ARRAY": [
+          75,
+          389.2,
+          168,
+          410.2
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 128,
+          "w": 230,
+          "h": 154,
+          "r": 242,
+          "b": 282
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 153,
+          "w": 228,
+          "h": 128,
+          "r": 241,
+          "b": 281,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 128,
+          "w": 214.1,
+          "h": 26,
+          "r": 226.1,
+          "b": 154
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          295.1,
+          415.7,
+          371.6,
+          436.7
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            181.9,
+            428.2
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            241,
+            404.8
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            182,
+            444
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            249.5,
+            440.8
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            316.1,
+            447.6
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        195,
+        51.5
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-640x360",
+      "chrome": {
+        "hud": {
+          "x": 34.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 605.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 577.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 640,
+          "b": 138
+        },
+        "tools": {
+          "x": 183,
+          "y": 274,
+          "w": 274,
+          "h": 54,
+          "r": 457,
+          "b": 328
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          339,
+          152,
+          411.4,
+          174
+        ],
+        "LOCAL LOAD": [
+          375.4,
+          217.9,
+          469.4,
+          239.9
+        ],
+        "GRID NODE": [
+          460.5,
+          174.6,
+          543.2,
+          196.6
+        ],
+        "BESS UNIT": [
+          264.3,
+          176.6,
+          344,
+          198.6
+        ],
+        "SOLAR ARRAY": [
+          191.4,
+          145.7,
+          294.7,
+          167.7
+        ]
+      },
+      "legend": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 274,
+          "w": 165,
+          "h": 54,
+          "r": 177,
+          "b": 328
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 274,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 328
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 145,
+          "w": 230,
+          "h": 124,
+          "r": 243,
+          "b": 269,
+          "clientHeight": 122,
+          "scrollHeight": 122,
+          "pointerEvents": "auto"
+        },
+        "detailsCover": {
+          "solarLabel": "51.6×22.0",
+          "panels": "9/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        }
+      },
+      "legendAfterSpace": "false",
+      "gridLabel": {
+        "rect": [
+          460.5,
+          174.6,
+          543.2,
+          196.6
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            304.2,
+            187.6
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            375.2,
+            163
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            304.4,
+            206.4
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            384.8,
+            202.3
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            474.7,
+            212.7
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        320,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "false",
+        "after": "false"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-667x375",
+      "chrome": {
+        "hud": {
+          "x": 48.1,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 618.9,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 604.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 667,
+          "b": 138
+        },
+        "tools": {
+          "x": 196.5,
+          "y": 289,
+          "w": 274,
+          "h": 54,
+          "r": 470.5,
+          "b": 343
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          354.8,
+          159.5,
+          427.2,
+          181.5
+        ],
+        "LOCAL LOAD": [
+          393.1,
+          227.4,
+          487.1,
+          249.4
+        ],
+        "GRID NODE": [
+          481.6,
+          182.3,
+          564.3,
+          204.3
+        ],
+        "BESS UNIT": [
+          277.2,
+          184.4,
+          356.9,
+          206.4
+        ],
+        "SOLAR ARRAY": [
+          201.7,
+          152.2,
+          305,
+          174.2
+        ]
+      },
+      "legend": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 289,
+          "w": 165,
+          "h": 54,
+          "r": 177,
+          "b": 343
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 289,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 343
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 160,
+          "w": 230,
+          "h": 124,
+          "r": 243,
+          "b": 284,
+          "clientHeight": 122,
+          "scrollHeight": 122,
+          "pointerEvents": "auto"
+        },
+        "detailsCover": {
+          "solarLabel": "41.3×14.2",
+          "panels": "7/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        }
+      },
+      "legendAfterSpace": "false",
+      "gridLabel": {
+        "rect": [
+          481.6,
+          182.3,
+          564.3,
+          204.3
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            317.1,
+            195.4
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            391,
+            170.5
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            317.3,
+            215
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            401,
+            210.7
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            494.7,
+            221.6
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        333.5,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "false",
+        "after": "false"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-1280x720",
+      "chrome": {
+        "hud": {
+          "x": 354.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 925.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 1217.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 1280,
+          "b": 138
+        },
+        "tools": {
+          "x": 503,
+          "y": 634,
+          "w": 274,
+          "h": 54,
+          "r": 777,
+          "b": 688
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          741.8,
+          351.4,
+          814.2,
+          373.4
+        ],
+        "LOCAL LOAD": [
+          858.7,
+          476,
+          952.7,
+          498
+        ],
+        "GRID NODE": [
+          1070.8,
+          363.5,
+          1153.5,
+          385.5
+        ],
+        "BESS UNIT": [
+          560.5,
+          367.9,
+          640.2,
+          389.9
+        ],
+        "SOLAR ARRAY": [
+          405.1,
+          293.4,
+          508.4,
+          315.4
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 230,
+          "h": 154,
+          "r": 242,
+          "b": 298
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 169,
+          "w": 228,
+          "h": 128,
+          "r": 241,
+          "b": 297,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 214.1,
+          "h": 26,
+          "r": 226.1,
+          "b": 170
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          1070.8,
+          363.5,
+          1153.5,
+          385.5
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            600.4,
+            378.9
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            778,
+            362.4
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "BESS body": {
+          "point": [
+            601.1,
+            425.8
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            801.4,
+            415.6
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            1036.9,
+            443.9
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        640,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-1440x900",
+      "chrome": {
+        "hud": {
+          "x": 434.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 1005.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 1377.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 1440,
+          "b": 138
+        },
+        "tools": {
+          "x": 583,
+          "y": 814,
+          "w": 274,
+          "h": 54,
+          "r": 857,
+          "b": 868
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          844.5,
+          441.8,
+          916.9,
+          463.8
+        ],
+        "LOCAL LOAD": [
+          978.3,
+          584.9,
+          1072.3,
+          606.9
+        ],
+        "GRID NODE": [
+          1221.1,
+          455.7,
+          1303.8,
+          477.7
+        ],
+        "BESS UNIT": [
+          634,
+          461,
+          713.7,
+          483
+        ],
+        "SOLAR ARRAY": [
+          451.5,
+          373.3,
+          554.8,
+          395.3
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 230,
+          "h": 154,
+          "r": 242,
+          "b": 298
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 169,
+          "w": 228,
+          "h": 128,
+          "r": 241,
+          "b": 297,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 214.1,
+          "h": 26,
+          "r": 226.1,
+          "b": 170
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          1221.1,
+          455.7,
+          1303.8,
+          477.7
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            673.9,
+            472
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            880.7,
+            452.8
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "BESS body": {
+          "point": [
+            674.7,
+            526.7
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            908.2,
+            514.8
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            1178,
+            546.9
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        720,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-568x320",
+      "chrome": {
+        "hud": {
+          "x": 107,
+          "y": 8,
+          "w": 353.9,
+          "h": 31.5,
+          "r": 460.9,
+          "b": 39.5
+        },
+        "controls": {
+          "x": 0,
+          "y": 72,
+          "w": 36.2,
+          "h": 46,
+          "r": 36.2,
+          "b": 118
+        },
+        "metrics": {
+          "x": 523,
+          "y": 72,
+          "w": 45,
+          "h": 46,
+          "r": 568,
+          "b": 118
+        },
+        "tools": {
+          "x": 163,
+          "y": 234,
+          "w": 242,
+          "h": 54,
+          "r": 405,
+          "b": 288
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          300,
+          132.3,
+          366.2,
+          153.3
+        ],
+        "LOCAL LOAD": [
+          332.1,
+          193,
+          417.9,
+          214
+        ],
+        "GRID NODE": [
+          407.4,
+          154.5,
+          483.9,
+          175.5
+        ],
+        "BESS UNIT": [
+          233.2,
+          156.2,
+          306.7,
+          177.2
+        ],
+        "SOLAR ARRAY": [
+          169.1,
+          128.8,
+          262.2,
+          149.8
+        ]
+      },
+      "legend": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 234,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 288
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 234,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 288
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 143,
+          "w": 230,
+          "h": 86,
+          "r": 243,
+          "b": 229,
+          "clientHeight": 84,
+          "scrollHeight": 122,
+          "pointerEvents": "auto"
+        },
+        "detailsCover": {
+          "solarLabel": "73.9×6.8",
+          "panels": "12/12",
+          "otherLabels": {
+            "BESS UNIT": 205.8
+          },
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        }
+      },
+      "legendAfterSpace": "false",
+      "gridLabel": {
+        "rect": [
+          407.4,
+          154.5,
+          483.9,
+          175.5
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            269.9,
+            166.7
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            333.1,
+            142.8
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            270.2,
+            183.4
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            341.6,
+            179.8
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            421.5,
+            189.1
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        284,
+        51.5
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "false",
+        "after": "false"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-740x360",
+      "chrome": {
+        "hud": {
+          "x": 84.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 655.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 677.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 740,
+          "b": 138
+        },
+        "tools": {
+          "x": 233,
+          "y": 274,
+          "w": 274,
+          "h": 54,
+          "r": 507,
+          "b": 328
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          389,
+          152,
+          461.4,
+          174
+        ],
+        "LOCAL LOAD": [
+          425.4,
+          217.9,
+          519.4,
+          239.9
+        ],
+        "GRID NODE": [
+          510.5,
+          174.6,
+          593.2,
+          196.6
+        ],
+        "BESS UNIT": [
+          314.3,
+          176.6,
+          394,
+          198.6
+        ],
+        "SOLAR ARRAY": [
+          241.4,
+          145.7,
+          344.7,
+          167.7
+        ]
+      },
+      "legend": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 274,
+          "w": 165,
+          "h": 54,
+          "r": 177,
+          "b": 328
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 274,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 328
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 145,
+          "w": 230,
+          "h": 124,
+          "r": 243,
+          "b": 269,
+          "clientHeight": 122,
+          "scrollHeight": 122,
+          "pointerEvents": "auto"
+        },
+        "detailsCover": {
+          "solarLabel": "1.6×22.0",
+          "panels": "2/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        }
+      },
+      "legendAfterSpace": "false",
+      "gridLabel": {
+        "rect": [
+          510.5,
+          174.6,
+          593.2,
+          196.6
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            354.2,
+            187.6
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            425.2,
+            163
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            354.4,
+            206.4
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            434.8,
+            202.3
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            524.7,
+            212.7
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        370,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "false",
+        "after": "false"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-812x375",
+      "chrome": {
+        "hud": {
+          "x": 120.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 691.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 749.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 812,
+          "b": 138
+        },
+        "tools": {
+          "x": 269,
+          "y": 289,
+          "w": 274,
+          "h": 54,
+          "r": 543,
+          "b": 343
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          427.3,
+          159.5,
+          499.7,
+          181.5
+        ],
+        "LOCAL LOAD": [
+          465.6,
+          227.4,
+          559.6,
+          249.4
+        ],
+        "GRID NODE": [
+          554.1,
+          182.3,
+          636.8,
+          204.3
+        ],
+        "BESS UNIT": [
+          349.7,
+          184.4,
+          429.4,
+          206.4
+        ],
+        "SOLAR ARRAY": [
+          274.2,
+          152.2,
+          377.5,
+          174.2
+        ]
+      },
+      "legend": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 289,
+          "w": 165,
+          "h": 54,
+          "r": 177,
+          "b": 343
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 289,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 343
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 160,
+          "w": 230,
+          "h": 124,
+          "r": 243,
+          "b": 284,
+          "clientHeight": 122,
+          "scrollHeight": 122,
+          "pointerEvents": "auto"
+        },
+        "detailsCover": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        }
+      },
+      "legendAfterSpace": "false",
+      "gridLabel": {
+        "rect": [
+          554.1,
+          182.3,
+          636.8,
+          204.3
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            389.6,
+            195.4
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            463.5,
+            170.5
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            389.8,
+            215
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            473.5,
+            210.7
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            567.2,
+            221.6
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        406,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "false",
+        "after": "false"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-844x390",
+      "chrome": {
+        "hud": {
+          "x": 136.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 707.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 781.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 844,
+          "b": 138
+        },
+        "tools": {
+          "x": 285,
+          "y": 304,
+          "w": 274,
+          "h": 54,
+          "r": 559,
+          "b": 358
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          446.3,
+          167,
+          518.7,
+          189
+        ],
+        "LOCAL LOAD": [
+          487.5,
+          237.8,
+          581.5,
+          259.8
+        ],
+        "GRID NODE": [
+          580.5,
+          190.1,
+          663.2,
+          212.1
+        ],
+        "BESS UNIT": [
+          364.8,
+          192.3,
+          444.5,
+          214.3
+        ],
+        "SOLAR ARRAY": [
+          286.2,
+          158.5,
+          389.5,
+          180.5
+        ]
+      },
+      "legend": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 304,
+          "w": 165,
+          "h": 54,
+          "r": 177,
+          "b": 358
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 304,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 358
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 175,
+          "w": 230,
+          "h": 124,
+          "r": 243,
+          "b": 299,
+          "clientHeight": 122,
+          "scrollHeight": 122,
+          "pointerEvents": "auto"
+        },
+        "detailsCover": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        }
+      },
+      "legendAfterSpace": "false",
+      "gridLabel": {
+        "rect": [
+          580.5,
+          190.1,
+          663.2,
+          212.1
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            404.7,
+            203.3
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            482.5,
+            178
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            404.9,
+            223.9
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            493.1,
+            219.5
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            592,
+            230.9
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        422,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "false",
+        "after": "false"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-932x430",
+      "chrome": {
+        "hud": {
+          "x": 180.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 751.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 869.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 932,
+          "b": 138
+        },
+        "tools": {
+          "x": 329,
+          "y": 344,
+          "w": 274,
+          "h": 54,
+          "r": 603,
+          "b": 398
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          501.4,
+          187.2,
+          573.8,
+          209.2
+        ],
+        "LOCAL LOAD": [
+          553.5,
+          268.3,
+          647.5,
+          290.3
+        ],
+        "GRID NODE": [
+          663.7,
+          211.3,
+          746.4,
+          233.3
+        ],
+        "BESS UNIT": [
+          405.6,
+          213.8,
+          485.3,
+          235.8
+        ],
+        "SOLAR ARRAY": [
+          316.2,
+          174.2,
+          419.5,
+          196.2
+        ]
+      },
+      "legend": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 344,
+          "w": 165,
+          "h": 54,
+          "r": 177,
+          "b": 398
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 344,
+          "w": 137,
+          "h": 54,
+          "r": 149,
+          "b": 398
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 215,
+          "w": 230,
+          "h": 124,
+          "r": 243,
+          "b": 339,
+          "clientHeight": 122,
+          "scrollHeight": 122,
+          "pointerEvents": "auto"
+        },
+        "detailsCover": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        }
+      },
+      "legendAfterSpace": "false",
+      "gridLabel": {
+        "rect": [
+          663.7,
+          211.3,
+          746.4,
+          233.3
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            445.5,
+            224.8
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            537.6,
+            198.2
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            445.8,
+            249.2
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            550,
+            243.9
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            668.6,
+            257.8
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        466,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "false",
+        "after": "false"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-320x568",
+      "chrome": {
+        "hud": {
+          "x": 3.2,
+          "y": 8,
+          "w": 313.6,
+          "h": 51.5,
+          "r": 316.8,
+          "b": 59.5
+        },
+        "controls": {
+          "x": 0,
+          "y": 72,
+          "w": 36.2,
+          "h": 46,
+          "r": 36.2,
+          "b": 118
+        },
+        "metrics": {
+          "x": 275,
+          "y": 72,
+          "w": 45,
+          "h": 46,
+          "r": 320,
+          "b": 118
+        },
+        "tools": {
+          "x": 39,
+          "y": 482,
+          "w": 242,
+          "h": 54,
+          "r": 281,
+          "b": 536
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          163.3,
+          256.1,
+          229.6,
+          277.1
+        ],
+        "LOCAL LOAD": "hidden",
+        "GRID NODE": [
+          232.4,
+          276.9,
+          308.9,
+          297.9
+        ],
+        "BESS UNIT": [
+          112.9,
+          278.4,
+          186.4,
+          299.4
+        ],
+        "SOLAR ARRAY": [
+          56,
+          256.1,
+          149.1,
+          277.1
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 45,
+          "y": 64,
+          "w": 230,
+          "h": 154,
+          "r": 275,
+          "b": 218
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 46,
+          "y": 89,
+          "w": 228,
+          "h": 128,
+          "r": 274,
+          "b": 217,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 53,
+          "y": 64,
+          "w": 214.1,
+          "h": 26,
+          "r": 267,
+          "b": 90
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          232.4,
+          276.9,
+          308.9,
+          297.9
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            149.7,
+            288.9
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            196.4,
+            266.6
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            149.7,
+            301.5
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            203.2,
+            298.9
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            256.7,
+            304.4
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        10,
+        470
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-390x568",
+      "chrome": {
+        "hud": {
+          "x": 18,
+          "y": 8,
+          "w": 353.9,
+          "h": 31.5,
+          "r": 371.9,
+          "b": 39.5
+        },
+        "controls": {
+          "x": 0,
+          "y": 72,
+          "w": 36.2,
+          "h": 46,
+          "r": 36.2,
+          "b": 118
+        },
+        "metrics": {
+          "x": 345,
+          "y": 72,
+          "w": 45,
+          "h": 46,
+          "r": 390,
+          "b": 118
+        },
+        "tools": {
+          "x": 74,
+          "y": 482,
+          "w": 242,
+          "h": 54,
+          "r": 316,
+          "b": 536
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          207.5,
+          256.3,
+          273.7,
+          277.3
+        ],
+        "LOCAL LOAD": "hidden",
+        "GRID NODE": [
+          297.3,
+          277.8,
+          373.8,
+          298.8
+        ],
+        "BESS UNIT": [
+          145.3,
+          279.7,
+          218.8,
+          300.7
+        ],
+        "SOLAR ARRAY": [
+          78.2,
+          252.2,
+          171.3,
+          273.2
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 80,
+          "y": 64,
+          "w": 230,
+          "h": 154,
+          "r": 310,
+          "b": 218
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 81,
+          "y": 89,
+          "w": 228,
+          "h": 128,
+          "r": 309,
+          "b": 217,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 88,
+          "y": 64,
+          "w": 214.1,
+          "h": 26,
+          "r": 302,
+          "b": 90
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          297.3,
+          277.8,
+          373.8,
+          298.8
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            182.1,
+            290.2
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            240.6,
+            266.8
+          ],
+          "tap": null,
+          "hover": null,
+          "click": null
+        },
+        "BESS body": {
+          "point": [
+            182.1,
+            305.9
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            249,
+            302.6
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            317.2,
+            309.8
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        195,
+        51.5
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-768x1024",
+      "chrome": {
+        "hud": {
+          "x": 98.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 669.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 705.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 768,
+          "b": 138
+        },
+        "tools": {
+          "x": 247,
+          "y": 938,
+          "w": 274,
+          "h": 54,
+          "r": 521,
+          "b": 992
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          443.5,
+          502.7,
+          515.9,
+          524.7
+        ],
+        "LOCAL LOAD": [
+          505,
+          581.3,
+          599,
+          603.3
+        ],
+        "GRID NODE": [
+          641,
+          510.2,
+          723.7,
+          532.2
+        ],
+        "BESS UNIT": [
+          316.9,
+          514,
+          396.6,
+          536
+        ],
+        "SOLAR ARRAY": [
+          187.7,
+          457.1,
+          291,
+          479.1
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 230,
+          "h": 154,
+          "r": 242,
+          "b": 298
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 169,
+          "w": 228,
+          "h": 128,
+          "r": 241,
+          "b": 297,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 214.1,
+          "h": 26,
+          "r": 226.1,
+          "b": 170
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          641,
+          510.2,
+          723.7,
+          532.2
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            356.8,
+            525
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            479.7,
+            513.7
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "BESS body": {
+          "point": [
+            356.9,
+            557.8
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            497.1,
+            551
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            642.4,
+            566.7
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        384,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "branch-1024x768",
+      "chrome": {
+        "hud": {
+          "x": 226.6,
+          "y": 12,
+          "w": 570.7,
+          "h": 42,
+          "r": 797.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "w": 53.5,
+          "h": 46,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 961.8,
+          "y": 92,
+          "w": 62.2,
+          "h": 46,
+          "r": 1024,
+          "b": 138
+        },
+        "tools": {
+          "x": 375,
+          "y": 682,
+          "w": 274,
+          "h": 54,
+          "r": 649,
+          "b": 736
+        }
+      },
+      "labels": {
+        "PCS / MV": [
+          594.5,
+          375,
+          666.9,
+          397
+        ],
+        "LOCAL LOAD": [
+          685.3,
+          478.3,
+          779.3,
+          500.3
+        ],
+        "GRID NODE": [
+          862,
+          385,
+          944.8,
+          407
+        ],
+        "BESS UNIT": [
+          438.2,
+          389.2,
+          517.9,
+          411.2
+        ],
+        "SOLAR ARRAY": [
+          295.2,
+          322.9,
+          398.5,
+          344.9
+        ]
+      },
+      "legend": {
+        "expanded": "true",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 230,
+          "h": 154,
+          "r": 242,
+          "b": 298
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": {
+          "x": 13,
+          "y": 169,
+          "w": 228,
+          "h": 128,
+          "r": 241,
+          "b": 297,
+          "clientHeight": 128,
+          "scrollHeight": 128,
+          "pointerEvents": "none"
+        }
+      },
+      "firstTabStop": "button \"Live power routes\"",
+      "legendAfterEnter": {
+        "expanded": "false",
+        "rect": {
+          "x": 12,
+          "y": 144,
+          "w": 214.1,
+          "h": 26,
+          "r": 226.1,
+          "b": 170
+        },
+        "covers": {
+          "solarLabel": null,
+          "panels": "0/12",
+          "otherLabels": {},
+          "hud": 0,
+          "controls": 0,
+          "metrics": 0,
+          "tools": 0
+        },
+        "details": null,
+        "detailsCover": null
+      },
+      "legendAfterSpace": "true",
+      "gridLabel": {
+        "rect": [
+          862,
+          385,
+          944.8,
+          407
+        ],
+        "elementAtCentre": "canvas",
+        "tap": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseClick": {
+          "centre": "grid-node",
+          "left": "grid-node",
+          "right": "grid-node",
+          "topRight": "grid-node",
+          "bottomRight": "grid-node"
+        },
+        "mouseHover": {
+          "cards": [
+            "Hover preview: Grid Node"
+          ],
+          "cursor": "pointer",
+          "labelHighlighted": true
+        }
+      },
+      "otherTargets": {
+        "BESS UNIT label": {
+          "point": [
+            478.1,
+            400.2
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS / MV label": {
+          "point": [
+            630.7,
+            386
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "BESS body": {
+          "point": [
+            478.5,
+            440.7
+          ],
+          "tap": "bess",
+          "hover": "Hover preview: BESS Unit",
+          "click": "bess"
+        },
+        "PCS body": {
+          "point": [
+            651.3,
+            432
+          ],
+          "tap": "pcs-mv",
+          "hover": "Hover preview: PCS / MV Station",
+          "click": "pcs-mv"
+        },
+        "Grid body": {
+          "point": [
+            845,
+            454.4
+          ],
+          "tap": "grid-node",
+          "hover": "Hover preview: Grid Node",
+          "click": "grid-node"
+        }
+      },
+      "emptyTapPoint": [
+        512,
+        66
+      ],
+      "emptyTapClears": true,
+      "dragFromGridLabelOrbits": true,
+      "drawers": {
+        "drawer-controls": {
+          "legend": 0,
+          "toolbar": 0
+        },
+        "drawer-metrics": {
+          "legend": 0,
+          "toolbar": 0
+        }
+      },
+      "legendStateAfterDrawers": {
+        "before": "true",
+        "after": "true"
+      },
+      "errors": []
+    }
+  ]
+}

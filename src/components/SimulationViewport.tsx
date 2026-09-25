@@ -4,7 +4,8 @@ import { useProgress } from '@react-three/drei';
 import { clearEquipmentModelCache } from '../utils/equipmentModels';
 import { MicrogridScene } from './MicrogridScene';
 import { SceneAssetInfoCard } from './SceneAssetInfoCard';
-import { EnergyFlowLegend } from './EnergyFlowLegend';
+import { COMPACT_LEGEND_QUERY, EnergyFlowLegend } from './EnergyFlowLegend';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import { SCENE_3D } from '../config';
 import type { GridState, SceneAssetId } from '../types';
 
@@ -89,6 +90,11 @@ export function SimulationViewport({
   const [viewResetVersion, setViewResetVersion] = useState(0);
   const [hoveredAssetId, setHoveredAssetId] = useState<SceneAssetId | null>(null);
   const [selectedAssetId, setSelectedAssetId] = useState<SceneAssetId | null>(null);
+  // The legend follows the layout default until the user toggles it. The choice
+  // lives here so it survives drawers unmounting the legend.
+  const compactLegend = useMediaQuery(COMPACT_LEGEND_QUERY);
+  const [legendChoice, setLegendChoice] = useState<boolean | null>(null);
+  const legendExpanded = legendChoice ?? !compactLegend;
   const loading3d = useProgress(progress => progress.active);
   const canvasListenerCleanup = useRef<(() => void) | null>(null);
   const equipmentButtons = useRef<Partial<Record<SceneAssetId, HTMLButtonElement | null>>>({});
@@ -222,7 +228,9 @@ export function SimulationViewport({
           Loading 3D equipment…
         </div>
       )}
-      {sceneToolsVisible && !failure && <EnergyFlowLegend />}
+      {sceneToolsVisible && !failure && (
+        <EnergyFlowLegend expanded={legendExpanded} onToggle={() => setLegendChoice(!legendExpanded)} />
+      )}
       {sceneToolsVisible && (
         <nav aria-label="Scene tools" className="absolute bottom-8 left-1/2 z-20 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 gap-1 rounded-xl border border-slate-600/50 bg-slate-950/85 p-1 shadow-xl backdrop-blur-md">
           {EQUIPMENT_CHOICES.map(asset => (

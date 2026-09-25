@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ControlPanelProps, GridSnapshot, GridState, MicrogridSceneProps } from './types';
 import App from './App';
 import { SCENE_3D } from './config';
+import { COMPACT_LEGEND_QUERY } from './components/EnergyFlowLegend';
 import { useGLTF } from '@react-three/drei';
 
 const modelCache = vi.hoisted(() => ({ failed: false, loading: false }));
@@ -253,6 +254,8 @@ describe('App viewport integration', () => {
     render(<App />);
     await user.tab(); // mocked canvas equipment
     await user.tab();
+    expect(screen.getByRole('button', { name: 'Live power routes' })).toHaveFocus();
+    await user.tab();
     for (const [name, key, title] of [
       ['Inspect BESS equipment', '{Enter}', 'BESS Unit'],
       ['Inspect PCS / MV equipment', ' ', 'PCS / MV Station'],
@@ -288,6 +291,74 @@ describe('App viewport integration', () => {
     expect(screen.getByRole('button', { name: 'Close metrics' })).toHaveFocus();
     await user.keyboard('{Escape}');
     expect(screen.getByRole('button', { name: 'Inspect grid equipment' })).toHaveFocus();
+  });
+
+  it('toggles the flow key by keyboard and keeps the choice while a drawer hides it', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const toggle = screen.getByRole('button', { name: 'Live power routes' });
+    const details = document.getElementById(toggle.getAttribute('aria-controls')!)!;
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(within(details).getAllByRole('term').map(term => term.textContent)).toEqual(['Solar', 'BESS', 'BESS', 'Grid']);
+    expect(details).toHaveTextContent('Dots show direction; each line brightens as its flow rises.');
+
+    toggle.focus();
+    await user.keyboard('{Enter}');
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(details).not.toBeVisible();
+    expect(within(screen.getByRole('complementary', { name: 'Energy flow legend' })).queryAllByRole('term')).toHaveLength(0);
+
+    await user.click(screen.getByRole('button', { name: 'Open metrics' }));
+    expect(screen.queryByRole('complementary', { name: 'Energy flow legend' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close metrics' }));
+    const restored = screen.getByRole('button', { name: 'Live power routes' });
+    expect(restored).toHaveAttribute('aria-expanded', 'false');
+
+    restored.focus();
+    await user.keyboard(' ');
+    expect(restored).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Red sparks = curtailed solar')).toBeVisible();
+  });
+
+  it('starts the flow key collapsed on short landscape screens and follows rotation until chosen', async () => {
+    const user = userEvent.setup();
+    const listeners = new Set<EventListener>();
+    let shortLandscape = true;
+    const base = window.matchMedia('');
+    vi.mocked(window.matchMedia).mockImplementation(query => ({
+      ...base,
+      matches: query === COMPACT_LEGEND_QUERY && shortLandscape,
+      media: query,
+      addEventListener: (_type: string, listener: EventListener) => {
+        if (query === COMPACT_LEGEND_QUERY) listeners.add(listener);
+      },
+      removeEventListener: (_type: string, listener: EventListener) => {
+        listeners.delete(listener);
+      },
+    }) as MediaQueryList);
+    const rotate = (landscape: boolean) => act(() => {
+      shortLandscape = landscape;
+      listeners.forEach(listener => listener(new Event('change')));
+    });
+
+    render(<App />);
+    const toggle = screen.getByRole('button', { name: 'Live power routes' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByText('Red sparks = curtailed solar')).not.toBeVisible();
+    rotate(false);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    rotate(true);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    await user.tab(); // mocked canvas equipment
+    await user.tab();
+    expect(toggle).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Red sparks = curtailed solar')).toBeVisible();
+    rotate(false);
+    rotate(true);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('announces pending 3D assets without replacing simulation controls', () => {

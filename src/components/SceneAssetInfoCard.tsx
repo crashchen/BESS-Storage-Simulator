@@ -30,7 +30,10 @@ export function SceneAssetInfoCard({ assetId, gridState, pinned, onClose, closeB
       id="scene-asset-info"
       aria-label={`${info.title} live information`}
       data-testid="scene-asset-info-card"
-      className="pointer-events-auto absolute bottom-24 left-1/2 z-30 max-h-[calc(100dvh-12rem)] w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overflow-x-hidden overscroll-contain rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl lg:left-auto lg:right-5 lg:top-40 lg:bottom-auto lg:max-h-[calc(100dvh-16rem)] lg:translate-x-0"
+      // A hover preview can open over the hovered equipment or its label (Grid on
+      // desktop). Letting the pointer through keeps hover stable and lets the click
+      // pin it; only a pinned card has controls.
+      className={`${pinned ? 'pointer-events-auto' : 'pointer-events-none'} absolute bottom-24 left-1/2 z-30 max-h-[calc(100dvh-12rem)] w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overflow-x-hidden overscroll-contain rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl lg:left-auto lg:right-5 lg:top-40 lg:bottom-auto lg:max-h-[calc(100dvh-16rem)] lg:translate-x-0`}
     >
       <div className={`h-1.5 bg-gradient-to-r ${info.accent}`} />
       <div className="p-4">

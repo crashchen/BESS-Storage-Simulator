@@ -11,6 +11,8 @@
 
 **第十批（已发布）**：Controls 显示与 AUTO 判断共用公式的晚峰临界价，并对无法在可编辑价格范围内越过门槛的情形作出提示。用户安排的CC复审无阻塞；四处小修正后[PR #16](https://github.com/crashchen/BESS-Storage-Simulator/pull/16)合并为`c4a467a`，[main CI 35982356235](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356235)与[Pages 35982356587](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356587)成功。线上Controls默认约€178.78/MWh及PCC限定语已点检，未观察到console error；见[第十批记录](../2026-09-24/batch-10.md)。
 
+**第七批场景遗留修复（待复审）**：基于main`477293d`的分支`claude/sweet-clarke-8xtncd`经[PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19)处理第七批两项P3。能流图例改为可折叠，矮横屏默认折叠于场景工具栏左侧，可用键盘操作。GRID NODE标签经R3F射线内的屏幕矩形命中区选中Grid，标签DOM仍不接收指针。另将未钉选的悬停预览卡改为指针穿透，消除其盖住主变时的闪烁与点击落空。未改仿真、reducer、tick与结算。云端headless Chromium（SwiftShader软件WebGL，非GPU、非实体手机）的截图、点击结果与限制见[修复记录](../2026-09-25/scene-legend-grid-label.md)。
+
 **总体判断**
 
 项目已有清晰的 reducer → tick → settlement 分层和回归测试基础，作为交互演示具备可用性。结合用户提供的 CC 复核与新增正常工况对照，将 SoC 步长问题由 P1 调整为 P2。下一轮优先修太阳板朝向、状态恢复、输入回显与遮挡等直接影响演示的问题，再澄清口径、修数值边界、完善工程韧性。模型定位为视觉演示，收益应按已声明的简化假设理解。
