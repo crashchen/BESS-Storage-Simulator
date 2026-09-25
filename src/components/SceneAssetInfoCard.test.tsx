@@ -108,9 +108,30 @@ describe('SceneAssetInfoCard', () => {
         expect(card.className).toMatch(/max-h-\[/);
     });
 
+    it('docks beside the default overview instead of over the site', () => {
+        // Placement is CSS: a bottom sheet above the scene toolbar in portrait, and
+        // top-right below the HUD and left of the Metrics handle in landscape.
+        // index.css docks .scene-asset-card over the solar array in short
+        // landscape. jsdom has no layout engine; the real-browser check in
+        // docs/audits/2026-09-25/card-label-check.mjs measures the rectangles.
+        render(<SceneAssetInfoCard assetId="bess" gridState={makeGridState()} pinned onClose={vi.fn()} />);
+
+        const card = screen.getByTestId('scene-asset-info-card');
+        expect(card).toHaveClass('scene-asset-card', 'bottom-24', 'left-1/2', 'landscape:top-[62px]', 'landscape:right-[70px]');
+        expect(card.className).not.toMatch(/(^|\s)lg:/);
+    });
+
+    it('keeps the Close name when a narrow card shows only a glyph', () => {
+        render(<SceneAssetInfoCard assetId="pcs-mv" gridState={makeGridState()} pinned onClose={vi.fn()} />);
+
+        const close = screen.getByRole('button', { name: 'Close equipment info card' });
+        expect(close).toHaveTextContent('Close');
+        expect(close.querySelector('[aria-hidden="true"]')).toHaveTextContent('×');
+    });
+
     it('lets a hover preview pass pointer input through; a pinned card takes it', () => {
-        // On desktop the preview opens over the Grid transformer and its label. If
-        // it caught the pointer, hover would flicker and the click would miss Grid.
+        // A preview can still open over equipment after the camera moves. If it
+        // caught the pointer, hover would flicker and the click would miss.
         const { rerender } = render(
             <SceneAssetInfoCard assetId="grid-node" gridState={makeGridState()} pinned={false} onClose={vi.fn()} />,
         );

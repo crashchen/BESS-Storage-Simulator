@@ -1,0 +1,3236 @@
+{
+  "url": "http://127.0.0.1:4311/BESS-Storage-Simulator/",
+  "chromium": "141.0.7390.37",
+  "stubbedRequests": [
+    "<font-data>/codepoint-index/plane0/0-ff.json",
+    "<font-data>/font-files/latin/sans-serif.normal.400.woff",
+    "<font-data>/font-meta/latin.json"
+  ],
+  "note": "Viewports were split across two concurrent runs of card-label-check.mjs; results are merged in this order.",
+  "results": [
+    {
+      "viewport": "main-1280x720",
+      "labels": {
+        "PCS / MV": {
+          "x": 741.8,
+          "y": 351.4,
+          "r": 814.2,
+          "b": 373.4
+        },
+        "LOCAL LOAD": {
+          "x": 858.7,
+          "y": 476,
+          "r": 952.7,
+          "b": 498
+        },
+        "GRID NODE": {
+          "x": 1070.8,
+          "y": 363.5,
+          "r": 1153.5,
+          "b": 385.5
+        },
+        "BESS UNIT": {
+          "x": 560.5,
+          "y": 367.9,
+          "r": 640.2,
+          "b": 389.9
+        },
+        "SOLAR ARRAY": {
+          "x": 405.1,
+          "y": 293.4,
+          "r": 508.4,
+          "b": 315.4
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 504.7,
+            "y": 367,
+            "r": 692.2,
+            "b": 490.1
+          },
+          "centre": [
+            601.1,
+            425.8
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 713,
+            "y": 356.2,
+            "r": 895,
+            "b": 481.3
+          },
+          "centre": [
+            801.4,
+            415.6
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 920.8,
+            "y": 338,
+            "r": 1194.7,
+            "b": 567.5
+          },
+          "centre": [
+            1036.9,
+            443.9
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 307.8,
+            "y": 327,
+            "r": 546.6,
+            "b": 395.6
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 354.6,
+          "y": 12,
+          "r": 925.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 1217.8,
+          "y": 92,
+          "r": 1280,
+          "b": 138
+        },
+        "tools": {
+          "x": 503,
+          "y": 634,
+          "r": 777,
+          "b": 688
+        },
+        "legend": {
+          "x": 12,
+          "y": 144,
+          "r": 242,
+          "b": 298
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 870,
+            "y": 160,
+            "r": 1260,
+            "b": 624
+          },
+          "clientHeight": 462,
+          "scrollHeight": 852,
+          "closeOnTop": true,
+          "covers": {
+            "label LOCAL LOAD": 0.88,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.14,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "canvas",
+            "pcs-mv body": "canvas",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 870,
+            "y": 160,
+            "r": 1260,
+            "b": 624
+          },
+          "clientHeight": 462,
+          "scrollHeight": 972,
+          "closeOnTop": true,
+          "covers": {
+            "label LOCAL LOAD": 0.88,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.14,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "canvas",
+            "pcs-mv body": "canvas",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 870,
+            "y": 160,
+            "r": 1260,
+            "b": 624
+          },
+          "clientHeight": 462,
+          "scrollHeight": 803,
+          "closeOnTop": true,
+          "covers": {
+            "label LOCAL LOAD": 0.88,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.14,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "canvas",
+            "pcs-mv body": "canvas",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "pcs-mv",
+          "bess → pcs-mv body": "pcs-mv",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "bess",
+          "pcs-mv → bess body": "bess",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "bess",
+          "grid-node → bess body": "bess",
+          "grid-node → PCS / MV label": "pcs-mv",
+          "grid-node → pcs-mv body": "pcs-mv",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "pcs-mv",
+          "bess → pcs-mv body": "pcs-mv",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "bess",
+          "pcs-mv → bess body": "bess",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "bess",
+          "grid-node → bess body": "bess",
+          "grid-node → PCS / MV label": "pcs-mv",
+          "grid-node → pcs-mv body": "pcs-mv",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 560.5,
+            "y": 367.9,
+            "r": 640.2,
+            "b": 389.9
+          },
+          "tap": {
+            "centre": "bess",
+            "left": "bess",
+            "right": "bess",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": "bess",
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          },
+          "click": {
+            "centre": "bess",
+            "left": "bess",
+            "right": "bess",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": "bess",
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 741.8,
+            "y": 351.4,
+            "r": 814.2,
+            "b": 373.4
+          },
+          "tap": {
+            "centre": "pcs-mv",
+            "left": "pcs-mv",
+            "right": null,
+            "top": null,
+            "bottom": "pcs-mv",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "pcs-mv",
+            "bottomRight": "pcs-mv"
+          },
+          "click": {
+            "centre": "pcs-mv",
+            "left": "pcs-mv",
+            "right": null,
+            "top": null,
+            "bottom": "pcs-mv",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "pcs-mv",
+            "bottomRight": "pcs-mv"
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 1070.8,
+            "y": 363.5,
+            "r": 1153.5,
+            "b": 385.5
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 870,
+            "y": 160,
+            "r": 1260,
+            "b": 624
+          },
+          "covers": {
+            "label LOCAL LOAD": 0.88,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.14,
+            "body grid-node": 1
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 870,
+            "y": 160,
+            "r": 1260,
+            "b": 624
+          },
+          "covers": {
+            "label LOCAL LOAD": 0.88,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.14,
+            "body grid-node": 1
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 870,
+            "y": 160,
+            "r": 1260,
+            "b": 624
+          },
+          "covers": {
+            "label LOCAL LOAD": 0.88,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.14,
+            "body grid-node": 1
+          }
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-1440x900",
+      "labels": {
+        "PCS / MV": {
+          "x": 844.5,
+          "y": 441.8,
+          "r": 916.9,
+          "b": 463.8
+        },
+        "LOCAL LOAD": {
+          "x": 978.3,
+          "y": 584.9,
+          "r": 1072.3,
+          "b": 606.9
+        },
+        "GRID NODE": {
+          "x": 1221.1,
+          "y": 455.7,
+          "r": 1303.8,
+          "b": 477.7
+        },
+        "BESS UNIT": {
+          "x": 634,
+          "y": 461,
+          "r": 713.7,
+          "b": 483
+        },
+        "SOLAR ARRAY": {
+          "x": 451.5,
+          "y": 373.3,
+          "r": 554.8,
+          "b": 395.3
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 562.9,
+            "y": 458.1,
+            "r": 780.8,
+            "b": 601.1
+          },
+          "centre": [
+            674.7,
+            526.7
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 805,
+            "y": 445.6,
+            "r": 1015.3,
+            "b": 590.9
+          },
+          "centre": [
+            908.2,
+            514.8
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 1047.4,
+            "y": 424.5,
+            "r": 1351.3,
+            "b": 687.9
+          },
+          "centre": [
+            1178,
+            546.9
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 329,
+            "y": 410.9,
+            "r": 609.6,
+            "b": 491.8
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 434.6,
+          "y": 12,
+          "r": 1005.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 1377.8,
+          "y": 92,
+          "r": 1440,
+          "b": 138
+        },
+        "tools": {
+          "x": 583,
+          "y": 814,
+          "r": 857,
+          "b": 868
+        },
+        "legend": {
+          "x": 12,
+          "y": 144,
+          "r": 242,
+          "b": 298
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 1030,
+            "y": 160,
+            "r": 1420,
+            "b": 804
+          },
+          "clientHeight": 642,
+          "scrollHeight": 852,
+          "closeOnTop": true,
+          "covers": {
+            "label LOCAL LOAD": 0.45,
+            "label GRID NODE": 1,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "canvas",
+            "pcs-mv body": "canvas",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 1030,
+            "y": 160,
+            "r": 1420,
+            "b": 804
+          },
+          "clientHeight": 642,
+          "scrollHeight": 972,
+          "closeOnTop": true,
+          "covers": {
+            "label LOCAL LOAD": 0.45,
+            "label GRID NODE": 1,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "canvas",
+            "pcs-mv body": "canvas",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 1030,
+            "y": 160,
+            "r": 1420,
+            "b": 804
+          },
+          "clientHeight": 642,
+          "scrollHeight": 803,
+          "closeOnTop": true,
+          "covers": {
+            "label LOCAL LOAD": 0.45,
+            "label GRID NODE": 1,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "canvas",
+            "pcs-mv body": "canvas",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "pcs-mv",
+          "bess → pcs-mv body": "pcs-mv",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "bess",
+          "pcs-mv → bess body": "bess",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "bess",
+          "grid-node → bess body": "bess",
+          "grid-node → PCS / MV label": "pcs-mv",
+          "grid-node → pcs-mv body": "pcs-mv",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "pcs-mv",
+          "bess → pcs-mv body": "pcs-mv",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "bess",
+          "pcs-mv → bess body": "bess",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "bess",
+          "grid-node → bess body": "bess",
+          "grid-node → PCS / MV label": "pcs-mv",
+          "grid-node → pcs-mv body": "pcs-mv",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 634,
+            "y": 461,
+            "r": 713.7,
+            "b": 483
+          },
+          "tap": {
+            "centre": "bess",
+            "left": "bess",
+            "right": "bess",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": "bess",
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          },
+          "click": {
+            "centre": "bess",
+            "left": "bess",
+            "right": "bess",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": "bess",
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 844.5,
+            "y": 441.8,
+            "r": 916.9,
+            "b": 463.8
+          },
+          "tap": {
+            "centre": "pcs-mv",
+            "left": "pcs-mv",
+            "right": "pcs-mv",
+            "top": null,
+            "bottom": "pcs-mv",
+            "topLeft": null,
+            "topRight": "pcs-mv",
+            "bottomLeft": "pcs-mv",
+            "bottomRight": "pcs-mv"
+          },
+          "click": {
+            "centre": "pcs-mv",
+            "left": "pcs-mv",
+            "right": "pcs-mv",
+            "top": null,
+            "bottom": "pcs-mv",
+            "topLeft": null,
+            "topRight": "pcs-mv",
+            "bottomLeft": "pcs-mv",
+            "bottomRight": "pcs-mv"
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 1221.1,
+            "y": 455.7,
+            "r": 1303.8,
+            "b": 477.7
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 1030,
+            "y": 160,
+            "r": 1420,
+            "b": 804
+          },
+          "covers": {
+            "label LOCAL LOAD": 0.45,
+            "label GRID NODE": 1,
+            "body grid-node": 1
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 1030,
+            "y": 160,
+            "r": 1420,
+            "b": 804
+          },
+          "covers": {
+            "label LOCAL LOAD": 0.45,
+            "label GRID NODE": 1,
+            "body grid-node": 1
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 1030,
+            "y": 160,
+            "r": 1420,
+            "b": 804
+          },
+          "covers": {
+            "label LOCAL LOAD": 0.45,
+            "label GRID NODE": 1,
+            "body grid-node": 1
+          }
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-1024x768",
+      "labels": {
+        "PCS / MV": {
+          "x": 594.5,
+          "y": 375,
+          "r": 666.9,
+          "b": 397
+        },
+        "LOCAL LOAD": {
+          "x": 685.3,
+          "y": 478.3,
+          "r": 779.3,
+          "b": 500.3
+        },
+        "GRID NODE": {
+          "x": 862,
+          "y": 385,
+          "r": 944.8,
+          "b": 407
+        },
+        "BESS UNIT": {
+          "x": 438.2,
+          "y": 389.2,
+          "r": 517.9,
+          "b": 411.2
+        },
+        "SOLAR ARRAY": {
+          "x": 295.2,
+          "y": 322.9,
+          "r": 398.5,
+          "b": 344.9
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 396.4,
+            "y": 390,
+            "r": 557,
+            "b": 495
+          },
+          "centre": [
+            478.5,
+            440.7
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 574.9,
+            "y": 380.7,
+            "r": 728,
+            "b": 487.6
+          },
+          "centre": [
+            651.3,
+            432
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 754.4,
+            "y": 365.2,
+            "r": 960.2,
+            "b": 555
+          },
+          "centre": [
+            845,
+            454.4
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 217.2,
+            "y": 354.1,
+            "r": 428.1,
+            "b": 415.3
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 226.6,
+          "y": 12,
+          "r": 797.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 961.8,
+          "y": 92,
+          "r": 1024,
+          "b": 138
+        },
+        "tools": {
+          "x": 375,
+          "y": 682,
+          "r": 649,
+          "b": 736
+        },
+        "legend": {
+          "x": 12,
+          "y": 144,
+          "r": 242,
+          "b": 298
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 614,
+            "y": 160,
+            "r": 1004,
+            "b": 672
+          },
+          "clientHeight": 510,
+          "scrollHeight": 852,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 0.73,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.74,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 614,
+            "y": 160,
+            "r": 1004,
+            "b": 672
+          },
+          "clientHeight": 510,
+          "scrollHeight": 972,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 0.73,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.74,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 614,
+            "y": 160,
+            "r": 1004,
+            "b": 672
+          },
+          "clientHeight": 510,
+          "scrollHeight": 803,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 0.73,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.74,
+            "body grid-node": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "canvas",
+            "bess body": "canvas",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "bess",
+          "pcs-mv → bess body": "bess",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "bess",
+          "grid-node → bess body": "bess",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "bess",
+          "pcs-mv → bess body": "bess",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "bess",
+          "grid-node → bess body": "bess",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 438.2,
+            "y": 389.2,
+            "r": 517.9,
+            "b": 411.2
+          },
+          "tap": {
+            "centre": "bess",
+            "left": "bess",
+            "right": "bess",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          },
+          "click": {
+            "centre": "bess",
+            "left": "bess",
+            "right": "bess",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 594.5,
+            "y": 375,
+            "r": 666.9,
+            "b": 397
+          },
+          "tap": {
+            "centre": "pcs-mv",
+            "left": "pcs-mv",
+            "right": null,
+            "top": null,
+            "bottom": "pcs-mv",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "pcs-mv",
+            "bottomRight": "pcs-mv"
+          },
+          "click": {
+            "centre": "pcs-mv",
+            "left": "pcs-mv",
+            "right": null,
+            "top": null,
+            "bottom": "pcs-mv",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "pcs-mv",
+            "bottomRight": "pcs-mv"
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 862,
+            "y": 385,
+            "r": 944.8,
+            "b": 407
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 614,
+            "y": 160,
+            "r": 1004,
+            "b": 672
+          },
+          "covers": {
+            "label PCS / MV": 0.73,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.74,
+            "body grid-node": 1
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 614,
+            "y": 160,
+            "r": 1004,
+            "b": 672
+          },
+          "covers": {
+            "label PCS / MV": 0.73,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.74,
+            "body grid-node": 1
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 614,
+            "y": 160,
+            "r": 1004,
+            "b": 672
+          },
+          "covers": {
+            "label PCS / MV": 0.73,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 1,
+            "body pcs-mv": 0.74,
+            "body grid-node": 1
+          }
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-390x844",
+      "labels": {
+        "PCS / MV": {
+          "x": 207.9,
+          "y": 394.3,
+          "r": 274.1,
+          "b": 415.3
+        },
+        "LOCAL LOAD": null,
+        "GRID NODE": {
+          "x": 295.1,
+          "y": 415.7,
+          "r": 371.6,
+          "b": 436.7
+        },
+        "BESS UNIT": {
+          "x": 145.2,
+          "y": 417.7,
+          "r": 218.7,
+          "b": 438.7
+        },
+        "SOLAR ARRAY": {
+          "x": 75,
+          "y": 389.2,
+          "r": 168,
+          "b": 410.2
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 151,
+            "y": 424.4,
+            "r": 212.5,
+            "b": 464.2
+          },
+          "centre": [
+            182,
+            444
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 219.5,
+            "y": 420.7,
+            "r": 279.4,
+            "b": 461.5
+          },
+          "centre": [
+            249.5,
+            440.8
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 284,
+            "y": 414.9,
+            "r": 347.8,
+            "b": 481.7
+          },
+          "centre": [
+            316.1,
+            447.6
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 70,
+            "y": 408.5,
+            "r": 158,
+            "b": 434.9
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 18,
+          "y": 8,
+          "r": 371.9,
+          "b": 39.5
+        },
+        "controls": {
+          "x": 0,
+          "y": 72,
+          "r": 36.2,
+          "b": 118
+        },
+        "metrics": {
+          "x": 345,
+          "y": 72,
+          "r": 390,
+          "b": 118
+        },
+        "tools": {
+          "x": 74,
+          "y": 758,
+          "r": 316,
+          "b": 812
+        },
+        "legend": {
+          "x": 12,
+          "y": 128,
+          "r": 242,
+          "b": 282
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 374,
+            "b": 748
+          },
+          "clientHeight": 650,
+          "scrollHeight": 913,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 374,
+            "b": 748
+          },
+          "clientHeight": 650,
+          "scrollHeight": 1002,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 374,
+            "b": 748
+          },
+          "clientHeight": 650,
+          "scrollHeight": 838,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 145.2,
+            "y": 417.7,
+            "r": 218.7,
+            "b": 438.7
+          },
+          "tap": {
+            "centre": "bess",
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          },
+          "click": {
+            "centre": "bess",
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 207.9,
+            "y": 394.3,
+            "r": 274.1,
+            "b": 415.3
+          },
+          "tap": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          },
+          "click": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 295.1,
+            "y": 415.7,
+            "r": 371.6,
+            "b": 436.7
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 374,
+            "b": 748
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 374,
+            "b": 748
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 374,
+            "b": 748
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          }
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-320x640",
+      "labels": {
+        "PCS / MV": {
+          "x": 163.4,
+          "y": 292.1,
+          "r": 229.6,
+          "b": 313.1
+        },
+        "LOCAL LOAD": null,
+        "GRID NODE": {
+          "x": 232,
+          "y": 312.9,
+          "r": 308.4,
+          "b": 333.9
+        },
+        "BESS UNIT": {
+          "x": 112.9,
+          "y": 314.5,
+          "r": 186.4,
+          "b": 335.5
+        },
+        "SOLAR ARRAY": {
+          "x": 55.3,
+          "y": 291.9,
+          "r": 148.3,
+          "b": 312.9
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 125,
+            "y": 321.9,
+            "r": 173.9,
+            "b": 353.5
+          },
+          "centre": [
+            149.7,
+            337.5
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 179.5,
+            "y": 319,
+            "r": 227.1,
+            "b": 351.4
+          },
+          "centre": [
+            203.3,
+            334.9
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 230.9,
+            "y": 314.4,
+            "r": 281.6,
+            "b": 367.5
+          },
+          "centre": [
+            256.4,
+            340.4
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 60.9,
+            "y": 309.3,
+            "r": 130.7,
+            "b": 330.2
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 3.2,
+          "y": 8,
+          "r": 316.8,
+          "b": 59.5
+        },
+        "controls": {
+          "x": 0,
+          "y": 72,
+          "r": 36.2,
+          "b": 118
+        },
+        "metrics": {
+          "x": 275,
+          "y": 72,
+          "r": 320,
+          "b": 118
+        },
+        "tools": {
+          "x": 39,
+          "y": 554,
+          "r": 281,
+          "b": 608
+        },
+        "legend": {
+          "x": 12,
+          "y": 128,
+          "r": 242,
+          "b": 282
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 304,
+            "b": 544
+          },
+          "clientHeight": 446,
+          "scrollHeight": 1018,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 0.94,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 304,
+            "b": 544
+          },
+          "clientHeight": 446,
+          "scrollHeight": 1171,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 0.94,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 304,
+            "b": 544
+          },
+          "clientHeight": 446,
+          "scrollHeight": 1014,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 0.94,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 112.9,
+            "y": 314.5,
+            "r": 186.4,
+            "b": 335.5
+          },
+          "tap": {
+            "centre": "bess",
+            "left": null,
+            "right": "pcs-mv",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": "pcs-mv"
+          },
+          "click": {
+            "centre": "bess",
+            "left": null,
+            "right": "pcs-mv",
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": "pcs-mv"
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 163.4,
+            "y": 292.1,
+            "r": 229.6,
+            "b": 313.1
+          },
+          "tap": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          },
+          "click": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 232,
+            "y": 312.9,
+            "r": 308.4,
+            "b": 333.9
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 304,
+            "b": 544
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 0.94,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 304,
+            "b": 544
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 0.94,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 16,
+            "y": 96,
+            "r": 304,
+            "b": 544
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label GRID NODE": 0.94,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 1,
+            "body solar": 1,
+            "controls": 444,
+            "metrics": 638,
+            "legend": 34804
+          }
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-640x360",
+      "labels": {
+        "PCS / MV": {
+          "x": 339,
+          "y": 152,
+          "r": 411.4,
+          "b": 174
+        },
+        "LOCAL LOAD": {
+          "x": 375.4,
+          "y": 217.9,
+          "r": 469.4,
+          "b": 239.9
+        },
+        "GRID NODE": {
+          "x": 460.5,
+          "y": 174.6,
+          "r": 543.2,
+          "b": 196.6
+        },
+        "BESS UNIT": {
+          "x": 264.3,
+          "y": 176.6,
+          "r": 344,
+          "b": 198.6
+        },
+        "SOLAR ARRAY": {
+          "x": 191.4,
+          "y": 145.7,
+          "r": 294.7,
+          "b": 167.7
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 266.3,
+            "y": 182.8,
+            "r": 340.9,
+            "b": 231.6
+          },
+          "centre": [
+            304.4,
+            206.4
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 349.2,
+            "y": 178.5,
+            "r": 420.4,
+            "b": 228.2
+          },
+          "centre": [
+            384.8,
+            202.3
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 432.8,
+            "y": 171.3,
+            "r": 528,
+            "b": 259.4
+          },
+          "centre": [
+            474.7,
+            212.7
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 182.8,
+            "y": 166.1,
+            "r": 280.9,
+            "b": 194.6
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 34.6,
+          "y": 12,
+          "r": 605.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 577.8,
+          "y": 92,
+          "r": 640,
+          "b": 138
+        },
+        "tools": {
+          "x": 183,
+          "y": 274,
+          "r": 457,
+          "b": 328
+        },
+        "legend": {
+          "x": 12,
+          "y": 274,
+          "r": 177,
+          "b": 328
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 125,
+            "y": 96,
+            "r": 515,
+            "b": 264
+          },
+          "clientHeight": 166,
+          "scrollHeight": 852,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.66,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.86,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 125,
+            "y": 96,
+            "r": 515,
+            "b": 264
+          },
+          "clientHeight": 166,
+          "scrollHeight": 972,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.66,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.86,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 125,
+            "y": 96,
+            "r": 515,
+            "b": 264
+          },
+          "clientHeight": 166,
+          "scrollHeight": 803,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.66,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.86,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 264.3,
+            "y": 176.6,
+            "r": 344,
+            "b": 198.6
+          },
+          "tap": {
+            "centre": "bess",
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": null
+          },
+          "click": {
+            "centre": "bess",
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": null
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 339,
+            "y": 152,
+            "r": 411.4,
+            "b": 174
+          },
+          "tap": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          },
+          "click": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 460.5,
+            "y": 174.6,
+            "r": 543.2,
+            "b": 196.6
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 125,
+            "y": 96,
+            "r": 515,
+            "b": 264
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.66,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.86,
+            "body solar": 1
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 125,
+            "y": 96,
+            "r": 515,
+            "b": 264
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.66,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.86,
+            "body solar": 1
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 125,
+            "y": 96,
+            "r": 515,
+            "b": 264
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.66,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.86,
+            "body solar": 1
+          }
+        }
+      },
+      "legendPopoverWithCard": {
+        "expanded": true,
+        "overlapPx2": 14042,
+        "topAtDetailsCentre": "card",
+        "cardStillPinned": "bess"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-667x375",
+      "labels": {
+        "PCS / MV": {
+          "x": 354.8,
+          "y": 159.5,
+          "r": 427.2,
+          "b": 181.5
+        },
+        "LOCAL LOAD": {
+          "x": 393.1,
+          "y": 227.4,
+          "r": 487.1,
+          "b": 249.4
+        },
+        "GRID NODE": {
+          "x": 481.6,
+          "y": 182.3,
+          "r": 564.3,
+          "b": 204.3
+        },
+        "BESS UNIT": {
+          "x": 277.2,
+          "y": 184.4,
+          "r": 356.9,
+          "b": 206.4
+        },
+        "SOLAR ARRAY": {
+          "x": 201.7,
+          "y": 152.2,
+          "r": 305,
+          "b": 174.2
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 277.5,
+            "y": 190.4,
+            "r": 355.3,
+            "b": 241.3
+          },
+          "centre": [
+            317.3,
+            215
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 364,
+            "y": 185.9,
+            "r": 438.1,
+            "b": 237.7
+          },
+          "centre": [
+            401,
+            210.7
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 451,
+            "y": 178.4,
+            "r": 550.2,
+            "b": 270.2
+          },
+          "centre": [
+            494.7,
+            221.6
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 190.5,
+            "y": 173,
+            "r": 292.8,
+            "b": 202.7
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 48.1,
+          "y": 12,
+          "r": 618.9,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 604.8,
+          "y": 92,
+          "r": 667,
+          "b": 138
+        },
+        "tools": {
+          "x": 196.5,
+          "y": 289,
+          "r": 470.5,
+          "b": 343
+        },
+        "legend": {
+          "x": 12,
+          "y": 289,
+          "r": 177,
+          "b": 343
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 138.5,
+            "y": 96,
+            "r": 528.5,
+            "b": 279
+          },
+          "clientHeight": 181,
+          "scrollHeight": 852,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.57,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.78,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 138.5,
+            "y": 96,
+            "r": 528.5,
+            "b": 279
+          },
+          "clientHeight": 181,
+          "scrollHeight": 972,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.57,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.78,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 138.5,
+            "y": 96,
+            "r": 528.5,
+            "b": 279
+          },
+          "clientHeight": 181,
+          "scrollHeight": 803,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.57,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.78,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "card",
+            "grid-node body": "card"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "bess",
+          "bess → grid-node body": "bess",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "pcs-mv",
+          "pcs-mv → grid-node body": "pcs-mv",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 277.2,
+            "y": 184.4,
+            "r": 356.9,
+            "b": 206.4
+          },
+          "tap": {
+            "centre": "bess",
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          },
+          "click": {
+            "centre": "bess",
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 354.8,
+            "y": 159.5,
+            "r": 427.2,
+            "b": 181.5
+          },
+          "tap": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          },
+          "click": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 481.6,
+            "y": 182.3,
+            "r": 564.3,
+            "b": 204.3
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 138.5,
+            "y": 96,
+            "r": 528.5,
+            "b": 279
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.57,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.78,
+            "body solar": 1
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 138.5,
+            "y": 96,
+            "r": 528.5,
+            "b": 279
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.57,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.78,
+            "body solar": 1
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 138.5,
+            "y": 96,
+            "r": 528.5,
+            "b": 279
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label GRID NODE": 0.57,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.78,
+            "body solar": 1
+          }
+        }
+      },
+      "legendPopoverWithCard": {
+        "expanded": true,
+        "overlapPx2": 12436,
+        "topAtDetailsCentre": "legend",
+        "cardStillPinned": "bess"
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-932x430",
+      "labels": {
+        "PCS / MV": {
+          "x": 501.4,
+          "y": 187.2,
+          "r": 573.8,
+          "b": 209.2
+        },
+        "LOCAL LOAD": {
+          "x": 553.5,
+          "y": 268.3,
+          "r": 647.5,
+          "b": 290.3
+        },
+        "GRID NODE": {
+          "x": 663.7,
+          "y": 211.3,
+          "r": 746.4,
+          "b": 233.3
+        },
+        "BESS UNIT": {
+          "x": 405.6,
+          "y": 213.8,
+          "r": 485.3,
+          "b": 235.8
+        },
+        "SOLAR ARRAY": {
+          "x": 316.2,
+          "y": 174.2,
+          "r": 419.5,
+          "b": 196.2
+        }
+      },
+      "bounds": {
+        "bess": {
+          "rect": {
+            "x": 396.1,
+            "y": 218.6,
+            "r": 493.1,
+            "b": 282.2
+          },
+          "centre": [
+            445.8,
+            249.2
+          ]
+        },
+        "pcs-mv": {
+          "rect": {
+            "x": 503.9,
+            "y": 213,
+            "r": 597,
+            "b": 277.7
+          },
+          "centre": [
+            550,
+            243.9
+          ]
+        },
+        "grid-node": {
+          "rect": {
+            "x": 612.1,
+            "y": 203.6,
+            "r": 741.9,
+            "b": 319.6
+          },
+          "centre": [
+            668.6,
+            257.8
+          ]
+        },
+        "solar": {
+          "rect": {
+            "x": 289.9,
+            "y": 197.3,
+            "r": 416.1,
+            "b": 233.8
+          }
+        }
+      },
+      "chrome": {
+        "hud": {
+          "x": 180.6,
+          "y": 12,
+          "r": 751.4,
+          "b": 54
+        },
+        "controls": {
+          "x": 0,
+          "y": 92,
+          "r": 53.5,
+          "b": 138
+        },
+        "metrics": {
+          "x": 869.8,
+          "y": 92,
+          "r": 932,
+          "b": 138
+        },
+        "tools": {
+          "x": 329,
+          "y": 344,
+          "r": 603,
+          "b": 398
+        },
+        "legend": {
+          "x": 12,
+          "y": 344,
+          "r": 177,
+          "b": 398
+        }
+      },
+      "pinned": {
+        "bess": {
+          "kind": "Pinned equipment",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 271,
+            "y": 96,
+            "r": 661,
+            "b": 334
+          },
+          "clientHeight": 236,
+          "scrollHeight": 852,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.38,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "canvas",
+            "grid-node body": "canvas"
+          }
+        },
+        "pcs-mv": {
+          "kind": "Pinned equipment",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 271,
+            "y": 96,
+            "r": 661,
+            "b": 334
+          },
+          "clientHeight": 236,
+          "scrollHeight": 972,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.38,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "canvas",
+            "grid-node body": "canvas"
+          }
+        },
+        "grid-node": {
+          "kind": "Pinned equipment",
+          "title": "Grid Node",
+          "rect": {
+            "x": 271,
+            "y": 96,
+            "r": 661,
+            "b": 334
+          },
+          "clientHeight": 236,
+          "scrollHeight": 803,
+          "closeOnTop": true,
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.38,
+            "body solar": 1
+          },
+          "topAtTargets": {
+            "BESS UNIT label": "card",
+            "bess body": "card",
+            "PCS / MV label": "card",
+            "pcs-mv body": "card",
+            "GRID NODE label": "canvas",
+            "grid-node body": "canvas"
+          }
+        }
+      },
+      "switchWhilePinned": {
+        "click": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "grid-node",
+          "bess → grid-node body": "grid-node",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "grid-node",
+          "pcs-mv → grid-node body": "grid-node",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        },
+        "tap": {
+          "bess → BESS UNIT label": "bess",
+          "bess → bess body": "bess",
+          "bess → PCS / MV label": "bess",
+          "bess → pcs-mv body": "bess",
+          "bess → GRID NODE label": "grid-node",
+          "bess → grid-node body": "grid-node",
+          "pcs-mv → BESS UNIT label": "pcs-mv",
+          "pcs-mv → bess body": "pcs-mv",
+          "pcs-mv → PCS / MV label": "pcs-mv",
+          "pcs-mv → pcs-mv body": "pcs-mv",
+          "pcs-mv → GRID NODE label": "grid-node",
+          "pcs-mv → grid-node body": "grid-node",
+          "grid-node → BESS UNIT label": "grid-node",
+          "grid-node → bess body": "grid-node",
+          "grid-node → PCS / MV label": "grid-node",
+          "grid-node → pcs-mv body": "grid-node",
+          "grid-node → GRID NODE label": "grid-node",
+          "grid-node → grid-node body": "grid-node"
+        }
+      },
+      "labelPoints": {
+        "BESS UNIT": {
+          "rect": {
+            "x": 405.6,
+            "y": 213.8,
+            "r": 485.3,
+            "b": 235.8
+          },
+          "tap": {
+            "centre": "bess",
+            "left": "bess",
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          },
+          "click": {
+            "centre": "bess",
+            "left": "bess",
+            "right": null,
+            "top": null,
+            "bottom": "bess",
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": "bess",
+            "bottomRight": "bess"
+          }
+        },
+        "PCS / MV": {
+          "rect": {
+            "x": 501.4,
+            "y": 187.2,
+            "r": 573.8,
+            "b": 209.2
+          },
+          "tap": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          },
+          "click": {
+            "centre": null,
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null,
+            "topLeft": null,
+            "topRight": null,
+            "bottomLeft": null,
+            "bottomRight": null
+          }
+        },
+        "GRID NODE": {
+          "rect": {
+            "x": 663.7,
+            "y": 211.3,
+            "r": 746.4,
+            "b": 233.3
+          },
+          "tap": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          },
+          "click": {
+            "centre": "grid-node",
+            "left": "grid-node",
+            "right": "grid-node",
+            "top": "grid-node",
+            "bottom": "grid-node",
+            "topLeft": "grid-node",
+            "topRight": "grid-node",
+            "bottomLeft": "grid-node",
+            "bottomRight": "grid-node"
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "kind": "Hover preview",
+          "title": "BESS Unit",
+          "rect": {
+            "x": 271,
+            "y": 96,
+            "r": 661,
+            "b": 334
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.38,
+            "body solar": 1
+          }
+        },
+        "pcs-mv": {
+          "kind": "Hover preview",
+          "title": "PCS / MV Station",
+          "rect": {
+            "x": 271,
+            "y": 96,
+            "r": 661,
+            "b": 334
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.38,
+            "body solar": 1
+          }
+        },
+        "grid-node": {
+          "kind": "Hover preview",
+          "title": "Grid Node",
+          "rect": {
+            "x": 271,
+            "y": 96,
+            "r": 661,
+            "b": 334
+          },
+          "covers": {
+            "label PCS / MV": 1,
+            "label LOCAL LOAD": 1,
+            "label BESS UNIT": 1,
+            "label SOLAR ARRAY": 1,
+            "body bess": 1,
+            "body pcs-mv": 1,
+            "body grid-node": 0.38,
+            "body solar": 1
+          }
+        }
+      },
+      "legendPopoverWithCard": {
+        "expanded": true,
+        "overlapPx2": 0,
+        "topAtDetailsCentre": "legend",
+        "cardStillPinned": "bess"
+      },
+      "errors": []
+    }
+  ]
+}

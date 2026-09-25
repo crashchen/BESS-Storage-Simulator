@@ -20,13 +20,15 @@ interface EnergyFlowLegendProps {
 
 // A disclosure keeps the color and direction key one keyboard/touch action away
 // where the full card would cover the site. The card itself stays pointer-
-// transparent; only the toggle and the short-landscape popover take input.
+// transparent; only the toggle and the short-landscape popover take input. It
+// stacks above the equipment card (z-30): in short landscape the popover opens
+// over the card docked on the left; elsewhere the two do not meet.
 export function EnergyFlowLegend({ expanded, onToggle }: EnergyFlowLegendProps) {
     const detailsId = useId();
 
     return (
         <aside aria-label="Energy flow legend" className={[
-            'energy-flow-legend pointer-events-none absolute left-3 top-32 z-20 flex flex-col rounded-xl border border-slate-600/50 bg-slate-950/85 text-[11px] leading-4 text-slate-200 shadow-xl backdrop-blur-md sm:top-36',
+            'energy-flow-legend pointer-events-none absolute left-3 top-32 z-[35] flex flex-col rounded-xl border border-slate-600/50 bg-slate-950/85 text-[11px] leading-4 text-slate-200 shadow-xl backdrop-blur-md sm:top-36',
             expanded ? 'w-[min(230px,calc(100vw-1.5rem))]' : 'w-max max-w-[calc(100vw-1.5rem)]',
         ].join(' ')}>
             <h2>

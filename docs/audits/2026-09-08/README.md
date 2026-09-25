@@ -13,6 +13,8 @@
 
 **第七批遗留三项（2026-09-25已发布）**：[PR #18](https://github.com/crashchen/BESS-Storage-Simulator/pull/18)先合并为`adc1083`，修复NumericField提交值在Reset后被旧草稿覆盖的P2；[PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19)随后合并为`72dc624`，处理矮横屏图例遮挡与GRID NODE标签不可点两项P3。图例在矮横屏默认折叠，可用键盘打开；Grid标签通过R3F射线的屏幕矩形命中区选中Grid，DOM仍不接收指针；未钉选的悬停预览卡改为指针穿透。[main CI 36154001741](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36154001741)与[36154050071](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36154050071)通过；PR #18的Pages因后续push取消，[PR #19的Pages 36154056975](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36154056975)通过并发布两项。联合代码本地lint、273测试/23文件和Pages子路径构建通过；线上点检Grid标签点击、PV上限20→Reset 102→失焦保持102，未观察到console error。未改仿真、reducer、tick与结算；云端headless Chromium的短屏证据为SwiftShader软件WebGL，非GPU或实体手机，见[输入修复](../2026-09-25/numericfield-reset.md)与[场景修复](../2026-09-25/scene-legend-grid-label.md)。
 
+**钉选卡与PCS标签（待复审）**：基于main`647ffe7`的分支`claude/pinned-card-pcs-label`经[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)处理PR #19留下的两项。信息卡改为停靠在默认全景旁的空白处：竖屏在场景下方，横屏在右上，矮横屏在不可选的光伏阵列上方。已钉选时可直接点击其他设备标签或本体切换，包括GRID NODE标签。BESS与PCS标签复用Grid标签的屏幕矩形命中区，抬高的PCS标签可选中PCS。卡片可见高度因此变短，内容在卡内滚动。未改仿真、reducer、tick与结算。云端headless Chromium（SwiftShader软件WebGL，非GPU、非实体手机）的截图、点击结果与限制见[钉选卡记录](../2026-09-25/pinned-card-pcs-label.md)。
+
 **总体判断**
 
 项目已有清晰的 reducer → tick → settlement 分层和回归测试基础，作为交互演示具备可用性。结合用户提供的 CC 复核与新增正常工况对照，将 SoC 步长问题由 P1 调整为 P2。下一轮优先修太阳板朝向、状态恢复、输入回显与遮挡等直接影响演示的问题，再澄清口径、修数值边界、完善工程韧性。模型定位为视觉演示，收益应按已声明的简化假设理解。
@@ -146,9 +148,9 @@ vault中的2026-07-17“9条audit全在dev”是历史记录，可以保留；�
 | 8：累计价值拆分（PR #12，已发布） | BESS出口、实际避免进口和恢复未供负荷的假设价值逐子步累计；旧总额不改；两张主卡明确为演示价值 | 收尾完成 | 230/21、lint/Pages build；独立拆分不变式和72h过载回归；CC另核8场景及浏览器金额；`20dadaf`同提交main CI/Pages成功，线上明细点检通过，详见[第八批记录](../2026-09-23/batch-8.md) |
 | 9：多日AUTO晚峰留电（PR #14，已发布） | 夜间40%目标仅在价差覆盖效率、12%保留与峰段余量时延续到肩段；手动及结算不变 | 已发布 | 257/22、Node24 lint/Pages build；CC二次复审、main CI/Pages、同初末SoC三日对照及局限见[第九批记录](../2026-09-23/batch-9.md)；演示值增量不能视为现金收入 |
 | 10：晚峰留电临界价显示（PR #16，已发布） | Controls从AUTO同一函数显示约数；无法越过可编辑电价上限时提示；策略与结算不变 | 已发布 | Node24 lint/260个测试/Pages build；用户安排CC复审、main CI/Pages成功及线上默认价点检见[第十批记录](../2026-09-24/batch-10.md) |
-| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第八至十批及PR #18/#19已合并；历史P2/P3三项见[输入修复](../2026-09-25/numericfield-reset.md)与[场景修复](../2026-09-25/scene-legend-grid-label.md)；钉选卡遮Grid标签、抬高PCS标签的空白命中仍为独立待办 | 随批次同步 | 文档记录核对日期、commit、检查与部署run；历史drift清单不等于当前全部未修；未完成项保留清单 |
+| 持续：housekeeping及剩余体验 | 各批次同步仓库/vault；第八至十批及PR #18/#19已合并；历史P2/P3三项见[输入修复](../2026-09-25/numericfield-reset.md)与[场景修复](../2026-09-25/scene-legend-grid-label.md)；钉选卡遮Grid标签、抬高PCS标签的空白命中两项经[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)待复审，见[钉选卡记录](../2026-09-25/pinned-card-pcs-label.md) | 随批次同步 | 文档记录核对日期、commit、检查与部署run；历史drift清单不等于当前全部未修；未完成项保留清单 |
 
-第七批原先留下的三项在2026-09-25的PR #18/#19中处理：NumericField的“改值→Reset→失焦”回归先于修复提交，Grid标签和矮横屏图例有云端浏览器对照。原始复现、影响和当时的待办描述保留在[第七批记录](../2026-09-22/batch-7.md)，作为历史基线，不再代表当前未修状态。当前仍需单独处理：已钉选的信息卡会盖住Grid标签；抬高的PCS标签在窄/矮视口中心点可能点空。两者在PR #19的[边界与后续事项](../2026-09-25/scene-legend-grid-label.md#边界与后续事项)中有具体条件和替代操作。
+第七批原先留下的三项在2026-09-25的PR #18/#19中处理：NumericField的“改值→Reset→失焦”回归先于修复提交，Grid标签和矮横屏图例有云端浏览器对照。原始复现、影响和当时的待办描述保留在[第七批记录](../2026-09-22/batch-7.md)，作为历史基线，不再代表当前未修状态。当前仍需单独处理：已钉选的信息卡会盖住Grid标签；抬高的PCS标签在窄/矮视口中心点可能点空。两者在PR #19的[边界与后续事项](../2026-09-25/scene-legend-grid-label.md#边界与后续事项)中有具体条件和替代操作。2026-09-25另起分支处理这两项，经[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)待复审，见[钉选卡记录](../2026-09-25/pinned-card-pcs-label.md)。
 
 修复后再考虑：配置保存/导出、对比两个运行场景、累计出口/进口价值图表、可解释的演示preset。年度真实电价/发电量、交易优化或FCR是新的产品范围，不把它们缺失算作本次缺陷。
 

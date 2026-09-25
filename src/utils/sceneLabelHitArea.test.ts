@@ -14,7 +14,7 @@ const element = (rect: Rect) => ({
 const LABEL_OFFSET = new Vector3(1.5, SCENE_3D.models.mainTransformer.size[1] * SCENE_3D.equipmentScale + 0.1, 0);
 const LABEL_SIZE = { width: 83, height: 22 };
 
-function setup(canvas: Rect = { left: 0, top: 0, width: 1280, height: 720 }) {
+function setup(canvas: Rect = { left: 0, top: 0, width: 1280, height: 720 }, liftPx = 0) {
     const camera = new PerspectiveCamera(SCENE_3D.camera.fov, canvas.width / canvas.height, SCENE_3D.camera.near, SCENE_3D.camera.far);
     camera.position.set(...SCENE_3D.camera.position);
     camera.lookAt(...SCENE_3D.orbit.target);
@@ -34,7 +34,7 @@ function setup(canvas: Rect = { left: 0, top: 0, width: 1280, height: 720 }) {
         x: canvas.left + ((anchor.x + 1) / 2) * canvas.width,
         y: canvas.top + ((1 - anchor.y) / 2) * canvas.height,
     };
-    const label: Rect = { left: centre.x - LABEL_SIZE.width / 2, top: centre.y - LABEL_SIZE.height / 2, ...LABEL_SIZE };
+    const label: Rect = { left: centre.x - LABEL_SIZE.width / 2, top: centre.y - LABEL_SIZE.height / 2 - liftPx, ...LABEL_SIZE };
     let labelRect: Rect = label;
     proxy.raycast = createLabelRaycast(() => element(labelRect), () => element(canvas));
 
@@ -91,6 +91,17 @@ describe('createLabelRaycast', () => {
 
         const hits = castAt(centre.x, centre.y);
         expect(hits.map(hit => hit.object)).toEqual([proxy, blocker]);
+    });
+
+    it('follows the drawn rectangle when CSS lifts the label off its anchor', () => {
+        // Narrow and short screens lift the PCS / MV tag 18 px, which can leave it
+        // over empty space. The hit area must use the drawn box, not the anchor.
+        const { proxy, label, centre, castAt } = setup(undefined, 18);
+        expect(castAt(centre.x, centre.y - 18)[0]?.object).toBe(proxy);
+        expect(castAt(label.left + 1, label.top + 1)[0]?.object).toBe(proxy);
+        // Inside the unlifted box, but below the drawn one.
+        expect(castAt(centre.x, label.top + label.height + 1)).toHaveLength(0);
+        expect(castAt(centre.x, centre.y)).toHaveLength(0);
     });
 
     it('maps the ray through an offset canvas rectangle', () => {
