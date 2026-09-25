@@ -1,0 +1,87 @@
+{
+  "url": "http://127.0.0.1:4302/BESS-Storage-Simulator/",
+  "chromium": "141.0.7390.37",
+  "results": [
+    {
+      "viewport": "1280x720",
+      "Grid body": {
+        "point": [
+          1036.9,
+          443.9
+        ],
+        "previewShown": "12/12",
+        "pointerOverCard": "0/12",
+        "sequence": "PPPPPPPPPPPP",
+        "clickSelectsGrid": true
+      },
+      "GRID NODE label (right edge)": {
+        "point": [
+          1147.5,
+          374.5
+        ],
+        "previewShown": "12/12",
+        "pointerOverCard": "0/12",
+        "sequence": "PPPPPPPPPPPP",
+        "clickSelectsGrid": true
+      },
+      "withBessPinned": {
+        "pinnedCardCoversGridLabel": true,
+        "selectionAfterLabelClick": "bess"
+      }
+    },
+    {
+      "viewport": "390x844",
+      "Grid body": {
+        "point": [
+          316.1,
+          447.6
+        ],
+        "previewShown": "12/12",
+        "pointerOverCard": "0/12",
+        "sequence": "PPPPPPPPPPPP",
+        "clickSelectsGrid": true
+      },
+      "GRID NODE label (right edge)": {
+        "point": [
+          365.6,
+          426.2
+        ],
+        "previewShown": "12/12",
+        "pointerOverCard": "0/12",
+        "sequence": "PPPPPPPPPPPP",
+        "clickSelectsGrid": true
+      },
+      "withBessPinned": {
+        "pinnedCardCoversGridLabel": true,
+        "selectionAfterLabelClick": "bess"
+      }
+    },
+    {
+      "viewport": "640x360",
+      "Grid body": {
+        "point": [
+          474.7,
+          212.7
+        ],
+        "previewShown": "12/12",
+        "pointerOverCard": "0/12",
+        "sequence": "PPPPPPPPPPPP",
+        "clickSelectsGrid": true
+      },
+      "GRID NODE label (right edge)": {
+        "point": [
+          537.2,
+          185.6
+        ],
+        "previewShown": "12/12",
+        "pointerOverCard": "0/12",
+        "sequence": "PPPPPPPPPPPP",
+        "clickSelectsGrid": true
+      },
+      "withBessPinned": {
+        "pinnedCardCoversGridLabel": false,
+        "selectionAfterLabelClick": "grid-node"
+      }
+    }
+  ]
+}

@@ -81,6 +81,8 @@ Batch 9's evening-peak AUTO rule was released through [PR #14](https://github.co
 
 Batch 10 was released through [PR #16](https://github.com/crashchen/BESS-Storage-Simulator/pull/16) as `c4a467a`. Controls displays the peak-tariff threshold calculated by the same AUTO policy function, with an explicit warning when no editable price can exceed it. The estimate excludes load, PV, PCC and transfer-limit effects. User-arranged CC review found no blocker; four small copy, formatting and accessibility follow-ups were included before merge. [Main CI 35982356235](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356235) and [Pages 35982356587](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356587) passed. The live Controls panel shows about €178.78/MWh at default tariffs and the PCC caveat, with no console error observed during the smoke check. Node 24.21.0 lint, 260 tests across 22 files, and the Pages-path build passed; see the [batch 10 record](docs/audits/2026-09-24/batch-10.md).
 
+The two batch 7 scene follow-ups are in review on `claude/sweet-clarke-8xtncd`, from main `477293d`. On short landscape screens (≤430px high) the flow legend now starts as a keyboard-operable chip beside the scene toolbar and opens as a popover. The SOLAR ARRAY label and PV array therefore stay visible at 640×360 and 667×375. Taller layouts keep the expanded card, now clear of the Controls handle. The offset GRID NODE label selects Grid through a screen-space hit area in R3F's raycast, while the label element stays pointer-transparent. Unpinned hover previews no longer intercept the pointer; on desktop they had covered the transformer and its label. Node 24.21.0 lint, **268 tests across 23 files**, and the Pages-path build pass. Headless Chromium checks with software (SwiftShader) WebGL, not a GPU or phone, are recorded with screenshots in the [follow-up record](docs/audits/2026-09-25/scene-legend-grid-label.md). No simulation or settlement changes.
+
 Batches 2–3 ([PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5)) and batch 4 ([PR #6](https://github.com/crashchen/BESS-Storage-Simulator/pull/6)) passed user-arranged CC review and were merged on September 20. The preceding batch-4 production baseline was `be9eb17`, with [CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) and [Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) successful. The Pages run exercised quality checks, same-run artifact download, and deployment. Live smoke checks confirmed the three models, updated yield/value wording, running telemetry and chart, with no console errors observed. That 197/18 suite is the historical batch-4 release; the next releases were batch 5 at `29c81d7` (214/21) and batch 6 at `b5cdf58` (221/21).
 
 The first batch was released through [PR #4](https://github.com/crashchen/BESS-Storage-Simulator/pull/4) as `053c82c`; its original 146/15 checks and deployment evidence remain in the audit history.
@@ -104,12 +106,13 @@ src/
   hooks/
     useGridSimulation.ts         RAF tick loop, throttled React updates, history snapshots
     useDrawerLayout.ts           Shared responsive drawer state and equipment-overlay coordination
+    useMediaQuery.ts             Media-query subscription (flow-legend layout default)
   components/
     SimulationViewport.tsx       Canvas wrapper with WebGL error boundary and asset hover/click
     SceneCameraControls.tsx     Automatic framing, retained inspection on resize, view-only restore
     EquipmentModel.tsx          Shared metre-scale equipment rendering
-    SceneLabel.tsx              Screen-readable equipment names at 3D anchors
-    EnergyFlowLegend.tsx        Color and direction key for the animated routes
+    SceneLabel.tsx              Screen-readable equipment names at 3D anchors; opt-in label hit area
+    EnergyFlowLegend.tsx        Collapsible color and direction key for the animated routes
     MicrogridScene.tsx           3D scene: 7 energy-flow particle paths, BESS SoC, LOCAL LOAD node
     SceneAssetInfoCard.tsx       Hover/click info card for BESS / PCS-MV / Grid Node
     StatusHud.tsx                Compact live status bar
@@ -136,6 +139,7 @@ src/
     sceneFlowVisuals.ts          Shared scene/legend flow colors
     bessDisplay.ts               Display-only: sampled BESS action, run state, dispatch intent, known limits
     sceneOverview.ts             Perspective fit for the curated site envelope
+    sceneLabelHitArea.ts         Screen-space raycast so a pointer-transparent label can select its equipment
     sceneAssetInfo.ts            Structured asset info for the 3D info cards
     gridSelectors.ts             Derived state (battery duration, total grid connection)
     importTelemetryChart.ts      Native import transport; retry/cache logic stays in the chart boundary
