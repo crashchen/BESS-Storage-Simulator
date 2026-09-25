@@ -1,6 +1,6 @@
 # 场景交互后续：钉选信息卡让出场景，BESS/PCS标签可点
 
-日期：2026-09-25（Europe/Berlin）。基线为main `647ffe7`（PR #20合并后）。改动位于新分支`claude/pinned-card-pcs-label`，没有沿用已合并的PR #19分支，经[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)等待复审。本代理没有调用CC，没有合并或推送main。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
+日期：2026-09-25（Europe/Berlin）。基线为main `647ffe7`（PR #20合并后）。改动最初位于新分支`claude/pinned-card-pcs-label`，没有沿用已合并的PR #19分支；[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)现已合并发布为`0c03017`。开发阶段没有调用CC或直接推送main；Codex随后复审并按用户要求合并。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
 
 ## 问题与基线复现
 
@@ -174,3 +174,7 @@ main竖屏中与抽屉把手的重叠只是几何相交：把手为z-40，位于
 - 矮横屏的停靠卡片与悬停预览会盖住SOLAR ARRAY标签与光伏阵列的六到八成。这是用户打开的覆盖层，阵列不可选中，关闭卡片即恢复。矮横屏中若在钉选时展开图例，浮层会压住卡片左下部，收起图例后恢复。
 - 窄横屏窗口（高>430px、宽<710px，如640×480）中，卡片按`100vw − 320px`变窄。640×480时它压住SOLAR ARRAY标签右下角约20×19px；该标签不可选中，而且展开的图例（位置与main相同）本已盖住它的约七成。800×500这类矮桌面窗口中，卡片只有约160px高。
 - 系数依赖当前取景包络和场地布置。修改`SCENE_3D.framing`、设备位置或标签位置后，应重跑`card-label-check.mjs`；它是手动脚本，不在CI中运行。
+
+## 合并与发布收尾
+
+[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)经Codex复审未发现阻塞项，按用户要求合并为`0c0301796f87aaba1c34eb415868cfe709953ffb`。同提交[main CI 36176889549](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889549)与[Pages 36176889988](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889988)均成功。Codex在Node 26.8.2隔离工作区复跑lint、276测试/23文件、Pages子路径构建及diff check，核对16个分支视口的原始JSON和截图；没有独立重跑完整浏览器脚本。用户计划之后人工验证视觉效果，尚未完成，因此不能把云端headless证据写成用户验收或实体设备验收。

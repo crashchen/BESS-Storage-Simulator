@@ -32,7 +32,7 @@ CC复审后本地真实浏览器再次点检：PCS标签的CSS `pointer-events`�
 
 ## 第七批发布时的已知后续事项（2026-09-25已复核状态）
 
-以下三项保留第七批发布时的复现描述。其后，NumericField P2经[PR #18](https://github.com/crashchen/BESS-Storage-Simulator/pull/18)合并修复；矮横屏图例和Grid标签两项P3经[PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19)合并修复。当前仍有钉选卡盖住Grid标签、抬高PCS标签部分区域点空两个独立交互待办，见[场景修复记录](../2026-09-25/scene-legend-grid-label.md#边界与后续事项)。这两项的修复经[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)待复审，见[钉选卡记录](../2026-09-25/pinned-card-pcs-label.md)。
+以下三项保留第七批发布时的复现描述。其后，NumericField P2经[PR #18](https://github.com/crashchen/BESS-Storage-Simulator/pull/18)合并修复；矮横屏图例和Grid标签两项P3经[PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19)合并修复。PR #19另发现的钉选卡盖住Grid标签、抬高PCS标签部分区域点空两项，已由[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)合并发布为`0c03017`，见[钉选卡记录](../2026-09-25/pinned-card-pcs-label.md)。用户计划的人工视觉检查尚未完成。
 
 - **P3 — 矮横屏图例遮挡**：640×360与667×375时，左上图例分别盖住SOLAR ARRAY标签约50px与40px，且压住阵列。需设计可折叠或精简图例，兼顾触摸/键盘入口；单纯移动图例可能挤占HUD或设备区。当前有颜色/方向说明，但这两个宽度的场景辨识仍受影响。
 - **P3 — Grid标签点击**：标签为保持Canvas命中而整体穿透；Grid标签横移1.5m后多数区域位于主变右侧空白，点标签不会选中Grid。BESS与PCS标签下方有机身，可点中设备。恢复Grid标签交互需单独决定DOM转发点击及悬停的行为，并做真实浏览器回归。
