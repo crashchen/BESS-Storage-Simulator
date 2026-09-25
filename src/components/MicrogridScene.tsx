@@ -444,7 +444,9 @@ const LoadBuilding = memo(function LoadBuilding({
             <Suspense fallback={<EquipmentModelPlaceholder model={TRANSFORMER_MODEL} />}>
                 <EquipmentModel model={TRANSFORMER_MODEL} />
             </Suspense>
-            <SceneLabel position={[1.5, TRANSFORMER_HEIGHT + 0.1, 0]} highlighted={isActive} alert={overloaded}>
+            {/* Offset beside the transformer for label spacing; its hit area keeps
+                the whole visible tag selecting Grid, not just the part over the model. */}
+            <SceneLabel position={[1.5, TRANSFORMER_HEIGHT + 0.1, 0]} highlighted={isActive} alert={overloaded} hitArea>
                 GRID NODE
             </SceneLabel>
         </group>

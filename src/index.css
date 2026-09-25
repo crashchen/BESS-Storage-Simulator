@@ -42,10 +42,71 @@
   }
 }
 
+.energy-flow-legend__toggle[aria-expanded="true"] .energy-flow-legend__chevron {
+  transform: rotate(180deg);
+}
+
 @media (max-width: 420px) and (max-height: 600px) {
   .energy-flow-legend {
     top: 64px;
     left: 50%;
     transform: translateX(-50%);
+  }
+}
+
+/* Short landscape (COMPACT_LEGEND_QUERY): the full card would cover the PV
+   array, so the legend starts as a chip beside the scene toolbar (same height
+   and baseline) and its details open as a popover above it. The popover stops
+   142px from the top, below the Controls handle, and scrolls rather than reach
+   the handle or HUD. */
+@media (orientation: landscape) and (max-height: 430px) {
+  .energy-flow-legend {
+    top: auto;
+    bottom: 2rem;
+    left: 0.75rem;
+    width: max-content;
+    transform: none;
+  }
+
+  .energy-flow-legend__toggle {
+    min-height: 3.25rem;
+    padding-block: 0;
+    padding-inline: 0.625rem;
+  }
+
+  .energy-flow-legend__title {
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  .energy-flow-legend__toggle[aria-expanded="true"] .energy-flow-legend__chevron {
+    transform: none;
+  }
+
+  .energy-flow-legend__toggle[aria-expanded="false"] .energy-flow-legend__chevron {
+    transform: rotate(180deg);
+  }
+
+  .energy-flow-legend__details {
+    @apply pointer-events-auto absolute bottom-[calc(100%+6px)] left-0 w-[min(230px,calc(100vw-1.5rem))] max-h-[calc(100dvh-234px)] overflow-y-auto overscroll-contain rounded-xl border border-slate-600/50 bg-slate-950/85 py-1.5 shadow-xl backdrop-blur-md;
+  }
+
+  .energy-flow-legend__details dl > * {
+    margin-block: 0;
+  }
+
+  .energy-flow-legend__details > p:first-child {
+    margin-bottom: 0.125rem;
+  }
+
+  .energy-flow-legend__details > p:last-child {
+    margin-top: 0.125rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 430px) and (max-width: 639px) {
+  .energy-flow-legend__swatches {
+    display: none;
   }
 }

@@ -108,6 +108,21 @@ describe('SceneAssetInfoCard', () => {
         expect(card.className).toMatch(/max-h-\[/);
     });
 
+    it('lets a hover preview pass pointer input through; a pinned card takes it', () => {
+        // On desktop the preview opens over the Grid transformer and its label. If
+        // it caught the pointer, hover would flicker and the click would miss Grid.
+        const { rerender } = render(
+            <SceneAssetInfoCard assetId="grid-node" gridState={makeGridState()} pinned={false} onClose={vi.fn()} />,
+        );
+        const card = screen.getByTestId('scene-asset-info-card');
+        expect(card).toHaveClass('pointer-events-none');
+        expect(card).not.toHaveClass('pointer-events-auto');
+
+        rerender(<SceneAssetInfoCard assetId="grid-node" gridState={makeGridState()} pinned onClose={vi.fn()} />);
+        expect(card).toHaveClass('pointer-events-auto');
+        expect(card).not.toHaveClass('pointer-events-none');
+    });
+
     it('calls onClose when the pinned card close button is clicked', async () => {
         const user = userEvent.setup();
         const onClose = vi.fn();
