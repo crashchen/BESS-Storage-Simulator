@@ -110,3 +110,30 @@
     display: none;
   }
 }
+
+/* Short landscape (COMPACT_LEGEND_QUERY): the bands above and below the site
+   are too short for the equipment card, so it docks over the solar array, which
+   is not selectable. It sits right of the Controls handle, below the HUD and
+   above the legend chip, and ends left of the BESS (about 16% of the viewport
+   height left of centre in the default overview). */
+@media (orientation: landscape) and (max-height: 430px) {
+  .scene-asset-card {
+    top: 62px;
+    right: calc(50% + 16dvh + 8px);
+    bottom: auto;
+    left: 62px;
+    width: auto;
+    max-width: 390px;
+    max-height: calc(100dvh - 156px);
+    translate: none;
+  }
+}
+
+/* Below 640px wide the Controls handle and HUD are smaller. */
+@media (orientation: landscape) and (max-height: 430px) and (max-width: 639px) {
+  .scene-asset-card {
+    top: 48px;
+    left: 44px;
+    max-height: calc(100dvh - 142px);
+  }
+}

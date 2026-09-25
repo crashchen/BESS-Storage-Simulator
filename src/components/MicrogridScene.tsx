@@ -245,7 +245,9 @@ const BESSContainer = memo(function BESSContainer({
                 />
             </mesh>
 
-            <SceneLabel position={[0, BESS_MODEL_HEIGHT + 0.38, 0]} highlighted={interaction.isHighlighted}>
+            {/* The tag sits above the roof and can overhang it, especially on
+                narrow screens; the hit area makes the whole tag select BESS. */}
+            <SceneLabel position={[0, BESS_MODEL_HEIGHT + 0.38, 0]} highlighted={interaction.isHighlighted} hitArea>
                 BESS UNIT
             </SceneLabel>
         </group>
@@ -559,6 +561,9 @@ const SitePads = memo(function SitePads({ pcsInteraction }: { pcsInteraction: As
                     position={[-PCS_SKID_MODEL.size[0] * SCENE_3D.equipmentScale / 6, PCS_SKID_HEIGHT + 0.5, 0]}
                     highlighted={pcsActive}
                     mobileLift
+                    // The narrow/short-screen lift moves the tag off the skid; the hit
+                    // area keeps the lifted tag selecting PCS.
+                    hitArea
                 >
                     PCS / MV
                 </SceneLabel>
