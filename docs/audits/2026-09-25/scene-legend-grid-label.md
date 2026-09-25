@@ -1,6 +1,6 @@
 # 第七批场景遗留修复：矮横屏能流图例与GRID NODE标签点击
 
-日期：2026-09-25（Europe/Berlin）。基线为main `477293dd191a4f74339e2bd8eca5c28fae1c01f7`（第十批发布记录合并后），改动位于分支`claude/sweet-clarke-8xtncd`，经[PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19)等待复审。本代理没有调用CC，没有合并或推送main。它与同日独立的NumericField Reset修复（PR #18）互不依赖；两者没有改同一行，但合并后需同步两处“仍待处理”的状态句，见文末。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
+日期：2026-09-25（Europe/Berlin）。基线为main `477293dd191a4f74339e2bd8eca5c28fae1c01f7`（第十批发布记录合并后），改动原在分支`claude/sweet-clarke-8xtncd`。经[PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19)合并为main `72dc624bb24dfb33d3e3be73e6265c52ebe133a4`，同提交CI 36154050071与Pages 36154056975成功。云端代理没有调用CC；合并由Codex按用户要求执行。它与同日先合并的NumericField Reset修复（PR #18）没有代码冲突；两者合并后的联合树通过lint、273测试/23文件和Pages子路径构建。线上Grid标签可点击选中；PV上限20→Reset 102→失焦保持102，未观察到console error。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
 
 ## 问题与基线复现
 
@@ -200,4 +200,4 @@ Node 24.21.0（nodejs.org官方linux-x64发行包，SHA256已校验）下`npm ci
 - 桌面（1280×720）和390×844默认全景中，钉选卡片覆盖GRID NODE标签；已钉选其他设备时，点击标签不会切换到Grid，需先关闭卡片或使用工具栏Grid按钮。main相同（表6）。
 - main上靠近预览卡的鼠标结果取决于卡片何时渲染，重复运行可能不同：例如1280×720标签左缘的鼠标点击，本次选中Grid，此前一次同条件运行落在卡片上（该次结果未保留在仓库）。分支的预览卡不接收指针，本次各视口结果一致。
 - 任意手动相机姿态下的标签碰撞、GLB失败重试时`useProgress`的状态仍按第七批记录待处理。
-- 与PR #18的协调：本分支未改CLAUDE.md第七批段落中“Grid-label click behavior ... remain open”一句，也未改审计计划表中“横屏图例、Grid标签点击仍为独立待办”的行，以免与PR #18冲突。两者都合并后，应把这两处改为指向本记录。
+- 与PR #18的协调：两条PR以同一基线独立开发，合并时没有代码冲突；随后在仓库发布记录中把`CLAUDE.md`和审计计划表的旧“仍待处理”状态改为指向本记录。
