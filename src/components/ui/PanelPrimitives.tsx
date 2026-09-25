@@ -113,7 +113,9 @@ export function NumericField({
         const trimmedDraft = draft.trim();
         const n = Number(trimmedDraft);
         if (trimmedDraft !== '' && Number.isFinite(n) && n >= min && n <= max) {
-            setDraftState({ sourceValue: value, draft, invalid: false });
+            // Key the settled draft to the committed value. Keeping the previous
+            // value would revive it (and recommit it) when Reset restores that value.
+            setDraftState({ sourceValue: n, draft: String(n), invalid: false });
             onChange(n);
         } else {
             setDraftState({ sourceValue: value, draft, invalid: true });
