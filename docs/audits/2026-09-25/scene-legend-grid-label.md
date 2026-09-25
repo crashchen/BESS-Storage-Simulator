@@ -1,6 +1,6 @@
 # 第七批场景遗留修复：矮横屏能流图例与GRID NODE标签点击
 
-日期：2026-09-25（Europe/Berlin）。基线为main `477293dd191a4f74339e2bd8eca5c28fae1c01f7`（第十批发布记录合并后），改动位于分支`claude/sweet-clarke-8xtncd`，开PR等待复审。本代理没有调用CC，没有合并或推送main。它与同日独立的NumericField Reset修复（PR #18）互不依赖；两者没有改同一行，但合并后需同步两处“仍待处理”的状态句，见文末。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
+日期：2026-09-25（Europe/Berlin）。基线为main `477293dd191a4f74339e2bd8eca5c28fae1c01f7`（第十批发布记录合并后），改动位于分支`claude/sweet-clarke-8xtncd`，经[PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19)等待复审。本代理没有调用CC，没有合并或推送main。它与同日独立的NumericField Reset修复（PR #18）互不依赖；两者没有改同一行，但合并后需同步两处“仍待处理”的状态句，见文末。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
 
 ## 问题与基线复现
 
