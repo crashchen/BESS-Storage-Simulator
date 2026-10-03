@@ -1,6 +1,6 @@
 # 矮横屏信息卡精简与SOLAR ARRAY标签避让
 
-日期：2026-10-03（Europe/Berlin）。基线为main `9cc3661`（PR #23合并后）。分支`claude/compact-card-solar-label`有两个代码提交：`90d86c7`精简矮横屏卡片，`568d312`在卡片出现时隐藏SOLAR ARRAY标签。范围和约束来自用户转述的Codex意见：两项放同一批、分两个提交，桌面与竖屏布局不动。尚未推送、复审或合并，也没有调用CC复审。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
+日期：2026-10-03（Europe/Berlin）。基线为main `9cc3661`（PR #23合并后）。分支`claude/compact-card-solar-label`有两个代码提交：`90d86c7`精简矮横屏卡片，`568d312`在卡片出现时隐藏SOLAR ARRAY标签。范围和约束来自用户转述的Codex意见：两项放同一批、分两个提交，桌面与竖屏布局不动。Codex已复审，未发现代码阻塞（见“Codex复审”）；尚未合并。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
 
 ## 问题与基线
 
@@ -76,7 +76,7 @@ Node 26.10.0下的lint、测试与构建同样通过。Three vendor chunk 724.92
 **方法**：`docs/audits/2026-10-03/compact-card-check.mjs`逐视口执行：
 1. 经工具栏依次钉选三台设备，记录卡片可视高度与内容高度。有Details时，用键盘走Close→Tab→Enter并记录展开后的高度。
 2. 钉选BESS并展开后：
-   - 等待3秒；
+   - 等待3秒（模拟保持默认的停止状态，读数不变）；
    - 打开Metrics抽屉，再用Escape关闭；
    - 工具栏切到PCS再切回；
    - 点击GRID NODE标签；
@@ -87,7 +87,7 @@ Node 26.10.0下的lint、测试与构建同样通过。Three vendor chunk 724.92
 4. 鼠标悬停三台设备本体，记录预览高度和卡内的可聚焦控件。
 5. 无卡片、钉选、预览、关闭后各记录一次SOLAR ARRAY标签的visibility，以及标签矩形中未被卡片覆盖的面积。
 
-另用PR #21的`docs/audits/2026-09-25/card-label-check.mjs`在16个视口回归停靠位置、钉选时切换（鼠标与触摸）、三个设备标签九点命中和矮横屏图例浮层。
+另用PR #21的`docs/audits/2026-09-25/card-label-check.mjs`在其默认的15个视口回归停靠位置、钉选时切换（鼠标与触摸）、三个设备标签九点命中和矮横屏图例浮层。
 
 **表1 卡片内容高度（px；可视高度/内容高度，依次为BESS、PCS、Grid）**
 
@@ -112,15 +112,15 @@ Node 26.10.0下的lint、测试与构建同样通过。Three vendor chunk 724.92
 - **非矮横屏不变**：1280×720、1440×900、390×844、768×1024与640×480的内容高度与main逐像素相同（例如1280×720均为852/958/803），没有Details。
 - **键盘与折叠状态**：七个矮横屏视口中：
   - 钉选后焦点都在Close，Tab到Details，Enter展开；
-  - 3秒更新和Metrics抽屉开合后仍展开；
+  - 等待3秒、Metrics抽屉开合后仍展开。等待期间模拟停止、读数不变，所以这一步不能说明读数变化时Details保持展开；这一点由App用例（模拟运行5帧）和下文Codex复审的浏览器检查覆盖；
   - 工具栏切换、点击GRID NODE标签切到Grid、Escape后重开、Close后重开，都恢复折叠。
 - **悬停预览**：所有视口的预览都没有可聚焦控件。
-- **Solar标签**：七个矮横屏视口中，钉选卡与预览出现时标签为hidden，关闭后恢复visible，未遮挡面积与无卡片时相同（约2253或1995px²）。非矮横屏视口在钉选与预览时都保持完整可见。
+- **Solar标签**：七个矮横屏视口中，钉选卡与预览出现时标签为hidden，关闭后恢复visible，未遮挡面积与无卡片时相同（约2253或1995px²）。非矮横屏视口不受新规则影响，标签始终为visible：1280×720、1440×900、390×844与768×1024的未遮挡面积在钉选与预览时不变；640×480钉选与预览时为1877px²（无卡片时2253px²），即PR #21已记录的SOLAR标签一角仍被卡片压住，main测量相同。
 - **滚动**：
   - 滚轮在12个视口都滚动了卡片（52–120px，滚满一格或到底），相机都没有移动。
   - 聚焦Close后，PageDown在11/12个视口移动了卡片，End在11/12个视口到达底部。844×390的PageDown读数为0，随后End到底；640×480（非矮横屏，本批未改）End停在133/810px。
   - PR #21记录已注明headless平滑滚动的读数会滞后，键盘滚动读数只作参考。
-- **PR #21回归**：16个视口中：
+- **PR #21回归**：15个视口中：
   - 钉选时切换另两台设备的鼠标与触摸操作都是12/12；
   - 三个设备标签九点都能命中；
   - 矮横屏图例浮层位于卡片之上，卡片保持钉选；
@@ -144,11 +144,24 @@ Node 26.10.0下的lint、测试与构建同样通过。Three vendor chunk 724.92
 - **滚动未能验证**：这个iframe环境中，滚轮与PageDown都不能滚动卡片，main构建同样如此，所以没有在真实GPU下验证滚动。卡片内的Details位置是用脚本把卡片滚到底后再用真实鼠标点击的。滚动结论以上节headless结果为准。
 - 本轮从最后一个视口开始记录console，未见error；更早页面的console未被记录。
 
+### Codex复审
+
+用户转述的Codex复审结论是未发现代码阻塞：
+- Node 24.21.0下lint、282个测试 / 23文件、Pages路径构建均通过；
+- 在SwiftShader WebGL的浏览器中复跑三个尺寸，并补充确认：模拟运行、读数实际变化时Details保持展开，抽屉开合后保留，切换设备后折叠。这是本批唯一在浏览器中让读数实际变化的检查；Codex的复跑脚本与截图未存入本目录。
+
+本记录据此更正三处：
+- PR #21回归脚本跑的是15个视口，原写16个；
+- `compact-card-check.mjs`的3秒等待没有启动模拟；
+- 640×480的Solar标签一角仍被卡片压住，只是不受新规则影响，原写“完整可见”。
+
+真实GPU下的滚动与真机触摸仍待验证。
+
 ### 证据文件
 
 `compact-card-solar-label/`下：
 - `main-results.json`、`branch-results.json`：本批脚本的原始输出；
-- `card-label-branch-results.json`、`card-label-main-sample-results.json`：PR #21回归脚本的分支16视口结果与main两视口抽样；
+- `card-label-branch-results.json`、`card-label-main-sample-results.json`：PR #21回归脚本的分支15视口结果与main两视口抽样；
 - 若干headless与真实GPU截图。
 
 ## 边界与后续

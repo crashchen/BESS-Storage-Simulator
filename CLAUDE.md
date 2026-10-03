@@ -177,7 +177,7 @@ The later user-supplied CC report confirms default-overview placement and label/
 
 ### Short-landscape card summary and Solar label (2026-10-03, branch)
 
-`claude/compact-card-solar-label` starts at main `9cc3661`. Commits `90d86c7` (card summary) and `568d312` (Solar label) address the two short-landscape items in the CC real-GPU report, within the scope and constraints Codex agreed. Not yet pushed or reviewed. The change touches no simulation, reducer, tick or settlement code. Record: `docs/audits/2026-10-03/compact-card-solar-label.md`.
+`claude/compact-card-solar-label` starts at main `9cc3661`. Commits `90d86c7` (card summary) and `568d312` (Solar label) address the two short-landscape items in the CC real-GPU report, within the scope and constraints Codex agreed. Codex reviewed the branch and found no blocker; its independent Node 24.21.0 lint, 282 tests / 23 files and Pages-path build passed. Not yet merged. The change touches no simulation, reducer, tick or settlement code. Record: `docs/audits/2026-10-03/compact-card-solar-label.md`.
 
 Under `COMPACT_LEGEND_QUERY` (the media query, not the card width) `SimulationViewport` passes `compact`. The card then shows a summary:
 - title and eyebrow;
@@ -188,17 +188,19 @@ Under `COMPACT_LEGEND_QUERY` (the media query, not the card width) `SimulationVi
 
 Key readings, description and the close hint fold behind a Details disclosure; no field is removed. Other layouts render every reading as before, with `summaryRows` leading the key readings. The viewport keys the card by its pinned selection. Details stays open across same-asset updates and drawer hiding. It folds for each new selection: switching equipment, or closing and reopening. A switched card also opens at the top. Hover previews render no Details control and contain nothing focusable.
 
-`index.css` hides the SOLAR ARRAY tag (`scene-label-solar`) through `.scene-viewport:has(.scene-asset-card)`, inside the short-landscape query only. Pinned cards and previews both hide it, and it returns as soon as the card unmounts. A jsdom test reads `index.css?raw` and pins the rule to that query. `COMPACT_LEGEND_QUERY` now has three mirrors in `index.css` (legend, card dock, Solar rule); change them together.
+`index.css` hides the SOLAR ARRAY tag (`scene-label-solar`) through `.scene-viewport:has(.scene-asset-card)`, inside the short-landscape query only. Pinned cards and previews both hide it, and it returns as soon as the card unmounts. Other layouts never match the rule; at 640×480 a card still covers the existing SOLAR corner, as on main. A jsdom test reads `index.css?raw` and pins the rule to that query. `COMPACT_LEGEND_QUERY` now has three mirrors in `index.css` (legend, card dock, Solar rule); change them together.
 
 Node 24.21.0 lint, 282 tests / 23 files, the Pages-path build and diff check pass; the build is byte-identical to the bundle tested in the browser. `docs/audits/2026-10-03/compact-card-check.mjs` is not part of CI. It ran in headless Chromium 153 on macOS across 12 viewports:
 - The summary is 1.1–2.3 card windows tall; main was 3.1–9.3.
 - Desktop and portrait content heights match main.
 - Wheel scrolling scrolls the card without moving the camera.
 
-PR #21's `card-label-check.mjs` passes at all 16 viewports. A 0.7–1px overlap between the short-landscape card and the Controls handle comes from local font metrics. Main shows the same overlap; this batch did not change the card's CSS.
+Its 3-second wait runs with the simulation stopped, so it does not exercise live updates. Details staying open while readings change is covered by the App test (five simulated frames) and by Codex's review rerun at three viewports in SwiftShader Chromium.
+
+PR #21's `card-label-check.mjs` passes at all 15 of its default viewports. A 0.7–1px overlap between the short-landscape card and the Controls handle comes from local font metrics. Main shows the same overlap; this batch did not change the card's CSS.
 
 A real-GPU Chrome pass used Apple M5/Metal, a real mouse and iframe widths:
-- At 640/667/844/932 short landscape it confirms the summary, the Details lifetime and the Solar label.
+- At 640/667/844/932 short landscape it confirms the summary, Details folding on switch and reopen, its retention under the Metrics drawer, and the Solar label.
 - Cards at 1280×720 and 390×844 are unchanged.
 - Wheel scrolling did not work in that harness, on main either, so scrolling evidence is headless only.
 
