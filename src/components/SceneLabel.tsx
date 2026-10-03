@@ -13,13 +13,15 @@ interface SceneLabelProps {
     mobileLift?: boolean;
     /** Resolve pointer rays through the rendered label to the parent's handlers. */
     hitArea?: boolean;
+    /** Extra classes on the tag, e.g. a hook for index.css rules. */
+    className?: string;
 }
 
 // World-space text shrinks with the full-site camera fit. Keep equipment names
 // anchored to their 3D positions while rendering them at a readable CSS size.
 // Labels never receive DOM pointer events; an opt-in hit area makes a label
 // selectable through R3F's own raycast instead.
-export function SceneLabel({ position, children, highlighted = false, alert = false, secondary = false, mobileLift = false, hitArea = false }: SceneLabelProps) {
+export function SceneLabel({ position, children, highlighted = false, alert = false, secondary = false, mobileLift = false, hitArea = false, className = '' }: SceneLabelProps) {
     const labelRef = useRef<HTMLSpanElement>(null);
     const hitAreaRef = useRef<Group>(null);
     const canvas = useThree(state => state.gl.domElement);
@@ -37,6 +39,7 @@ export function SceneLabel({ position, children, highlighted = false, alert = fa
                     alert ? 'border-rose-400/80 text-rose-300' : highlighted ? 'border-cyan-300/80 text-cyan-100' : 'border-slate-500/60 text-slate-100',
                     secondary ? 'max-[420px]:hidden' : '',
                     mobileLift ? 'scene-label-mobile-lift' : '',
+                    className,
                 ].join(' ')}>
                     {children}
                 </span>

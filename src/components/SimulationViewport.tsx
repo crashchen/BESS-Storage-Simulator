@@ -194,7 +194,7 @@ export function SimulationViewport({
   const activeAssetId = equipmentInfoEnabled ? selectedAssetId ?? hoveredAssetId : null;
 
   return (
-    <div className="relative h-full w-full">
+    <div className="scene-viewport relative h-full w-full">
       {failure ? (
         <ViewportFallback failure={failure} onRetry={handleRetry} />
       ) : (

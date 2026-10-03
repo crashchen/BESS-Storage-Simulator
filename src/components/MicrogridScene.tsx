@@ -351,7 +351,8 @@ const SolarArray = memo(function SolarArray({ solarOutputMw, solarAcCapacityMw, 
                     emissiveIntensity={emissiveIntensity}
                 />
             ))}
-            <SceneLabel position={[-9.2, 2.65, -6.95]}>
+            {/* index.css hides this tag while the short-landscape card is docked over the array. */}
+            <SceneLabel position={[-9.2, 2.65, -6.95]} className="scene-label-solar">
                 SOLAR ARRAY
             </SceneLabel>
         </group>

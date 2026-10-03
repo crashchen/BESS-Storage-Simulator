@@ -6,6 +6,8 @@ import { getSceneAssetInfo } from '../utils/sceneAssetInfo';
 import { makeGridState } from '../test/fixtures';
 import { applyCommand } from '../utils/gridReducer';
 import { createInitialGridState } from '../utils/tickEngine';
+import { COMPACT_LEGEND_QUERY } from './EnergyFlowLegend';
+import indexCss from '../index.css?raw';
 
 describe('SceneAssetInfoCard', () => {
     it('renders live BESS values for the selected asset', () => {
@@ -119,6 +121,17 @@ describe('SceneAssetInfoCard', () => {
         const card = screen.getByTestId('scene-asset-info-card');
         expect(card).toHaveClass('scene-asset-card', 'bottom-24', 'left-1/2', 'landscape:top-[62px]', 'landscape:right-[70px]');
         expect(card.className).not.toMatch(/(^|\s)lg:/);
+    });
+
+    it('hides the SOLAR ARRAY tag behind a shown card only in short landscape', () => {
+        // jsdom does not apply index.css; docs/audits/2026-10-03/compact-card-check.mjs
+        // measures the tag in Chromium. This pins the rule to the compact query.
+        const rule = /\.scene-viewport:has\(\.scene-asset-card\) \.scene-label-solar\s*\{\s*visibility: hidden;\s*\}/;
+        const queries = [...indexCss.matchAll(/@media ([^{]+)\{((?:[^{}]*\{[^{}]*\})*)\s*\}/g)]
+            .filter(([, , body]) => rule.test(body))
+            .map(([, query]) => query.trim());
+        expect(queries).toEqual([COMPACT_LEGEND_QUERY]);
+        expect(indexCss.match(/\.scene-label-solar/g)).toHaveLength(1);
     });
 
     it('keeps the Close name when a narrow card shows only a glyph', () => {
