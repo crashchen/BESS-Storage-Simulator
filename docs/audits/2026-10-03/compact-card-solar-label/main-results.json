@@ -1,0 +1,1650 @@
+{
+  "url": "http://127.0.0.1:4311/BESS-Storage-Simulator/",
+  "chromium": "153.0.8010.12",
+  "results": [
+    {
+      "viewport": "main-640x360",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 191.9,
+            "y": 145.7,
+            "r": 294.3,
+            "b": 167.7
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 191.9,
+            "y": 145.7,
+            "r": 294.3,
+            "b": 167.7
+          },
+          "visiblePx": 877
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 191.9,
+            "y": 145.7,
+            "r": 294.3,
+            "b": 167.7
+          },
+          "visiblePx": 877
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 191.9,
+            "y": 145.7,
+            "r": 294.3,
+            "b": 167.7
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 254.4,
+              "b": 266
+            },
+            "clientHeight": 202,
+            "scrollHeight": 1416,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 254.4,
+              "b": 266
+            },
+            "clientHeight": 202,
+            "scrollHeight": 1564,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 254.4,
+              "b": 266
+            },
+            "clientHeight": 202,
+            "scrollHeight": 1345,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 202,
+          "scrollHeight": 1416,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 202,
+          "scrollHeight": 1564,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 202,
+          "scrollHeight": 1345,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-667x375",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 202.2,
+            "y": 152.2,
+            "r": 304.6,
+            "b": 174.2
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 202.2,
+            "y": 152.2,
+            "r": 304.6,
+            "b": 174.2
+          },
+          "visiblePx": 860
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 202.2,
+            "y": 152.2,
+            "r": 304.6,
+            "b": 174.2
+          },
+          "visiblePx": 860
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 202.2,
+            "y": 152.2,
+            "r": 304.6,
+            "b": 174.2
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 265.5,
+              "b": 281
+            },
+            "clientHeight": 217,
+            "scrollHeight": 1356,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 265.5,
+              "b": 281
+            },
+            "clientHeight": 217,
+            "scrollHeight": 1489,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 265.5,
+              "b": 281
+            },
+            "clientHeight": 217,
+            "scrollHeight": 1309,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 217,
+          "scrollHeight": 1356,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 217,
+          "scrollHeight": 1461,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 217,
+          "scrollHeight": 1309,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-844x390",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 286.6,
+            "y": 158.5,
+            "r": 389,
+            "b": 180.5
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 286.6,
+            "y": 158.5,
+            "r": 389,
+            "b": 180.5
+          },
+          "visiblePx": 823
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 286.6,
+            "y": 158.5,
+            "r": 389,
+            "b": 180.5
+          },
+          "visiblePx": 823
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 286.6,
+            "y": 158.5,
+            "r": 389,
+            "b": 180.5
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 351.6,
+              "b": 296
+            },
+            "clientHeight": 232,
+            "scrollHeight": 1018,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 351.6,
+              "b": 296
+            },
+            "clientHeight": 232,
+            "scrollHeight": 1157,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 351.6,
+              "b": 296
+            },
+            "clientHeight": 232,
+            "scrollHeight": 1000,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 232,
+          "scrollHeight": 1003,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 232,
+          "scrollHeight": 1142,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 232,
+          "scrollHeight": 969,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-932x430",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 316.7,
+            "y": 174.2,
+            "r": 419.1,
+            "b": 196.2
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 316.7,
+            "y": 174.2,
+            "r": 419.1,
+            "b": 196.2
+          },
+          "visiblePx": 657
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 316.7,
+            "y": 174.2,
+            "r": 419.1,
+            "b": 196.2
+          },
+          "visiblePx": 657
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 316.7,
+            "y": 174.2,
+            "r": 419.1,
+            "b": 196.2
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 389.2,
+              "b": 336
+            },
+            "clientHeight": 272,
+            "scrollHeight": 943,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 389.2,
+              "b": 336
+            },
+            "clientHeight": 272,
+            "scrollHeight": 1082,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 389.2,
+              "b": 336
+            },
+            "clientHeight": 272,
+            "scrollHeight": 853,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 272,
+          "scrollHeight": 912,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 272,
+          "scrollHeight": 1067,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 272,
+          "scrollHeight": 838,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-568x320",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 168.1,
+            "y": 128.8,
+            "r": 263.1,
+            "b": 149.8
+          },
+          "visiblePx": 1995
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 168.1,
+            "y": 128.8,
+            "r": 263.1,
+            "b": 149.8
+          },
+          "visiblePx": 805
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 168.1,
+            "y": 128.8,
+            "r": 263.1,
+            "b": 149.8
+          },
+          "visiblePx": 805
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 168.1,
+            "y": 128.8,
+            "r": 263.1,
+            "b": 149.8
+          },
+          "visiblePx": 1995
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 44,
+              "y": 48,
+              "r": 224.8,
+              "b": 226
+            },
+            "clientHeight": 176,
+            "scrollHeight": 1501,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 44,
+              "y": 48,
+              "r": 224.8,
+              "b": 226
+            },
+            "clientHeight": 176,
+            "scrollHeight": 1629,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 44,
+              "y": 48,
+              "r": 224.8,
+              "b": 226
+            },
+            "clientHeight": 176,
+            "scrollHeight": 1375,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 176,
+          "scrollHeight": 1486,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 176,
+          "scrollHeight": 1614,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 176,
+          "scrollHeight": 1360,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-740x360",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 241.9,
+            "y": 145.7,
+            "r": 344.3,
+            "b": 167.7
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 241.9,
+            "y": 145.7,
+            "r": 344.3,
+            "b": 167.7
+          },
+          "visiblePx": 877
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 241.9,
+            "y": 145.7,
+            "r": 344.3,
+            "b": 167.7
+          },
+          "visiblePx": 877
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 241.9,
+            "y": 145.7,
+            "r": 344.3,
+            "b": 167.7
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 304.4,
+              "b": 266
+            },
+            "clientHeight": 202,
+            "scrollHeight": 1321,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 304.4,
+              "b": 266
+            },
+            "clientHeight": 202,
+            "scrollHeight": 1361,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 304.4,
+              "b": 266
+            },
+            "clientHeight": 202,
+            "scrollHeight": 1244,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 202,
+          "scrollHeight": 1321,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 202,
+          "scrollHeight": 1361,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 202,
+          "scrollHeight": 1244,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-812x375",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 274.7,
+            "y": 152.2,
+            "r": 377.1,
+            "b": 174.2
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 274.7,
+            "y": 152.2,
+            "r": 377.1,
+            "b": 174.2
+          },
+          "visiblePx": 860
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 274.7,
+            "y": 152.2,
+            "r": 377.1,
+            "b": 174.2
+          },
+          "visiblePx": 860
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 274.7,
+            "y": 152.2,
+            "r": 377.1,
+            "b": 174.2
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 338,
+              "b": 281
+            },
+            "clientHeight": 217,
+            "scrollHeight": 1090,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 338,
+              "b": 281
+            },
+            "clientHeight": 217,
+            "scrollHeight": 1188,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 62,
+              "y": 62,
+              "r": 338,
+              "b": 281
+            },
+            "clientHeight": 217,
+            "scrollHeight": 1015,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 217,
+          "scrollHeight": 1075,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 217,
+          "scrollHeight": 1157,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 217,
+          "scrollHeight": 984,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-1280x720",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 405.6,
+            "y": 293.4,
+            "r": 508,
+            "b": 315.4
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 405.6,
+            "y": 293.4,
+            "r": 508,
+            "b": 315.4
+          },
+          "visiblePx": 2253
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 405.6,
+            "y": 293.4,
+            "r": 508,
+            "b": 315.4
+          },
+          "visiblePx": 2253
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 405.6,
+            "y": 293.4,
+            "r": 508,
+            "b": 315.4
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 820,
+              "y": 62,
+              "r": 1210,
+              "b": 324.4
+            },
+            "clientHeight": 260,
+            "scrollHeight": 852,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 820,
+              "y": 62,
+              "r": 1210,
+              "b": 324.4
+            },
+            "clientHeight": 260,
+            "scrollHeight": 958,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 820,
+              "y": 62,
+              "r": 1210,
+              "b": 324.4
+            },
+            "clientHeight": 260,
+            "scrollHeight": 803,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 260,
+          "scrollHeight": 852,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 260,
+          "scrollHeight": 958,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 260,
+          "scrollHeight": 787,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-1440x900",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 452,
+            "y": 373.3,
+            "r": 554.4,
+            "b": 395.3
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 452,
+            "y": 373.3,
+            "r": 554.4,
+            "b": 395.3
+          },
+          "visiblePx": 2253
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 452,
+            "y": 373.3,
+            "r": 554.4,
+            "b": 395.3
+          },
+          "visiblePx": 2253
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 452,
+            "y": 373.3,
+            "r": 554.4,
+            "b": 395.3
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 980,
+              "y": 62,
+              "r": 1370,
+              "b": 411.2
+            },
+            "clientHeight": 347,
+            "scrollHeight": 852,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 980,
+              "y": 62,
+              "r": 1370,
+              "b": 411.2
+            },
+            "clientHeight": 347,
+            "scrollHeight": 958,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 980,
+              "y": 62,
+              "r": 1370,
+              "b": 411.2
+            },
+            "clientHeight": 347,
+            "scrollHeight": 803,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 347,
+          "scrollHeight": 852,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 347,
+          "scrollHeight": 958,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 347,
+          "scrollHeight": 787,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-390x844",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 74,
+            "y": 389.2,
+            "r": 169,
+            "b": 410.2
+          },
+          "visiblePx": 1995
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 74,
+            "y": 389.2,
+            "r": 169,
+            "b": 410.2
+          },
+          "visiblePx": 1995
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 74,
+            "y": 389.2,
+            "r": 169,
+            "b": 410.2
+          },
+          "visiblePx": 1995
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 74,
+            "y": 389.2,
+            "r": 169,
+            "b": 410.2
+          },
+          "visiblePx": 1995
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 16,
+              "y": 492.2,
+              "r": 374,
+              "b": 748
+            },
+            "clientHeight": 254,
+            "scrollHeight": 913,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 16,
+              "y": 492.2,
+              "r": 374,
+              "b": 748
+            },
+            "clientHeight": 254,
+            "scrollHeight": 1002,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 16,
+              "y": 492.2,
+              "r": 374,
+              "b": 748
+            },
+            "clientHeight": 254,
+            "scrollHeight": 838,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 254,
+          "scrollHeight": 897,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 254,
+          "scrollHeight": 1002,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 254,
+          "scrollHeight": 822,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-768x1024",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 188.2,
+            "y": 457.1,
+            "r": 290.6,
+            "b": 479.1
+          },
+          "visiblePx": 2253
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 188.2,
+            "y": 457.1,
+            "r": 290.6,
+            "b": 479.1
+          },
+          "visiblePx": 2253
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 188.2,
+            "y": 457.1,
+            "r": 290.6,
+            "b": 479.1
+          },
+          "visiblePx": 2253
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 188.2,
+            "y": 457.1,
+            "r": 290.6,
+            "b": 479.1
+          },
+          "visiblePx": 2253
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 189,
+              "y": 650.3,
+              "r": 579,
+              "b": 928
+            },
+            "clientHeight": 276,
+            "scrollHeight": 852,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 189,
+              "y": 650.3,
+              "r": 579,
+              "b": 928
+            },
+            "clientHeight": 276,
+            "scrollHeight": 958,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 189,
+              "y": 650.3,
+              "r": 579,
+              "b": 928
+            },
+            "clientHeight": 276,
+            "scrollHeight": 803,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 276,
+          "scrollHeight": 852,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 276,
+          "scrollHeight": 958,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 276,
+          "scrollHeight": 787,
+          "focusable": []
+        }
+      },
+      "errors": []
+    },
+    {
+      "viewport": "main-640x480",
+      "solarLabel": {
+        "noCard": {
+          "visibility": "visible",
+          "rect": {
+            "x": 167.5,
+            "y": 198.3,
+            "r": 269.9,
+            "b": 220.3
+          },
+          "visiblePx": 2252
+        },
+        "pinned": {
+          "visibility": "visible",
+          "rect": {
+            "x": 167.5,
+            "y": 198.3,
+            "r": 269.9,
+            "b": 220.3
+          },
+          "visiblePx": 1877
+        },
+        "hoverPreview": {
+          "visibility": "visible",
+          "rect": {
+            "x": 167.5,
+            "y": 198.3,
+            "r": 269.9,
+            "b": 220.3
+          },
+          "visiblePx": 1877
+        },
+        "afterClear": {
+          "visibility": "visible",
+          "rect": {
+            "x": 167.5,
+            "y": 198.3,
+            "r": 269.9,
+            "b": 220.3
+          },
+          "visiblePx": 2252
+        }
+      },
+      "pinned": {
+        "bess": {
+          "collapsed": {
+            "title": "BESS Unit",
+            "rect": {
+              "x": 250,
+              "y": 62,
+              "r": 570,
+              "b": 217.2
+            },
+            "clientHeight": 153,
+            "scrollHeight": 963,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "pcs-mv": {
+          "collapsed": {
+            "title": "PCS / MV Station",
+            "rect": {
+              "x": 250,
+              "y": 62,
+              "r": 570,
+              "b": 217.2
+            },
+            "clientHeight": 153,
+            "scrollHeight": 1082,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        },
+        "grid-node": {
+          "collapsed": {
+            "title": "Grid Node",
+            "rect": {
+              "x": 250,
+              "y": 62,
+              "r": 570,
+              "b": 217.2
+            },
+            "clientHeight": 153,
+            "scrollHeight": 853,
+            "details": null,
+            "focusable": [
+              "Close equipment info card"
+            ]
+          },
+          "expanded": null,
+          "keyboard": {
+            "focusAfterPin": "Close equipment info card",
+            "tabTo": null,
+            "enterOpens": null
+          }
+        }
+      },
+      "hoverPreview": {
+        "bess": {
+          "title": "BESS Unit",
+          "clientHeight": 153,
+          "scrollHeight": 948,
+          "focusable": []
+        },
+        "pcs-mv": {
+          "title": "PCS / MV Station",
+          "clientHeight": 153,
+          "scrollHeight": 1067,
+          "focusable": []
+        },
+        "grid-node": {
+          "title": "Grid Node",
+          "clientHeight": 153,
+          "scrollHeight": 838,
+          "focusable": []
+        }
+      },
+      "errors": []
+    }
+  ]
+}

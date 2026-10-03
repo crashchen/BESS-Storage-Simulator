@@ -173,7 +173,36 @@ The BESS UNIT, PCS / MV and GRID NODE labels all pass `hitArea`, so each whole v
 
 Node 24.21.0 lint, 276 tests / 23 files, the Pages-path build and diff check pass; the Three chunk warning remains at 724.92 kB. jsdom tests pin only the docking class contract, the narrow Close name and the lifted-rectangle raycast. Removing `hitArea` from a label fails no unit test. Layout and label wiring are verified by `docs/audits/2026-09-25/card-label-check.mjs` in headless Chromium 141 with SwiftShader WebGL. That is not a GPU, a phone or real touch, and the script is not part of CI. It covers 16 branch and 8 main viewports. On the branch, in the default overview, no pinned card or hover preview covers an equipment label or body, the HUD, the drawer handles, the legend or the toolbar. The exception is the non-selectable SOLAR label and solar array under the short-landscape dock, plus a 20×19px SOLAR corner at 640×480. With each asset pinned, all 12 mouse and 12 touch switches to the other equipment succeed at every viewport, and all three labels select at nine points each. On main, the four desktop switches to Grid land on the card; portrait and 640/667 short landscape switch 0/12; the lifted PCS label selects at 0/9 points. The cloud egress policy blocked cdn.jsdelivr.net, so the harness answered troika's font requests locally. Tailwind's source scan includes docs: writing a utility class the app no longer uses in Markdown adds its rule back to the CSS bundle, so records describe removed classes in words. The verified bundle is byte-identical to the final build.
 
-The later user-supplied CC report confirms default-overview placement and label/body switching on real GPU Chrome at 2320×1303, 1280×720, 390×844, 640×360 and 667×375. Narrow viewports were same-origin iframes, not physical phones. It also reports wheel scrolling without camera zoom and Full site restoring the overview after a manual camera move. Short-landscape visual backlog: the dock clips the SOLAR ARRAY label, and its roughly 200px scroll window exposes 1300–1600px of content. Consider a concise summary with expandable details before changing card placement; this is a proposal, not an implemented layout. The portrait site's narrow vertical band is an existing framing choice. Real-GPU fault injection and iOS/Android checks remain unverified.
+The later user-supplied CC report confirms default-overview placement and label/body switching on real GPU Chrome at 2320×1303, 1280×720, 390×844, 640×360 and 667×375. Narrow viewports were same-origin iframes, not physical phones. It also reports wheel scrolling without camera zoom and Full site restoring the overview after a manual camera move. Its two short-landscape items, the clipped SOLAR ARRAY label and a roughly 200px scroll window over 1300–1600px of content, are addressed on the branch in the next section. The portrait site's narrow vertical band is an existing framing choice. Real-GPU fault injection and iOS/Android checks remain unverified.
+
+### Short-landscape card summary and Solar label (2026-10-03, branch)
+
+`claude/compact-card-solar-label` starts at main `9cc3661`. Commits `90d86c7` (card summary) and `568d312` (Solar label) address the two short-landscape items in the CC real-GPU report, within the scope and constraints Codex agreed. Not yet pushed or reviewed. The change touches no simulation, reducer, tick or settlement code. Record: `docs/audits/2026-10-03/compact-card-solar-label.md`.
+
+Under `COMPACT_LEGEND_QUERY` (the media query, not the card width) `SimulationViewport` passes `compact`. The card then shows a summary:
+- title and eyebrow;
+- headline reading with status, and the meter;
+- any BESS reading note;
+- `summaryRows` (the BESS sampled operation while not running);
+- the flows as single lines, under a "Station-level totals" caption.
+
+Key readings, description and the close hint fold behind a Details disclosure; no field is removed. Other layouts render every reading as before, with `summaryRows` leading the key readings. The viewport keys the card by its pinned selection. Details stays open across same-asset updates and drawer hiding. It folds for each new selection: switching equipment, or closing and reopening. A switched card also opens at the top. Hover previews render no Details control and contain nothing focusable.
+
+`index.css` hides the SOLAR ARRAY tag (`scene-label-solar`) through `.scene-viewport:has(.scene-asset-card)`, inside the short-landscape query only. Pinned cards and previews both hide it, and it returns as soon as the card unmounts. A jsdom test reads `index.css?raw` and pins the rule to that query. `COMPACT_LEGEND_QUERY` now has three mirrors in `index.css` (legend, card dock, Solar rule); change them together.
+
+Node 24.21.0 lint, 282 tests / 23 files, the Pages-path build and diff check pass; the build is byte-identical to the bundle tested in the browser. `docs/audits/2026-10-03/compact-card-check.mjs` is not part of CI. It ran in headless Chromium 153 on macOS across 12 viewports:
+- The summary is 1.1–2.3 card windows tall; main was 3.1–9.3.
+- Desktop and portrait content heights match main.
+- Wheel scrolling scrolls the card without moving the camera.
+
+PR #21's `card-label-check.mjs` passes at all 16 viewports. A 0.7–1px overlap between the short-landscape card and the Controls handle comes from local font metrics. Main shows the same overlap; this batch did not change the card's CSS.
+
+A real-GPU Chrome pass used Apple M5/Metal, a real mouse and iframe widths:
+- At 640/667/844/932 short landscape it confirms the summary, the Details lifetime and the Solar label.
+- Cards at 1280×720 and 390×844 are unchanged.
+- Wheel scrolling did not work in that harness, on main either, so scrolling evidence is headless only.
+
+Physical phones remain unverified.
 
 ### Eighth-batch value breakdown (2026-09-23, released)
 
