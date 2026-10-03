@@ -137,3 +137,12 @@
     max-height: calc(100dvh - 142px);
   }
 }
+
+/* The docked card covers most of the array and would leave a clipped stub of
+   the SOLAR ARRAY tag beside it, so the tag hides while any card (pinned or
+   preview) is shown and returns when the card goes. Short landscape only. */
+@media (orientation: landscape) and (max-height: 430px) {
+  .scene-viewport:has(.scene-asset-card) .scene-label-solar {
+    visibility: hidden;
+  }
+}
