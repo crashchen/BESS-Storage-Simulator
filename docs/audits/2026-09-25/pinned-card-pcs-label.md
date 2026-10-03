@@ -168,7 +168,7 @@ main竖屏中与抽屉把手的重叠只是几何相交：把手为z-40，位于
 
 ## 边界与后续事项
 
-- 浏览器证据来自云端headless Chromium与SwiftShader软件WebGL，不是GPU、实体手机或真实触摸屏；触摸为Playwright经CDP注入的触摸事件。
+- 上文开发阶段的浏览器证据来自云端headless Chromium与SwiftShader软件WebGL，不是GPU、实体手机或真实触摸屏；触摸为Playwright经CDP注入的触摸事件。发布后的CC真实GPU鼠标报告另列于下节，两类证据不混用。
 - 停靠位置只针对默认全景。手动旋转、平移或缩放相机后，卡片可能盖住设备；Full site会恢复无遮挡的全景。任意手动姿态下的标签碰撞仍按第七批记录待处理。
 - 卡片的可见高度变短：1280×720从main的462px降为260px，390×844从650px降为254px。640×360为202px，main为166px，但main的卡片盖住整个场地。超出部分在卡内滚动，可用滚轮、触摸或键盘：Close获得焦点时，方向键、PageDown与End都能滚动卡片（1280×720验证；headless平滑滚动的读数滞后一步）。
 - 矮横屏的停靠卡片与悬停预览会盖住SOLAR ARRAY标签与光伏阵列的六到八成。这是用户打开的覆盖层，阵列不可选中，关闭卡片即恢复。矮横屏中若在钉选时展开图例，浮层会压住卡片左下部，收起图例后恢复。
@@ -177,4 +177,35 @@ main竖屏中与抽屉把手的重叠只是几何相交：把手为z-40，位于
 
 ## 合并与发布收尾
 
-[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)经Codex复审未发现阻塞项，按用户要求合并为`0c0301796f87aaba1c34eb415868cfe709953ffb`。同提交[main CI 36176889549](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889549)与[Pages 36176889988](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889988)均成功。Codex在Node 26.8.2隔离工作区复跑lint、276测试/23文件、Pages子路径构建及diff check，核对16个分支视口的原始JSON和截图；没有独立重跑完整浏览器脚本。用户计划之后人工验证视觉效果，尚未完成，因此不能把云端headless证据写成用户验收或实体设备验收。
+[PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21)经Codex复审未发现阻塞项，按用户要求合并为`0c0301796f87aaba1c34eb415868cfe709953ffb`。同提交[main CI 36176889549](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889549)与[Pages 36176889988](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889988)均成功。Codex在Node 26.8.2隔离工作区复跑lint、276测试/23文件、Pages子路径构建及diff check，核对16个分支视口的原始JSON和截图；没有独立重跑完整浏览器脚本。合并时用户另行计划人工验证；发布后补入下节CC报告，用户对视觉取舍的认可和实体手机验收仍待完成。
+
+## 2026-10-03 补充 CC 真实 GPU 鼠标验证
+
+本节整理用户于2026-10-03提供的CC报告；报告未注明测试执行日期。测试对象据CC报告为已发布main `abc6a32`的本地生产构建，与线上入口逐字节一致，附加测量脚本，未改应用代码。CC称使用用户Chrome、Apple M5/Metal真实GPU和真实鼠标；窄屏为同源iframe提供的真实CSS视口。Codex检查了六张原始截图，并核对GitHub main仍为`abc6a32`且没有开放PR；没有独立重跑CC的浏览器流程。GPU型号、点击计数、滚轮行为及控制台无error来自用户提供的CC报告，静态截图本身不能证明这些动态结果。
+
+| CSS视口 | CC报告的卡片位置/遮挡 | 钉选时切换标签及本体 |
+|---|---|---|
+| 2320×1303 | 右上角，底边在变压器上方约16px；不压设备、标签、HUD、把手、图例或工具栏 | 5/5；只记录切换到其他设备的五次 |
+| 1280×720 | x 820–1210、y 62–324；不压上述交互对象 | 6/6 |
+| 390×844 | 底部卡片与站点、工具栏各隔约10px | 6/6；抬高PCS标签上沿也能选中 |
+| 640×360 | 只遮住SOLAR ARRAY标签与光伏阵列；图例浮层位于卡片之上 | 6/6 |
+| 667×375 | 同上 | 6/6 |
+
+CC另报告：卡片可以滚轮滚动，滚动不会缩放3D相机；手动拖动相机后卡片可能遮住设备，Full site恢复全景并关闭卡片；测试过程中没有console error。首轮竖屏因窗口尺寸意外变化造成视角转动而作废，表中为重测结果。测试服务器和标签页已清理；CC曾调整用户Chrome窗口尺寸。
+
+截图从用户给出的临时目录复制到`pinned-card-pcs-label/`，保留原始像素；截图像素尺寸与上述CSS视口尺寸可能因设备像素比不同而不一致：
+
+- [原生桌面钉选BESS](pinned-card-pcs-label/cc-gpu-1-desktop-2320x1303-bess-pinned.jpg)
+- [1280×720钉选Grid](pinned-card-pcs-label/cc-gpu-2-desktop-1280x720-grid-pinned.png)
+- [390×844卡片已滚动](pinned-card-pcs-label/cc-gpu-3-portrait-390x844-bess-pinned-scrolled.png)
+- [640×360钉选BESS](pinned-card-pcs-label/cc-gpu-4-landscape-640x360-bess-pinned.png)
+- [640×360图例覆盖Grid卡片](pinned-card-pcs-label/cc-gpu-5-landscape-640x360-legend-over-card.png)
+- [667×375钉选BESS](pinned-card-pcs-label/cc-gpu-6-landscape-667x375-bess-pinned.png)
+
+### 观感与后续设计
+
+- **矮横屏Solar标签截断**：截图可见卡片旁只露出标签尾部，光伏板边角也零散露出。这是现有停靠方案的代价，尚未经用户认可；可在紧凑卡片打开时对该标签作整体避让或隐藏，关卡后恢复。
+- **矮横屏信息阅读过长**：CC报告约200px可视卡窗包含1300–1600px内容，需滚六到七屏；原云端表1也记录640×360为202/1401、667×375为217/1356。Codex建议下一轮先给窄卡设计简短摘要及可展开详情，保留名称、状态和主要功率/SoC，避免把全部读数都按大块单列展开。该建议尚未实施，也未被用户选定。
+- **竖屏取景窄带**：截图中的场地只占中部一条窄带，为既有宽度约束下的取景方式；不归因为PR #21回归。是否扩大场地显示要同时考虑图例、卡片与设备切换入口。
+
+真实GPU的普通鼠标流程已有用户提供的CC证据。真机触摸、手机地址栏伸缩、iOS/Android渲染、真实GPU故障注入及用户对遮挡的主观判断仍未覆盖；不得据此声称手机验收或全部视觉验收完成。
