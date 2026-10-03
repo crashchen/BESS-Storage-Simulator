@@ -90,11 +90,12 @@ export function SimulationViewport({
   const [viewResetVersion, setViewResetVersion] = useState(0);
   const [hoveredAssetId, setHoveredAssetId] = useState<SceneAssetId | null>(null);
   const [selectedAssetId, setSelectedAssetId] = useState<SceneAssetId | null>(null);
-  // The legend follows the layout default until the user toggles it. The choice
+  // Short landscape collapses the legend and condenses the equipment card. The
+  // legend follows the layout default until the user toggles it. The choice
   // lives here so it survives drawers unmounting the legend.
-  const compactLegend = useMediaQuery(COMPACT_LEGEND_QUERY);
+  const shortLandscape = useMediaQuery(COMPACT_LEGEND_QUERY);
   const [legendChoice, setLegendChoice] = useState<boolean | null>(null);
-  const legendExpanded = legendChoice ?? !compactLegend;
+  const legendExpanded = legendChoice ?? !shortLandscape;
   const loading3d = useProgress(progress => progress.active);
   const canvasListenerCleanup = useRef<(() => void) | null>(null);
   const equipmentButtons = useRef<Partial<Record<SceneAssetId, HTMLButtonElement | null>>>({});
@@ -266,9 +267,13 @@ export function SimulationViewport({
         </nav>
       )}
       <SceneAssetInfoCard
+        // Each pinned selection, or clearing it, starts a fresh card: folded
+        // details, scrolled to the top. Hiding the card under a drawer keeps it.
+        key={selectedAssetId ?? 'preview'}
         assetId={activeAssetId}
         gridState={gridState}
         pinned={selectedAssetId !== null}
+        compact={shortLandscape}
         onClose={handleClearSelection}
         closeButtonRef={cardCloseButton}
       />

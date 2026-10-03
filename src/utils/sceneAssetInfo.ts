@@ -24,6 +24,9 @@ export interface SceneAssetInfo {
         tone: 'green' | 'amber' | 'cyan' | 'red' | 'blue';
     };
     flowRows: InfoRow[];
+    /** Readings the short-landscape summary keeps beside the flows; the full
+     *  card lists them first among the key readings. */
+    summaryRows: InfoRow[];
     rows: InfoRow[];
 }
 
@@ -86,8 +89,8 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 { label: 'Charging input', value: formatMw(bessChargeMw) },
                 { label: 'Discharge output', value: formatMw(bessDischargeTotalMw) },
             ],
+            summaryRows: state.simulationStatus !== 'running' ? [{ label: 'Sampled operation', value: bessDisplay.powerLabel }] : [],
             rows: [
-                ...(state.simulationStatus !== 'running' ? [{ label: 'Sampled operation', value: bessDisplay.powerLabel }] : []),
                 { label: 'Selected dispatch', value: bessDisplay.dispatchLabel },
                 { label: 'Charge from solar', value: formatMw(state.batteryChargeFromSolarMw) },
                 { label: 'Charge from grid', value: formatMw(state.batteryChargeFromGridMw) },
@@ -126,6 +129,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
                 { label: 'Grid import to site', value: formatMw(visibleFlows.gridToSiteMw) },
                 { label: 'BESS discharge path', value: formatMw(bessDischargeTotalMw) },
             ],
+            summaryRows: [],
             rows: [
                 { label: 'PV to local load path', value: formatMw(visibleFlows.solarToLoadMw) },
                 { label: 'PV export path', value: formatMw(visibleFlows.solarToExportMw) },
@@ -165,6 +169,7 @@ export function getSceneAssetInfo(assetId: SceneAssetId, state: GridState): Scen
             { label: 'Export', value: formatMw(state.gridExportMw) },
             { label: 'Net export', value: formatMw(state.projectNetExportMw) },
         ],
+        summaryRows: [],
         rows: [
             { label: 'Grid demand', value: formatMw(state.gridDemandMw) },
             { label: 'Grid import', value: formatMw(state.gridImportMw) },

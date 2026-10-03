@@ -361,6 +361,47 @@ describe('App viewport integration', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('folds short-landscape card details for each new selection and keeps them while it updates', async () => {
+    const user = userEvent.setup();
+    const base = window.matchMedia('');
+    vi.mocked(window.matchMedia).mockImplementation(query => ({
+      ...base, matches: query === COMPACT_LEGEND_QUERY, media: query,
+    }) as MediaQueryList);
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Run custom simulation' }));
+    const details = () => within(screen.getByTestId('scene-asset-info-card')).getByRole('button', { name: 'Details' });
+
+    await user.click(screen.getByRole('button', { name: 'Inspect BESS equipment' }));
+    expect(screen.getByRole('button', { name: 'Close equipment info card' })).toHaveFocus();
+    await user.tab();
+    expect(details()).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(details()).toHaveAttribute('aria-expanded', 'true');
+
+    // Live updates and a drawer temporarily hiding the card keep it open.
+    const socBefore = readSimulation().state.batterySocPercent;
+    advanceFrames(5);
+    expect(readSimulation().state.batterySocPercent).not.toBe(socBefore);
+    expect(details()).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Open metrics' }));
+    expect(screen.queryByTestId('scene-asset-info-card')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Close metrics' }));
+    expect(details()).toHaveAttribute('aria-expanded', 'true');
+
+    // Switching equipment (toolbar or scene) and closing then reopening fold it.
+    await user.click(screen.getByRole('button', { name: 'Inspect PCS / MV equipment' }));
+    expect(details()).toHaveAttribute('aria-expanded', 'false');
+    await user.click(details());
+    fireEvent.click(screen.getByRole('button', { name: 'Inspect BESS' }));
+    expect(screen.getByTestId('scene-asset-info-card')).toHaveTextContent('BESS Unit');
+    expect(details()).toHaveAttribute('aria-expanded', 'false');
+    await user.click(details());
+    await user.keyboard('{Escape}');
+    expect(screen.queryByTestId('scene-asset-info-card')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Inspect BESS equipment' }));
+    expect(details()).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('announces pending 3D assets without replacing simulation controls', () => {
     modelCache.loading = true;
     const view = render(<App />);
