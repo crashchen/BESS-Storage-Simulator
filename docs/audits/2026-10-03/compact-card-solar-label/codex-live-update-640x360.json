@@ -1,0 +1,17 @@
+{
+  "reviewed_commit": "3036e4868345bfa4c2f17e94f15f6797224a8f66",
+  "node": "24.21.0",
+  "chromium": "153.0.8010.12",
+  "evidence_kind": "transcribed successful process stdout; no separate live-check screenshot",
+  "result": {
+    "viewport": "640x360",
+    "before": "63.1%",
+    "after": "63.0%",
+    "detailsDuringLiveUpdates": "preserved",
+    "drawer": "preserved",
+    "switch": "folded",
+    "solar": "hidden/restored",
+    "pageErrors": [],
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+  }
+}

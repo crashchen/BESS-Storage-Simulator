@@ -1,0 +1,63 @@
+{
+  "url": "https://crashchen.github.io/BESS-Storage-Simulator/",
+  "status": 200,
+  "commit": "fa2d49321d414b2ee1858d19c32c1bcbaab9e4c4",
+  "assets": [
+    {
+      "file": "index-0ihOfOoD.js",
+      "bytes": 108767,
+      "sha256": "4149435ac921b20a4413c52cf53ac6662c293a4c0cdfba32864a51da3f7627aa",
+      "status": 200,
+      "matches_local": true
+    },
+    {
+      "file": "react-vendor-CuitrLKL.js",
+      "bytes": 192958,
+      "sha256": "d76913e96f2c98d8e9d664daa0cadc0a781ccbd5e241968dc8e33aa3aa4b142b",
+      "status": 200,
+      "matches_local": true
+    },
+    {
+      "file": "three-vendor-DzrJQo9q.js",
+      "bytes": 724921,
+      "sha256": "616ee1888edcf0b758ac585a05b819c9a85a70ca9cde50eca96cc6a389f170c9",
+      "status": 200,
+      "matches_local": true
+    },
+    {
+      "file": "r3f-vendor-BinA5Bfj.js",
+      "bytes": 156610,
+      "sha256": "3db5f9556be266b37c5fb8648993c5c0f04f73faee526009bd0fe3a032c15ec4",
+      "status": 200,
+      "matches_local": true
+    },
+    {
+      "file": "troika-vendor-BoasJsG3.js",
+      "bytes": 115770,
+      "sha256": "89d877a231f89cc0f8dde9e6c7f2fd8561aef72f85481c4381b95de99d31da00",
+      "status": 200,
+      "matches_local": true
+    },
+    {
+      "file": "drei-vendor-CJDqWb_-.js",
+      "bytes": 125561,
+      "sha256": "e0e6272c1a0fcc080221aeee8791b92a2670966a3120e249d98de19be28b5c7f",
+      "status": 200,
+      "matches_local": true
+    },
+    {
+      "file": "app-shared-YXkyLq2f.js",
+      "bytes": 170,
+      "sha256": "2ee6643410b87ab991d0c20694b5c3c103a7d68d53ecc7f0729c20376e5cbd8e",
+      "status": 200,
+      "matches_local": true
+    },
+    {
+      "file": "index-BdQDu_JE.css",
+      "bytes": 56258,
+      "sha256": "f481d3a6b77deb8634192dae9bc2b3771ed71ed260d2d034f8357e606de3661e",
+      "status": 200,
+      "matches_local": true
+    }
+  ]
+}

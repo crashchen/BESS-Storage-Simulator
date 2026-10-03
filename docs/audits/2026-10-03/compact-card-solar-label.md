@@ -1,6 +1,6 @@
 # 矮横屏信息卡精简与SOLAR ARRAY标签避让
 
-日期：2026-10-03（Europe/Berlin）。基线为main `9cc3661`（PR #23合并后）。分支`claude/compact-card-solar-label`有两个代码提交：`90d86c7`精简矮横屏卡片，`568d312`在卡片出现时隐藏SOLAR ARRAY标签。范围和约束来自用户转述的Codex意见：两项放同一批、分两个提交，桌面与竖屏布局不动。Codex已复审，未发现代码阻塞（见“Codex复审”）；尚未合并。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
+日期：2026-10-03（Europe/Berlin）。基线为main `9cc3661`（PR #23合并后）。分支`claude/compact-card-solar-label`有两个代码提交：`90d86c7`精简矮横屏卡片，`568d312`在卡片出现时隐藏SOLAR ARRAY标签。范围和约束来自用户转述的Codex意见：两项放同一批、分两个提交，桌面与竖屏布局不动。Codex已复审，未发现代码阻塞（见“Codex复审”）；用户确认后，[PR #24](https://github.com/crashchen/BESS-Storage-Simulator/pull/24)在合并命令中匹配已审核的分支头`0ba44ad`，合并为`fa2d493`，同提交main CI和Pages成功。未修改`GridState`、reducer、tick、dispatch、结算或配置数值。
 
 ## 问题与基线
 
@@ -35,7 +35,7 @@
 以下检查在Node 24.21.0下通过。Node使用nodejs.org官方darwin-arm64发行包并校验了SHA256，在`568d312`的独立工作区中执行`npm ci`后运行：
 
 - `npm run lint`；
-- `npm run test`：**282个测试 / 23文件**，main为276/23；
+- `npm run test`：**282个测试 / 23文件**，修复前main为276/23；
 - `BASE_URL=/BESS-Storage-Simulator/ npm run build`；
 - `git diff --check`。
 
@@ -102,7 +102,7 @@ Node 26.10.0下的lint、测试与构建同样通过。Three vendor chunk 724.92
 | 932×430 | 272 | 943 / 1082 / 853 | 324 / 320 / 300 | 819 / 908 / 765 |
 
 **结论**：
-- **摘要长度**：摘要是可视高度的1.1–2.3倍，main为3.1–9.3倍。
+- **摘要长度**：摘要是可视高度的1.1–2.3倍，修复前main为3.1–9.3倍。
   - 640×360：1.6–1.9屏；
   - 932×430：1.1–1.2屏；
   - 568×320最长，为1.8–2.3屏。
@@ -146,9 +146,11 @@ Node 26.10.0下的lint、测试与构建同样通过。Three vendor chunk 724.92
 
 ### Codex复审
 
-用户转述的Codex复审结论是未发现代码阻塞：
+Codex独立复审未发现代码阻塞：
 - Node 24.21.0下lint、282个测试 / 23文件、Pages路径构建均通过；
-- 在SwiftShader WebGL的浏览器中复跑三个尺寸，并补充确认：模拟运行、读数实际变化时Details保持展开，抽屉开合后保留，切换设备后折叠。这是本批唯一在浏览器中让读数实际变化的检查；Codex的复跑脚本与截图未存入本目录。
+- 在SwiftShader WebGL的浏览器中复跑通用检查：640×360、932×430、390×844。JSON中的卡片高度、键盘路径、折叠状态、Solar隐藏/恢复与CC数据一致。
+- 另在**640×360**启动模拟，SoC从63.1%变到63.0%时Details仍展开；Metrics抽屉开合后保留，切到PCS后折叠。这项实时更新检查只覆盖640×360，不能扩大成三个尺寸都测过实时更新。工具输出记录未见pageerror，渲染器为SwiftShader。
+- 复跑时的源码为`3036e48`，与PR #24分支头`0ba44ad`和合并提交`fa2d493`的源码及依赖锁文件相同。原始通用JSON、实时更新脚本与其stdout记录现已归档；复跑的三张截图也一起保留。
 
 本记录据此更正三处：
 - PR #21回归脚本跑的是15个视口，原写16个；
@@ -157,12 +159,21 @@ Node 26.10.0下的lint、测试与构建同样通过。Three vendor chunk 724.92
 
 真实GPU下的滚动与真机触摸仍待验证。
 
+### 发布核验
+
+- PR #24在分支头`0ba44add39e03d900d64d8f42d1208e5c5ef8be0`上通过[PR CI 37154229303](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/37154229303)。用户明确确认后，合并提交为`fa2d49321d414b2ee1858d19c32c1bcbaab9e4c4`，合并提交带Codex共同作者署名。
+- 合并后的[main CI 37154676443](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/37154676443)和[Pages 37154676612](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/37154676612)均为SUCCESS；不把PR分支CI当作main发布证据。
+- 线上HTTP及资源比对另见`compact-card-solar-label/pr24-online-check.json`。这项资源检查不代表重新完成浏览器交互或真机视觉验收。
+
 ### 证据文件
 
 `compact-card-solar-label/`下：
 - `main-results.json`、`branch-results.json`：本批脚本的原始输出；
 - `card-label-branch-results.json`、`card-label-main-sample-results.json`：PR #21回归脚本的分支15视口结果与main两视口抽样；
 - 若干headless与真实GPU截图。
+- `codex-review-results.json`及`codex-review-*.png`：Codex三个通用视口的原始JSON及选定截图；
+- `../compact-card-live-check.mjs`与`codex-live-update-640x360.json`：640×360实时更新的补充脚本及stdout记录，脚本不属于CI，Playwright不是项目依赖；
+- `pr24-online-check.json`：PR #24上线后的HTTP及入口资源比对。
 
 ## 边界与后续
 
