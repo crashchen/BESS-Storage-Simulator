@@ -1,8 +1,8 @@
 # Contributor and Agent Guidance
 
-Current architecture and invariants, not a changelog. Read [README](README.md) for operation, [audit index](docs/README.md) for historical decisions, and the [2026-10-11 record](docs/audits/2026-10-11/README.md) for the locally committed batch on `codex/telemetry-hud-housekeeping`. The deployed baseline is still `891198b`.
+Current architecture and invariants, not a changelog. Read [README](README.md) for operation, [audit index](docs/README.md) for historical decisions, and the [2026-10-11 record](docs/audits/2026-10-11/README.md) for the pushed `codex/telemetry-hud-housekeeping` branch in [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25). The deployed baseline is still `891198b`.
 
-The user supplied CC's final approval of the complete batch, including all three follow-ups, and authorized local commits. No push, PR, merge or release has occurred. Update status and exact-head evidence when the user authorizes those steps; CC's software-rendered checks do not replace native-device acceptance.
+The user supplied CC's final approval of the complete batch, including all three follow-ups, and subsequently authorized push and PR creation. PR #25 is open, not merged or released; use its checks for the latest exact-head CI status. Merge and deployment still require authorization. CC's software-rendered checks do not replace native-device acceptance.
 
 ## Ownership and Workflow
 

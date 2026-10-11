@@ -99,6 +99,6 @@ npm audit --omit=dev
 
 CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from its own successful reusable CI run. Unit/jsdom green does not certify WebGL, responsive geometry or physical-phone behavior; dated browser evidence records those limits separately.
 
-**CC-reviewed local submission, not released:** the user-provided final review approved the complete 2026-10-11 changes, including all three follow-ups. This batch is committed locally on `codex/telemetry-hud-housekeeping`; no push, PR, merge or deployment has occurred. Live Pages remains at `891198b`. See the [review and submission record](docs/audits/2026-10-11/README.md) for exact checks and remaining limitations, rather than treating old test counts or audit results as current.
+**CC-reviewed PR, not released:** the user-provided final review approved the complete 2026-10-11 changes, including all three follow-ups. The branch is pushed and [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25) is open against main; it has not been merged or deployed. Live Pages remains at `891198b`. See the [review and submission record](docs/audits/2026-10-11/README.md) for local checks and limitations, and the PR checks for exact-head CI status.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

@@ -1,12 +1,12 @@
-# 2026-10-11 修复、CC复审与本地提交记录
+# 2026-10-11 修复、CC复审与PR #25记录
 
 ## 状态与范围
 
-- 基线：`891198b30731637848148b9b26f279cfc37e34fc`；本批本地提交位于`codex/telemetry-hud-housekeeping`，确切SHA以该分支提交及Vault迭代记录为准。
-- 用户授权：修图表时间轴、定向依赖升级、HUD重叠，整理repo与Vault文档；经用户安排CC两轮复审后，已授权本地提交。
-- 已本地commit；未push、未开PR、未merge、未部署。Codex没有自动调用CC或其他外部审查模型。
+- 基线：`891198b30731637848148b9b26f279cfc37e34fc`；实现提交`af0830f`及后续状态文档提交位于已推送分支`codex/telemetry-hud-housekeeping`，见[PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25)。
+- 用户授权：修图表时间轴、定向依赖升级、HUD重叠，整理repo与Vault文档；经用户安排CC两轮复审后，先本地提交，随后明确授权push、开PR与推送Vault housekeeping。
+- 已push并开PR #25；未merge、未部署。Codex没有自动调用CC或其他外部审查模型。
 - 用户已转交CC最终通过报告：初批及三项P3补充均无阻塞，302/25、按锁文件安装、lint/type-check/Pages build及两范围audit均由CC独立复现。新增浏览器检查的范围与归属见下。
-- 已发布版本仍是891198b；其历史CI/Pages成功不能算作本候选的远端CI结果。
+- 已发布版本仍是891198b；其历史CI/Pages成功不能算作本PR的CI结果，后者须核对PR最新head。
 - 不改dispatch策略、reducer、tick、PCC/金额结算、GridState字段、GLB资产、相机或Switchyard。
 
 ## 改动及审查重点
@@ -41,7 +41,7 @@ Pause不累计图表时间；Stop/Reset/preset的resetHistory副作用同时重�
 - 新增docs/README证据索引；旧审计文件/截图未删，原长README/CLAUDE仍可从基线Git树追溯。
 - package描述/关键词统一为illustrative value / energy arbitrage，不再暗示完整project finance。
 - Vault仅整理项目五篇笔记，保留已有frontmatter字段与aliases/tags，以及本轮开始前已有的PR23/24 housekeeping和历史记录。当前验证汇总集中在迭代记录；其他四篇各司其职。
-- Vault部署hash不前移，代码验证hash回填本地提交；状态为CC完整复审通过、本地提交未推送。没有修改无关笔记或memory。
+- Vault部署hash不前移，代码验证hash回填PR最新提交；状态为CC完整复审通过、PR #25待合并。没有修改无关笔记或memory。
 
 ## 初批验证（CC已复现）
 
@@ -68,7 +68,7 @@ Pause不累计图表时间；Stop/Reset/preset的resetHistory副作用同时重�
 1. HUD：高度超过430px的横屏同样可能换行。清除组件中固定top/height的重复配置，统一由CSS消费测量值；补全普通横屏高度扣减契约。
 2. 时间轴：1–3×下200点窗口会跨过一分钟。增加30/75/240/599秒和600秒边界测试，前四者显示秒、600秒开始显示分钟；数值坐标与累计时间不变。
 3. Vault：在PR #21/#22历史段补回CI/Pages四个编号36176889549 / 36176889988 / 36177570989 / 36177571484。来源为Vault原Git版本，前两项亦有repo历史审计支持；没有声称本轮重跑这些历史流水线。跨五篇原工作树及旧Git元数据的10个历史run ID均已确认留存，不再只检查迭代正文。
-4. 状态措辞：repo README、CLAUDE、docs索引及Vault五篇已更新为CC完整复审通过、本地提交未推送。尚未开PR，不能写“PR #N待合并”；今后用户授权push/开PR/合并时，再按真实节点更新状态与证据。
+4. 状态措辞：repo README、CLAUDE、docs索引及Vault五篇随实际节点更新，现为CC完整复审通过、PR #25待合并。将来获准合并时，再按同提交CI/Pages结果更新发布状态。
 
 本轮单元/组件测试302/302（25文件），比CC复现版本增加5项；lint及Pages子路径构建通过，全量及omit=dev audit重跑均0。物理模型、价格、锁文件和GLB均未因这些补充发生变化。
 
@@ -95,7 +95,11 @@ Pause不累计图表时间；Stop/Reset/preset的resetHistory副作用同时重�
 - 1×运行75秒和100秒的刻度带秒、不重复；7×/8×跨十分钟窗口边界时分别用秒/分钟且均不重复；倍速比例、跨日D2及无pageerror再次确认。
 - PR #21/#22四个历史流水线编号及PR #18/#19的273/23历史数字保留；Vault范围仍只五篇。
 
-用户随后授权提交。提交轮只更新复审/提交状态，不再修改运行代码；Node24 lint、302/25和Pages构建再次通过。项目在独立codex分支本地提交，Vault单独提交这五篇并回填项目SHA，排除其他九个脏文件。尚无本批远端CI或部署结果；真机触摸和真实GPU验收仍待人工完成。
+用户随后授权提交。提交轮只更新复审/提交状态，不再修改运行代码；Node24 lint、302/25和Pages构建再次通过。项目提交为`af0830f`，Vault五篇的本地提交为`af632a6`，排除其他九个脏文件。该提交节点尚无远端CI；后续推送节点见下。真机触摸和真实GPU验收仍待人工完成。
+
+## PR #25推送节点
+
+用户另行授权后，已推送实现提交并创建[PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25)，base为main。后续文档提交只回填PR状态，不改运行代码；本地lint、302/25和Pages构建再次通过，14个dist文件与已验证构建逐字节一致。远端CI须与PR最新head一致，不将旧head通过当成新head通过；确切run链接/提交号同步到Vault迭代记录，并可从PR检查查看。未启用自动合并，未合并或触发本批Pages发布，main仍是`891198b`。
 
 浏览器脚本：[browser-check.mjs](browser-check.mjs)。使用已安装的外部Playwright，不引入项目依赖，也不是CI gate：
 
@@ -121,4 +125,4 @@ node docs/audits/2026-10-11/browser-check.mjs \
 - 新日期的零audit取代当前健康判断，不回改2026-09-19的历史audit快照。
 - Three大chunk提示、阴影弃用警告仍保留；本轮不做性能状态库迁移或灯光风格调整。
 - CC最终复审通过。真实手机、原生GPU故障、任意相机姿态的自动避让仍不在验收范围。
-- push、开PR、merge和部署尚未进行；后续更新必须保持repo/Vault分别圈定路径，不对Vault全量stage。
+- PR #25已推送待合并；merge和部署尚未进行。后续更新必须保持repo/Vault分别圈定路径，不对Vault全量stage。
