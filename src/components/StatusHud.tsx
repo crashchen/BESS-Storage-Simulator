@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { formatTime } from '../utils/formatTime';
 import { selectBessDisplay } from '../utils/bessDisplay';
 import type { SimulationStatus, StatusHudProps, TariffPeriod } from '../types';
@@ -20,7 +21,7 @@ const tariffBadge: Record<TariffPeriod, { color: string }> = {
     'peak': { color: '#ef4444' },
 };
 
-export function StatusHud({ gridState }: StatusHudProps) {
+export function StatusHud({ gridState, ref }: StatusHudProps & { ref?: Ref<HTMLDivElement> }) {
     const {
         timeOfDay,
         batterySocPercent,
@@ -38,7 +39,7 @@ export function StatusHud({ gridState }: StatusHudProps) {
 
     return (
         <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 select-none">
-            <div className="mx-auto mt-2 flex w-fit max-w-[98vw] flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-slate-700/50 bg-slate-900/80 px-3 py-1.5 shadow-2xl backdrop-blur-xl sm:mt-3 sm:gap-x-3 sm:px-5 sm:py-2.5">
+            <div ref={ref} data-testid="status-hud" className="mx-auto mt-2 flex w-fit max-w-[98vw] flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border border-slate-700/50 bg-slate-900/80 px-3 py-1.5 shadow-2xl backdrop-blur-xl sm:mt-3 sm:gap-x-3 sm:px-5 sm:py-2.5">
                 <div className="flex items-center gap-1">
                     <span className="text-[10px] text-slate-400 sm:text-xs">🕐</span>
                     <span className="font-mono text-xs font-bold tabular-nums text-slate-100 sm:text-sm">

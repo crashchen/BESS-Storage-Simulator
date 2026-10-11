@@ -2,182 +2,103 @@
 
 [![CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/crashchen/BESS-Storage-Simulator/actions/workflows/ci.yml)
 [![Deploy](https://github.com/crashchen/BESS-Storage-Simulator/actions/workflows/deploy.yml/badge.svg)](https://crashchen.github.io/BESS-Storage-Simulator/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An interactive utility-scale solar PV + BESS simulator for a Romania project baseline. The app combines an active-power-only dispatch model, a Three.js 3D scene with energy flow animations, and a collapsible dashboard for testing storage dispatch, market-price response, PCC import/export limits, and project cashflow behavior.
+A single-page, interactive solar PV + battery storage demonstration. Explore active-power dispatch, self-consumption, tariff windows and grid-connection limits through a 3D site and live controls. This is **not an engineering EMS, trading optimizer or financial forecast**.
 
-**[🚀 Live Demo](https://crashchen.github.io/BESS-Storage-Simulator/)**
+[Live demo](https://crashchen.github.io/BESS-Storage-Simulator/) · [Development guidance](CLAUDE.md) · [Verification and release history](docs/README.md)
 
-## Project Baseline
+## Run Locally
 
-- Solar PV: `117 MWp DC / 102 MW AC`
-- BESS: `188 MW` rated power with `744 MWh` storage
-- Grid connection: `288 MW total`
-- PV evacuation: `102 MW`
-- BESS simultaneous injection / evacuation: `186 MW`
-- Annual yield reference: `1,380 kWh/kW/year` (not used to scale the illustrative daily solar curve)
-
-## Features
-
-- **Real-time Simulation**: Start, pause, and stop the simulation clock with adjustable time speeds
-- **Dispatch Modes**: `AUTO` active-power dispatch plus manual `CHARGE`, `IDLE`, and `DISCHARGE` overrides
-- **Active-Power Settlement**: Grid import/export, PV curtailment, BESS charge/discharge, and PCC overload are settled from one power-balance node
-- **Configurable BESS**: Edit rated power and storage capacity from the UI
-- **Project Capacity Setup**: Edit solar AC/DC capacity, PV evacuation, and BESS interconnection live to model any project, not just the Romania baseline
-- **Price Scenarios**: Edit wholesale price windows, including negative-price scenarios
-- **Live Metrics**: Track SoC, solar output, grid demand, BESS power, grid import/export, and PCC overload
-- **Demo Value Tracking**: Project and BESS demo totals, cumulative export revenue, avoided import cost, assumed restored-load value, curtailment, and energy flow analysis
-- **3D Visualization**: Interactive Three.js scene with animated energy flow particles through PV, BESS, PCS/MV, and Grid Node assets; the BESS container, PCS-MV skid, and grid transformer render from supplier-neutral GLB equipment models
-- **Overload Warnings**: PCC overload is surfaced in the economics panel and highlighted in the 3D grid/load area
-- **Collapsible UI**: Desktop slide-out drawers can be opened together; entering a narrow viewport keeps only the most recently opened drawer. Metrics, and either drawer on narrow screens, take priority over equipment cards; clicking equipment closes the drawers and opens its pinned card.
-- **Viewport Recovery**: Retry rebuilds the 3D viewport while preserving simulation configuration, SoC, accumulated results, and history
-- **Scene Navigation (batches 5–6)**: Automatic full-site framing until the camera is manually moved, inspected views preserved on resize, a Full site restore button, and BESS / PCS-MV / Grid buttons for keyboard equipment inspection; all three equipment models share a common scale, with room for the full-size PCS-MV skid
-- **Accessibility**: ARIA support for screen readers (aria-pressed, aria-valuetext), keyboard navigation, and input validation feedback
-- **Efficiency Modeling**: BESS charge/discharge efficiency losses
-
-## Tech Stack
-
-- Vite
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Three.js with `@react-three/fiber` and `@react-three/drei`
-- Recharts
-- Vitest + Testing Library
-
-## Local Development
-
-Use Node **24.21.0**, pinned in `.nvmrc` and used by CI. Activate it with your existing version manager (`nvm use` if nvm is installed), or install/unpack the official Node 24.21.0 distribution and put its `bin` directory first on `PATH`. nvm is optional; the project supports Node 24 from 24.21.0 onward, below Node 25.
+Use Node **24.21.0** from `.nvmrc` (supported: >=24.21.0, <25). Use your existing version manager, or put an unpacked official Node distribution's `bin` directory first on `PATH`; nvm is optional.
 
 ```bash
-node --version    # v24.21.0 for the exact CI runtime
+node --version
 npm ci
 npm run dev
 ```
 
-For an unpacked distribution, run `export PATH="/absolute/path/to/node-v24.21.0-<platform>-<arch>/bin:$PATH"` first, replacing the example path with your actual directory. This changes only the current shell; it does not replace your global Node installation.
+Open the URL printed by Vite. Keep the terminal running; stopping the server makes that local URL unavailable. There is no backend or persisted run: refreshing the page starts over.
 
-Open the local URL printed by Vite after the dev server starts.
+## First Walkthrough
 
-## Quality Checks
+1. Open **Controls**, leave **AUTO** selected, and press **Start**. No Demo Scenario selection is required; the preset panel is intentionally hidden.
+2. Raise **Simulation Speed** to see a day/night cycle. Open **Metrics** for power history, tariff editing and illustrative value totals.
+3. Use **Charge / Idle / Discharge** to override economic dispatch. Hardware, energy and grid-connection limits still apply.
+4. Hover equipment for a preview; click its body, label, or the **BESS / PCS-MV / Grid** toolbar buttons to pin live information. **Full site** restores the camera without resetting the run.
+5. Change PV/BESS capacities, interconnection limits or demand scale to explore congestion and curtailment. Equipment models represent station aggregates; increasing capacity does not stretch the cabinet.
+
+| Control | Effect |
+| --- | --- |
+| Start / Pause | Advance or freeze the current run. Paused MW values are the last sampled snapshot, not ongoing transfer. |
+| Stop | Clear time/SoC/results/history to a fresh stopped run, preserving capacities, tariffs, demand scale, speed and dispatch intent. |
+| Reset | Also restore those settings to the baseline. Clears tariff drafts/errors even if the applied price was already at baseline. |
+| Retry 3D View / Retry chart | Recover that view without resetting the simulation. |
+| Reload / browser refresh | Start a new run; the current run is lost. |
+
+Desktop drawers can open together. Below 1024px only the most recently opened side remains open. Metrics, or either drawer on narrow screens, hides equipment cards without clearing their pinned selection. Short-landscape cards show a summary with **Details**; switching equipment or closing/reopening folds it, but live readings and temporary drawer hiding preserve it.
+
+## Baseline and Dispatch
+
+| Parameter | Default |
+| --- | --- |
+| PV | 117 MWp DC / 102 MW AC |
+| BESS | 188 MW / 744 MWh |
+| Shared PCC import/export limit | 288 MW = 102 MW PV evacuation + 186 MW BESS connection |
+| Annual yield reference | 1,380 kWh/kW/year; reference only, not calibration of the daily solar curve |
+| Off-peak / shoulder / peak tariff | 80 / 150 / 350 EUR/MWh; editable, including negative values |
+
+The active-power model uses **intent -> hardware clamp -> PCC settlement**:
+
+- **Off-peak:** no automatic discharge; top up toward 40% SoC. PV surplus can continue charging above that target.
+- **Shoulder:** absorb PV surplus. For deficits, hold 40% for the evening only when the edited tariffs clear the efficiency/reserve/pacing hurdle; otherwise self-consume down to empty. The default peak threshold is approximately EUR 178.78/MWh.
+- **Peak:** pace usable energy over the remaining peak window above a 12% reserve. Peak discharge itself has no round-trip price gate.
+- **Manual:** bypass economic rules, not SoC, PCS or connection limits.
+- **Congestion:** preserve PV export first, reduce BESS discharge before curtailment. Reduce grid charging before declaring import overload. `PCC Overload` is unserved demand, never actual imports above the limit.
+
+The tariff-only AUTO heuristic does not guarantee better value under every load, PV or PCC constraint. The simulator does not model frequency/FCR, voltage, protection trips, AC transients, degradation, weather forecasts or real market settlement.
+
+## Read the Scene and Metrics
+
+Seven simultaneous routes distinguish **PV -> BESS / local load / grid**, **BESS -> local load / grid**, and **grid -> BESS / local load**. They pass through the schematic PCS/MV collection node. Particle motion indicates direction; red particles show curtailment. A blue import route ending at **LOCAL LOAD** is not battery charging.
+
+The three GLBs are supplier-neutral representative units, not a detailed electrical installation. Info cards show station-level totals and approximate equipment equivalence. [Asset provenance and regeneration](public/models/README.md) describe the downstream conversion; Switchyard sources remain unchanged.
+
+Power history uses a **numeric, unwrapped simulated-time axis**. `D1 08:00` means day 1 at 08:00, `D2 00:00` the next midnight. Windows shorter than ten minutes and all tooltips include seconds. Changing speed changes the simulated interval, not its geometric meaning. Pause adds no time; Stop/Reset/preset loading clear and re-anchor history. Only the latest 200 samples are retained, so this is not a full-run energy report.
+
+Two totals are deliberately different:
+
+- **Project demo value:** PV exports + BESS discharge value - grid-paid BESS charging.
+- **BESS demo margin:** BESS discharge value - grid charging - opportunity cost of storing saleable PV.
+- **BESS discharge value:** export revenue + actual avoided imports + an **assumed** tariff value for restoring otherwise unserved load. The last part is not revenue or an import saving; both demo totals include it, even after current overload clears. Negative tariffs can make these components negative.
+
+These are illustrative values, not realized cash flow. CAPEX, OPEX, financing, tax and lifecycle costs are outside scope. Instantaneous power is the last settled subsegment; cumulative totals include all subsegments, so multiplying the final MW by a whole tick does not reconstruct its energy.
+
+## Development and Verification
+
+React 19, TypeScript, Vite, Tailwind 4, Three.js/R3F/Drei, Recharts, Vitest and Testing Library. Core entry points:
+
+| Area | Files |
+| --- | --- |
+| Commands / state | `types.ts`, `utils/gridReducer.ts` |
+| Tick / settlement / policy | `utils/tickEngine.ts`, `utils/simulationModel.ts`, `utils/autoPolicy.ts` |
+| RAF / telemetry / HUD clearance | `hooks/useGridSimulation.ts`, `hooks/useHudClearance.ts` |
+| 3D / interaction | `components/SimulationViewport.tsx`, `MicrogridScene.tsx`, `SceneAssetInfoCard.tsx` |
+| Controls / metrics | `components/panels/`, `TelemetryChart.tsx` |
+| Configuration / assets | `config.ts`, `public/models/` |
 
 ```bash
 npm run lint
 npm run test
 npm run build
+BASE_URL=/BESS-Storage-Simulator/ npm run build
+BASE_URL=/BESS-Storage-Simulator/ npm run preview
+npm audit
+npm audit --omit=dev
 ```
 
-Previous batch-6 verification on 2026-09-22: Node 24.21.0, lint, **221 tests across 21 files**, and the Pages-path build passed. Batch 5 (`e345c1f`) was merged through [PR #7](https://github.com/crashchen/BESS-Storage-Simulator/pull/7) as `29c81d7`; [main CI 35779667669](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779667669) and [Pages 35779668154](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35779668154) succeeded. Its suite is 214/21. It corrects equipment proportions with a common 0.9 scale, adds responsive full-site framing and keyboard inspection, and clears the Close button from the Metrics handle. CC reviewed its 208/20 core version; subsequent local verification is documented separately in the [batch 5 review guide](docs/audits/2026-09-20/batch-5.md).
+CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from its own successful reusable CI run. Unit/jsdom green does not certify WebGL, responsive geometry or physical-phone behavior; dated browser evidence records those limits separately.
 
-Batch 6 was merged through [PR #8](https://github.com/crashchen/BESS-Storage-Simulator/pull/8) as `b5cdf58`; [main CI 35780131524](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131524) and [Pages 35780131948](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35780131948) succeeded. Its functional commit credits Codex as a GitHub-recognized co-author. It preserves a manually rotated, panned or zoomed view across canvas resize, including height-only changes. Full site restores the current overview and re-enables automatic framing. A click without camera movement keeps automatic framing active. The user-arranged [CC review](docs/audits/2026-09-22/cc-review.md) approved the core change; its follow-up removed redundant event guards and added a residual-damping regression check, verified locally after review. Production-preview checks cover mouse rotation, wheel zoom, height changes and portrait/landscape transitions; these are desktop browser viewport checks, not phone hardware validation. See the [batch 6 review guide](docs/audits/2026-09-22/batch-6.md). No simulation or accounting changes. The Three chunk warning remains at 724.91 kB; the September 19 full/production audit snapshots each reported zero advisory entries.
+**CC-reviewed local submission, not released:** the user-provided final review approved the complete 2026-10-11 changes, including all three follow-ups. This batch is committed locally on `codex/telemetry-hud-housekeeping`; no push, PR, merge or deployment has occurred. Live Pages remains at `891198b`. See the [review and submission record](docs/audits/2026-10-11/README.md) for exact checks and remaining limitations, rather than treating old test counts or audit results as current.
 
-Batch 7 is tracked in [PR #10](https://github.com/crashchen/BESS-Storage-Simulator/pull/10) from baseline `9b81a7b`. It gives scene labels a fixed readable screen size, explains the color and direction of energy flows, and shows visible 3D/chart loading states. User-arranged CC review caught a label pointer-event regression and three smaller visual issues; the follow-up lets clicks reach the Canvas, keeps labels below the HUD, separates labels at common portrait widths and short landscape heights, and restores the red Grid overload label. CC independently confirmed all four fixes. Node 24.21.0 lint, **223 tests across 21 files**, and the Pages-path build passed at that stage. Local browser checks covered mobile/desktop viewports, the Grid overload label, and delayed 3D/chart loading. The later short-landscape legend and Grid-label fixes are recorded below; the original findings remain in the [batch 7 review guide](docs/audits/2026-09-22/batch-7.md). No simulation or settlement changes.
-
-PR #10 merged as `2989452` on 2026-09-22. [Main CI 35789638276](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35789638276) and [Pages 35789638697](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35789638697) passed on that commit. At that release, a live 640×360 viewport showed no BESS/PCS label overlap but still had the Solar/legend overlap, which PR #19 later addressed.
-
-Batch 8's auditable discharge-value split was released through [PR #12](https://github.com/crashchen/BESS-Storage-Simulator/pull/12) as `20dadaf`; its main CI and Pages deployment passed. Node 24.21.0 lint, 230 tests across 21 files, and the Pages-path build passed after the user-arranged CC review and follow-up. The live Metrics breakdown and negative-price wording were checked without browser errors. [Batch 8 evidence](docs/audits/2026-09-23/batch-8.md) distinguishes actual avoided imports from the assumed value of restored load.
-
-Batch 9's evening-peak AUTO rule was released through [PR #14](https://github.com/crashchen/BESS-Storage-Simulator/pull/14) as `dd3df1d`. The user-arranged CC first review found a loose price gate; its second review confirmed the revised efficiency/reserve/peak-pacing gate and independent three-day comparisons. [Main CI 35976088474](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35976088474) and [Pages 35976088804](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35976088804) passed on the merge commit. The live Controls panel shows the 40% peak-entry target and tariff-hurdle explanation without observed console errors. Node 24.21.0 lint, 257 tests across 22 files, and the Pages-path build passed. The [batch 9 record](docs/audits/2026-09-23/batch-9.md) states the price threshold, restored-load valuation limit and the 20 MW transfer-limit exception.
-
-Batch 10 was released through [PR #16](https://github.com/crashchen/BESS-Storage-Simulator/pull/16) as `c4a467a`. Controls displays the peak-tariff threshold calculated by the same AUTO policy function, with an explicit warning when no editable price can exceed it. The estimate excludes load, PV, PCC and transfer-limit effects. User-arranged CC review found no blocker; four small copy, formatting and accessibility follow-ups were included before merge. [Main CI 35982356235](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356235) and [Pages 35982356587](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35982356587) passed. The live Controls panel shows about €178.78/MWh at default tariffs and the PCC caveat, with no console error observed during the smoke check. Node 24.21.0 lint, 260 tests across 22 files, and the Pages-path build passed; see the [batch 10 record](docs/audits/2026-09-24/batch-10.md).
-
-[PR #18](https://github.com/crashchen/BESS-Storage-Simulator/pull/18) merged as `adc1083` and fixes the NumericField draft revived by Reset: a committed PV evacuation value of 20 no longer reappears after Reset restores 102. [PR #19](https://github.com/crashchen/BESS-Storage-Simulator/pull/19) merged next as `72dc624` and closes the two remaining batch 7 scene items. On short landscape screens (≤430px high) the flow legend starts as a keyboard-operable chip beside the scene toolbar and opens as a popover, keeping the SOLAR ARRAY label and PV array visible by default at 640×360 and 667×375. The offset GRID NODE label selects Grid through a screen-space R3F hit area while its DOM remains pointer-transparent. Unpinned hover previews no longer intercept clicks. Both merge commits passed Node 24 CI ([#18](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36154001741), [#19](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36154050071)), and the [PR #19 Pages run](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36154056975) deployed the combined code. The merged tree passed **273 tests across 23 files**, lint and the Pages-path build locally on Node 26. Online, Grid selection from its label and PV evacuation 20 → Reset 102 → blur were checked with no console error. Cloud headless Chromium checks with SwiftShader, not a GPU or physical phone, are in the [NumericField](docs/audits/2026-09-25/numericfield-reset.md) and [scene](docs/audits/2026-09-25/scene-legend-grid-label.md) records. At that release a pinned information card could still cover the Grid label, and the lifted PCS label could miss its equipment on narrow/short screens; the next paragraph covers the follow-up. No simulation or settlement changes.
-
-Those two scene follow-ups were released in [PR #21](https://github.com/crashchen/BESS-Storage-Simulator/pull/21), merged as `0c03017` from main `647ffe7`. The equipment card now docks beside the default overview instead of over it: below the site in portrait, top-right under the HUD in landscape, and over the solar array, which is not selectable, on short landscape screens. With a card pinned, clicking or tapping another equipment label or body switches the card, including the GRID NODE label. The BESS and PCS / MV labels use the Grid label's screen-space hit area, so the lifted PCS tag on narrow/short screens selects PCS. The trade-off is a shorter card whose details scroll; after a manual camera change it can still overlap equipment until Full site. Node 24.21.0 lint, **276 tests across 23 files**, and the Pages-path build passed; [main CI 36176889549](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889549) and [Pages 36176889988](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/36176889988) succeeded. The [pinned-card record](docs/audits/2026-09-25/pinned-card-pcs-label.md) preserves the original cloud SwiftShader evidence and a later user-supplied CC report received October 3: real Chrome on Apple M5/Metal, real-mouse switching at five CSS viewports, with screenshots inspected by Codex. Those narrow viewports were iframes. Physical-phone touch and user acceptance of the clipped Solar label and long short-landscape card remain pending. No simulation or settlement changes.
-
-Both short-landscape items were released through [PR #24](https://github.com/crashchen/BESS-Storage-Simulator/pull/24), merged as `fa2d493`. Its [main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/37154676443) and [Pages deployment](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/37154676612) passed on that merge commit. The reviewed tree passed Node 24 lint, **282 tests across 23 files**, and the Pages-path build.
-- On short landscape screens the equipment card now opens as a summary: name, headline reading, status, meter, reading note and flows. Key readings and the description fold behind a **Details** button.
-- In headless Chromium the summary is 1.1–2.3 card windows tall, compared with 3.1–9.3 on the pre-PR24 main baseline. Desktop and portrait cards are unchanged.
-- While a card is docked over the solar array, the SOLAR ARRAY label hides instead of showing a clipped stub.
-
-Evidence and limits are in the [short-landscape card record](docs/audits/2026-10-03/compact-card-solar-label.md).
-
-Batches 2–3 ([PR #5](https://github.com/crashchen/BESS-Storage-Simulator/pull/5)) and batch 4 ([PR #6](https://github.com/crashchen/BESS-Storage-Simulator/pull/6)) passed user-arranged CC review and were merged on September 20. The preceding batch-4 production baseline was `be9eb17`, with [CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504681930) and [Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/35504682035) successful. The Pages run exercised quality checks, same-run artifact download, and deployment. Live smoke checks confirmed the three models, updated yield/value wording, running telemetry and chart, with no console errors observed. That 197/18 suite is the historical batch-4 release; the next releases were batch 5 at `29c81d7` (214/21) and batch 6 at `b5cdf58` (221/21).
-
-The first batch was released through [PR #4](https://github.com/crashchen/BESS-Storage-Simulator/pull/4) as `053c82c`; its original 146/15 checks and deployment evidence remain in the audit history.
-
-Real-browser checks cover desktop/phone layout and tariff input, including the first batch's 350 → invalid 2000 → Reset → 350 with cleared validation and retained Reset focus. Second-batch checks cover yield/valuation copy, stopped/manual intent, running power, paused snapshots, and idle readouts after paused edits at desktop and phone widths. Hover restoration is covered by App integration events. Retry uses the real App/hook/reducer with a simulated canvas context-loss event, rather than an actual GPU failure. Remaining product and experience work is tracked in the [audit and optimization plan](docs/audits/2026-09-08/README.md).
-
-Deploy calls the reusable CI workflow before uploading its verified artifact. The successful chain was verified in Pages run 35504682035; intentional remote failure injection has not been performed. CI checks PRs against any base branch, while pushes and automatic Pages deployment remain scoped to `main`.
-
-## Project Structure
-
-```text
-public/
-  models/                        Supplier-neutral equipment GLBs (BESS, PCS-MV, transformer) — see its README
-scripts/
-  make_generic_bess_glb.py       Downstream Blender pass that removes BESS branding without editing Switchyard
-src/
-  App.tsx                        App shell and overlay composition
-  config.ts                      Centralized configuration constants
-  types.ts                       Shared simulation, drawer-layout, and component-prop contracts
-  scenarios.ts                   Demo scenario definitions (currently hidden from the main controls)
-  hooks/
-    useGridSimulation.ts         RAF tick loop, throttled React updates, history snapshots
-    useDrawerLayout.ts           Shared responsive drawer state and equipment-overlay coordination
-    useMediaQuery.ts             Media-query subscription (flow-legend layout default)
-  components/
-    SimulationViewport.tsx       Canvas wrapper with WebGL error boundary and asset hover/click
-    SceneCameraControls.tsx     Automatic framing, retained inspection on resize, view-only restore
-    EquipmentModel.tsx          Shared metre-scale equipment rendering
-    SceneLabel.tsx              Screen-readable equipment names at 3D anchors; opt-in label hit area
-    EnergyFlowLegend.tsx        Collapsible color and direction key for the animated routes
-    MicrogridScene.tsx           3D scene: 7 energy-flow particle paths, BESS SoC, LOCAL LOAD node
-    SceneAssetInfoCard.tsx       Hover/click info card for BESS / PCS-MV / Grid Node
-    StatusHud.tsx                Compact live status bar
-    ControlPanel.tsx             Collapsible drawer layout
-    TelemetryChart.tsx           Single lazy chart entry with its chart-only dependencies
-    RecoverableTelemetryChart.tsx  Local fallback and fresh-URL retry
-    AppErrorBoundary.tsx         Last-resort render fallback with explicit reload semantics
-    panels/                      Modular control panel components
-      index.ts                   Barrel re-exporting the panel components below
-      SimulationControl.tsx      Play/pause/stop/reset + time speed
-      BessControl.tsx            Houses four components: BessDispatchControl (mode + SoC/output gauges),
-                                 BessCapacitySetup (power/energy), ProjectCapacitySetup (solar/grid/PV
-                                 evacuation), and DispatchParameters (grid dispatch scale)
-      ScenarioPresetsPanel.tsx   Demo preset launcher (currently disabled in ControlPanel)
-      MetricsPanel.tsx           Project specifications
-      EconomicsPanel.tsx         Tariff editor + demo-value settlement breakdown
-    ui/
-      PanelPrimitives.tsx        Reusable UI (Gauge, ActionButton, NumericField, PanelCard)
-  utils/
-    gridReducer.ts               Pure BESSCommand reducer; emits ReducerResult with side-effects
-    tickEngine.ts                Deterministic tick: clock/energy events + AUTO pacing integration
-    simulationModel.ts           Active-power settlement, solar/demand models, demo-value math
-    energyFlowTelemetry.ts       Display-only: GridState → 7 visible energy flows
-    sceneFlowVisuals.ts          Shared scene/legend flow colors
-    bessDisplay.ts               Display-only: sampled BESS action, run state, dispatch intent, known limits
-    sceneOverview.ts             Perspective fit for the curated site envelope
-    sceneLabelHitArea.ts         Screen-space raycast so a pointer-transparent label can select its equipment
-    sceneAssetInfo.ts            Structured asset info for the 3D info cards
-    gridSelectors.ts             Derived state (battery duration, total grid connection)
-    importTelemetryChart.ts      Native import transport; retry/cache logic stays in the chart boundary
-  test/                          Vitest setup and shared GridState fixture
-```
-
-## Notes
-
-- The baseline numbers intentionally follow the provided project screenshot, including the displayed `188 MW / 744 MWh` BESS configuration.
-- `Project demo value` and `BESS demo margin` retain the earlier arithmetic but are labelled as modelled values, not realized project cash flow:
-  - `Project demo value` = direct PV sales + BESS discharge value − grid-paid charging cost.
-  - `BESS demo margin` = BESS discharge value − grid-paid charging cost − `Solar → BESS` opportunity cost (delayed sale value).
-  - `BESS discharge value` now has three cumulative parts: BESS export revenue, cost avoided by **actual** lower grid imports, and assumed value for restoring load that the PCC import cap would otherwise leave unserved. All three use the settlement-time tariff, including negative prices. The last part is an illustrative assumption, not export revenue or an avoided import; both totals include it. Export and avoided-cost rows are tariff-based estimates, not a complete financial forecast.
-- The current dispatch model intentionally focuses on **Energy Arbitrage + Self-consumption** using active power only. It does not model FCR, frequency response, voltage control, protection trips, or AC transient dynamics.
-- Local supply/demand gaps are represented as grid import/export at the PCC. Actual imports are capped at the configured PCC limit; `PCC Overload` is the remaining unserved demand, not actual imports above that limit.
-- The annual yield reference is a baseline project input for context. The current daily solar curve is illustrative, has no annual calibration, and does not provide an annual forecast.
-- The built-in `AUTO` dispatch is a simplified rule tree: charge toward 40% SoC off-peak; during the shoulder window, hold that target only when the evening tariff clears an estimated efficiency, peak-pacing and reserve-value hurdle, while serving local demand with any energy above it; charge from PV surplus; then pace peak discharge above the 12% reserve. Otherwise shoulder self-consumption remains available. PV export keeps priority at the PCC. This tariff-only rule does not guarantee higher realized revenue, and peak discharge itself still has no round-trip price gate.
-- Every simulation edit goes through a `BESSCommand` and the reducer. `dispatchMode` is the single source of truth for dispatch intent: `SET_DISPATCH_MODE` and its equivalence-tested `CHARGE` / `DISCHARGE` / `IDLE` shortcuts select that intent. Capacity, tariff, speed, and run-state commands have their own effects; they do not all change dispatch mode.
-- `Pause` freezes the clock and retains the current run. `Stop` starts a fresh stopped run: time and SoC return to their initial values, and accumulated results/history are cleared, while configured capacities, tariffs, demand scale, time speed, and dispatch intent are preserved. `Reset` also restores those settings to the baseline. Neither `Stop` nor `Reset` is equivalent to `Pause`.
-- The tick engine settles up to SoC, evening-entry target, and peak-reserve boundaries, then recomputes dispatch for the remaining time. The peak pacing horizon floor uses the integrated capped/exponential rule. Instantaneous telemetry is the last settled segment; cumulative values include every segment. Time-varying PV/demand still use midpoint approximation, so finite-step differences remain.
-- BESS displays separate the selected dispatch policy from sampled power and run state. Paused nonzero values describe the frozen snapshot; a paused configuration edit can reconcile power to zero without changing dispatch intent. Full/empty/reserve and other known limits are explained only when supported by the current state.
-- `Reset` clears tariff drafts and validation errors even when the applied tariff already equals the baseline. `Pause` and `Stop` do not trigger this explicit draft reset. Equipment hover continues to track pointer entry and exit while a drawer hides the card, so closing the drawer restores the current preview without reviving a departed hover.
-- The BESS container and its pad are fixed-scale representative equipment. Changing station capacity updates the telemetry and the info card's approximate unit count; it does not stretch the model.
-- Demo scenario definitions remain in code for later restoration, but the scenario panel is currently hidden while the base model is being hardened.
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

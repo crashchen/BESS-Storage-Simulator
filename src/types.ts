@@ -95,6 +95,7 @@ export type BESSCommand =
     | { type: 'APPLY_SCENARIO_PRESET'; payload: ScenarioPresetId };
 
 export interface GridSnapshot {
+    /** Unwrapped simulated hours from day 1 midnight; never wraps at 24h. */
     t: number;
     solarMw: number;
     demandMw: number;

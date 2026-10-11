@@ -226,6 +226,73 @@ describe('useGridSimulation dispatch', () => {
         expect(result.current.history[0]?.t).toBeCloseTo(8.0 + (0.1 * 240) / 3600, 3);
     });
 
+    it('retains precise simulated intervals when switching from 1x to 1440x', () => {
+        const { result } = renderHook(() => useGridSimulation());
+        act(() => {
+            result.current.dispatch({ type: 'SET_TIME_SPEED', payload: 1 });
+            result.current.dispatch({ type: 'START_SIMULATION' });
+        });
+        advanceFrames(5);
+        const slow = result.current.history;
+        expect(slow).toHaveLength(2);
+        expect(slow[1].t - slow[0].t).toBeCloseTo(0.4 / 3600, 10);
+
+        act(() => result.current.dispatch({ type: 'SET_TIME_SPEED', payload: 1440 }));
+        advanceFrames(4);
+        const fast = result.current.history;
+        expect(fast[2].t - fast[1].t).toBeCloseTo(0.4 * 1440 / 3600, 10);
+    });
+
+    it('keeps history monotonic through midnight and rolling-window eviction', () => {
+        const { result } = renderHook(() => useGridSimulation());
+        act(() => {
+            result.current.dispatch({ type: 'SET_TIME_SPEED', payload: 1440 });
+            result.current.dispatch({ type: 'START_SIMULATION' });
+        });
+        advanceFrames(900);
+        expect(result.current.state.timeOfDay).toBeCloseTo(20, 6);
+        expect(result.current.history).toHaveLength(SIMULATION.historyMaxPoints);
+        expect(result.current.history.at(-1)!.t).toBeGreaterThan(43);
+        expect(result.current.history.some(s => s.t < 24)).toBe(true);
+        result.current.history.slice(1).forEach((sample, index) => {
+            expect(sample.t - result.current.history[index].t).toBeCloseTo(0.16, 8);
+        });
+    });
+
+    it('excludes paused wall time and resumes the same chart clock', () => {
+        const { result } = renderHook(() => useGridSimulation());
+        act(() => result.current.dispatch({ type: 'START_SIMULATION' }));
+        advanceFrames(5);
+        const history = result.current.history;
+        act(() => result.current.dispatch({ type: 'PAUSE_SIMULATION' }));
+        advanceFrame(nowMs + 60_000);
+        expect(result.current.history).toBe(history);
+        act(() => result.current.dispatch({ type: 'START_SIMULATION' }));
+        advanceFrames(1);
+        expect(result.current.history.at(-1)!.t - history.at(-1)!.t)
+            .toBeCloseTo(0.1 * result.current.state.timeSpeed / 3600, 10);
+    });
+
+    it.each([
+        { type: 'STOP_SIMULATION' },
+        { type: 'RESET_SIMULATION' },
+        { type: 'APPLY_SCENARIO_PRESET', payload: 'evening-peak-discharge' },
+    ] as const)('reanchors telemetry after $type', (command) => {
+        const { result } = renderHook(() => useGridSimulation());
+        act(() => {
+            result.current.dispatch({ type: 'SET_TIME_SPEED', payload: 1440 });
+            result.current.dispatch({ type: 'START_SIMULATION' });
+        });
+        advanceFrames(410);
+        expect(result.current.history.at(-1)!.t).toBeGreaterThan(24);
+        act(() => result.current.dispatch(command));
+        expect(result.current.history).toEqual([]);
+        const { timeOfDay, timeSpeed } = result.current.state;
+        act(() => result.current.dispatch({ type: 'START_SIMULATION' }));
+        advanceFrames(1);
+        expect(result.current.history[0].t).toBeCloseTo(timeOfDay + 0.1 * timeSpeed / 3600, 10);
+    });
+
     it('preserves stored energy when BESS energy capacity changes', () => {
         const { result } = renderHook(() => useGridSimulation());
         const prevStoredMwh = (result.current.state.batterySocPercent / 100) * result.current.state.batteryEnergyCapacityMwh;

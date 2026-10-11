@@ -10,13 +10,14 @@ import {
     ReferenceLine,
 } from 'recharts';
 import type { GridSnapshot } from '../types';
-import { formatTime } from '../utils/formatTime';
+import { formatSimulationTime } from '../utils/formatTime';
 
 interface TelemetryChartProps {
     history: GridSnapshot[];
 }
 
 export function TelemetryChart({ history }: TelemetryChartProps) {
+    const spanHours = (history.at(-1)?.t ?? 0) - (history[0]?.t ?? 0);
     return (
         <div style={{ width: '100%', height: 170 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -24,8 +25,10 @@ export function TelemetryChart({ history }: TelemetryChartProps) {
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                     <XAxis
                         dataKey="t"
+                        type="number"
+                        domain={['dataMin', 'dataMax']}
                         tick={{ fontSize: 9, fill: '#64748b' }}
-                        tickFormatter={(v: number) => formatTime(v)}
+                        tickFormatter={(v: number) => formatSimulationTime(v, spanHours < 10 / 60)}
                     />
                     <YAxis
                         tick={{ fontSize: 9, fill: '#64748b' }}
@@ -39,7 +42,7 @@ export function TelemetryChart({ history }: TelemetryChartProps) {
                             fontSize: '11px',
                         }}
                         labelStyle={{ color: '#94a3b8' }}
-                        labelFormatter={(v) => formatTime(Number(v))}
+                        labelFormatter={(v) => formatSimulationTime(Number(v), true)}
                     />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', color: '#94a3b8' }} />
                     <ReferenceLine y={0} stroke="#475569" strokeDasharray="2 2" />

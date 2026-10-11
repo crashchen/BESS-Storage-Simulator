@@ -48,7 +48,7 @@ export function SceneAssetInfoCard({ assetId, gridState, pinned, compact = false
       // with folded details. Heights are capped to that space; the content
       // scrolls. A hover preview also lets the pointer through; only a pinned
       // card has controls.
-      className={`scene-asset-card @container ${pinned ? 'pointer-events-auto' : 'pointer-events-none'} absolute bottom-24 left-1/2 z-30 max-h-[max(8rem,calc(50dvh-18vw-96px))] w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overflow-x-hidden overscroll-contain rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl landscape:bottom-auto landscape:left-auto landscape:right-[70px] landscape:top-[62px] landscape:max-h-[max(8rem,calc(50dvh-2vw-72px))] landscape:w-[min(390px,calc(100vw-320px))] landscape:translate-x-0`}
+      className={`scene-asset-card @container ${pinned ? 'pointer-events-auto' : 'pointer-events-none'} absolute bottom-24 left-1/2 z-30 max-h-[max(8rem,calc(50dvh-18vw-96px))] w-[min(390px,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto overflow-x-hidden overscroll-contain rounded-3xl border border-slate-500/30 bg-slate-950/88 text-slate-100 shadow-2xl shadow-black/45 backdrop-blur-xl landscape:bottom-auto landscape:left-auto landscape:right-[70px] landscape:w-[min(390px,calc(100vw-320px))] landscape:translate-x-0`}
     >
       <div className={`h-1.5 bg-gradient-to-r ${info.accent}`} />
       <div className="p-3 @3xs:p-4">
