@@ -122,6 +122,17 @@ describe('App viewport integration', () => {
     }
   }
 
+  it('publishes actual HUD clearance on the shell shared with equipment cards', () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      return { top: 0, bottom: this.dataset.testid === 'status-hud' ? 78 : 360 } as DOMRect;
+    });
+    const { container } = render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^Inspect BESS$/ }));
+    const shell = container.firstElementChild as HTMLElement;
+    expect(shell.style.getPropertyValue('--hud-bottom')).toBe('78px');
+    expect(shell).toContainElement(screen.getByTestId('scene-asset-info-card'));
+  });
+
   it('keeps custom configuration, SoC, earnings and history across Retry 3D View', () => {
     const { unmount } = render(<StrictMode><App /></StrictMode>);
     fireEvent.click(screen.getByRole('button', { name: 'Run custom simulation' }));

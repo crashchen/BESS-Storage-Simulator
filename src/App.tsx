@@ -16,14 +16,16 @@ import { useGridSimulation } from './hooks/useGridSimulation';
 import { ControlPanel } from './components/ControlPanel';
 import { StatusHud } from './components/StatusHud';
 import { useDrawerLayout } from './hooks/useDrawerLayout';
+import { useHudClearance } from './hooks/useHudClearance';
 
 export default function App() {
   const { state, history, dispatch, simulationResetVersion } = useGridSimulation();
   const drawerLayout = useDrawerLayout();
+  const { shellRef, hudRef } = useHudClearance();
   const equipmentInfoEnabled = !drawerLayout.rightOpen && !(drawerLayout.compact && drawerLayout.leftOpen);
 
   return (
-    <div className="relative w-screen h-dvh overflow-hidden bg-[#0a0a0f]">
+    <div ref={shellRef} className="relative w-screen h-dvh overflow-hidden bg-[#0a0a0f]">
       {/* ── 3D Layer (@Agent-3D) ──────────────────────────── */}
       <SimulationViewport
         gridState={state}
@@ -33,7 +35,7 @@ export default function App() {
       />
 
       {/* ── 2D HUD Layer (@Agent-UI) ─────────────────────── */}
-      <StatusHud gridState={state} />
+      <StatusHud ref={hudRef} gridState={state} />
       <ControlPanel gridState={state} history={history} onCommand={dispatch} layout={drawerLayout} simulationResetVersion={simulationResetVersion} />
 
       {/* ── Attribution ───────────────────────────────────── */}

@@ -119,7 +119,7 @@ describe('SceneAssetInfoCard', () => {
         render(<SceneAssetInfoCard assetId="bess" gridState={makeGridState()} pinned onClose={vi.fn()} />);
 
         const card = screen.getByTestId('scene-asset-info-card');
-        expect(card).toHaveClass('scene-asset-card', 'bottom-24', 'left-1/2', 'landscape:top-[62px]', 'landscape:right-[70px]');
+        expect(card).toHaveClass('scene-asset-card', 'bottom-24', 'left-1/2', 'landscape:right-[70px]');
         expect(card.className).not.toMatch(/(^|\s)lg:/);
     });
 

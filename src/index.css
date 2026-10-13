@@ -111,6 +111,17 @@
   }
 }
 
+/* All landscape cards clear wrapped HUD content. Subtract the additional top
+   offset from the original height budget to preserve the lower docking edge. */
+@media (orientation: landscape) {
+  .scene-asset-card {
+    --scene-card-top: max(62px, calc(var(--hud-bottom, 0px) + 8px));
+    --scene-card-height: max(8rem, calc(50dvh - 2vw - 72px));
+    top: var(--scene-card-top);
+    max-height: max(0px, calc(var(--scene-card-height) - var(--scene-card-top) + 62px));
+  }
+}
+
 /* Short landscape (COMPACT_LEGEND_QUERY): the bands above and below the site
    are too short for the equipment card, so it docks over the solar array, which
    is not selectable. It sits right of the Controls handle, below the HUD and
@@ -118,13 +129,12 @@
    height left of centre in the default overview). */
 @media (orientation: landscape) and (max-height: 430px) {
   .scene-asset-card {
-    top: 62px;
     right: calc(50% + 16dvh + 8px);
     bottom: auto;
     left: 62px;
     width: auto;
     max-width: 390px;
-    max-height: calc(100dvh - 156px);
+    max-height: calc(100dvh - var(--scene-card-top) - 94px);
     translate: none;
   }
 }
@@ -132,9 +142,8 @@
 /* Below 640px wide the Controls handle and HUD are smaller. */
 @media (orientation: landscape) and (max-height: 430px) and (max-width: 639px) {
   .scene-asset-card {
-    top: 48px;
+    --scene-card-top: max(48px, calc(var(--hud-bottom, 0px) + 8px));
     left: 44px;
-    max-height: calc(100dvh - 142px);
   }
 }
 

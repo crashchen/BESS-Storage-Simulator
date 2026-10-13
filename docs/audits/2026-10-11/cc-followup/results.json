@@ -1,0 +1,121 @@
+{
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+  "axis": [
+    {
+      "label": "D1 08:00",
+      "x": 980
+    },
+    {
+      "label": "D1 08:15",
+      "x": 1054.14404296875
+    },
+    {
+      "label": "D1 08:30",
+      "x": 1128.2880859375
+    },
+    {
+      "label": "D1 08:54",
+      "x": 1246
+    }
+  ],
+  "layouts": [
+    {
+      "width": 640,
+      "height": 480,
+      "synthetic": false,
+      "hudBottom": 78,
+      "cardTop": 86,
+      "cardBottom": 217.1875,
+      "scrollHeight": 1007
+    },
+    {
+      "width": 700,
+      "height": 500,
+      "synthetic": false,
+      "hudBottom": 78,
+      "cardTop": 86,
+      "cardBottom": 226,
+      "scrollHeight": 872
+    },
+    {
+      "width": 768,
+      "height": 480,
+      "synthetic": false,
+      "hudBottom": 78,
+      "cardTop": 86,
+      "cardBottom": 214.625,
+      "scrollHeight": 872
+    },
+    {
+      "width": 800,
+      "height": 600,
+      "synthetic": true,
+      "hudBottom": 78,
+      "cardTop": 86,
+      "cardBottom": 274,
+      "scrollHeight": 872
+    },
+    {
+      "width": 640,
+      "height": 360,
+      "synthetic": true,
+      "hudBottom": 78,
+      "cardTop": 86,
+      "cardBottom": 266,
+      "scrollHeight": 379
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "synthetic": true,
+      "hudBottom": 78,
+      "cardTop": 86,
+      "cardBottom": 281,
+      "scrollHeight": 363
+    },
+    {
+      "width": 932,
+      "height": 430,
+      "synthetic": true,
+      "hudBottom": 54,
+      "cardTop": 62,
+      "cardBottom": 336,
+      "scrollHeight": 340
+    },
+    {
+      "width": 568,
+      "height": 320,
+      "synthetic": true,
+      "hudBottom": 59.5,
+      "cardTop": 68,
+      "cardBottom": 226,
+      "scrollHeight": 411
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "synthetic": true,
+      "hudBottom": 54,
+      "cardTop": 62,
+      "cardBottom": 324.390625,
+      "scrollHeight": 872
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "synthetic": true,
+      "hudBottom": 59.5,
+      "cardTop": 492.203125,
+      "cardBottom": 748,
+      "scrollHeight": 933
+    }
+  ],
+  "pageErrors": [],
+  "slowAxis": [
+    "D1 08:00:00",
+    "D1 08:00:16",
+    "D1 08:00:33",
+    "D1 08:01:01"
+  ],
+  "midnightAxis": "D1 08:01 / D1 13:01 / D1 18:01 / D2 00:06"
+}

@@ -11,6 +11,9 @@ import { createInitialGridState, simulateTick } from '../utils/tickEngine';
 export function useGridSimulation() {
     const simRef = useRef<GridState>(createInitialGridState());
     const historyRef = useRef<GridSnapshot[]>([]);
+    // Unwrapped hours, anchored to the run's starting clock. Keep sub-second
+    // precision: rounding each sample collapses slow-speed chart intervals.
+    const chartTimeRef = useRef<number>(SIMULATION.initialTimeOfDay);
     const lastFrameRef = useRef(0);
     const lastSnapshotRef = useRef(0);
     const lastRenderSyncRef = useRef(0);
@@ -37,6 +40,7 @@ export function useGridSimulation() {
         }
 
         if (sideEffects.resetHistory) {
+            chartTimeRef.current = next.timeOfDay;
             historyRef.current = [];
             setHistory([]);
         }
@@ -71,6 +75,7 @@ export function useGridSimulation() {
             const dtReal = Math.min((now - lastFrameRef.current) / 1000, SIMULATION.maxDeltaTimeSeconds);
             lastFrameRef.current = now;
 
+            chartTimeRef.current += dtReal * simRef.current.timeSpeed / 3600;
             simRef.current = simulateTick(simRef.current, dtReal, wallNow);
 
             if (now - lastSnapshotRef.current >= SIMULATION.snapshotIntervalMs) {
@@ -78,7 +83,7 @@ export function useGridSimulation() {
 
                 const s = simRef.current;
                 const snap: GridSnapshot = {
-                    t: parseFloat(s.timeOfDay.toFixed(3)),
+                    t: chartTimeRef.current,
                     solarMw: parseFloat(s.solarOutputMw.toFixed(1)),
                     demandMw: parseFloat(s.gridDemandMw.toFixed(1)),
                     batteryMw: parseFloat(s.batteryPowerMw.toFixed(1)),
