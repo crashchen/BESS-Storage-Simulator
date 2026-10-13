@@ -4,15 +4,18 @@ Use the [project README](../README.md) to run the demo and understand its limits
 and [CLAUDE.md](../CLAUDE.md) for contributor invariants. Dated records below are
 historical evidence, not interchangeable claims about the current checkout.
 
-## Current Pull Request
+## Current Release
 
-[2026-10-11 review and submission record](audits/2026-10-11/README.md): simulated-time chart,
+[2026-10-11 review and release record](audits/2026-10-11/README.md): simulated-time chart,
 development dependency patch, responsive HUD clearance and documentation cleanup.
 The user supplied CC's final approval, including all three follow-ups, and
-authorized push and PR creation. The branch `codex/telemetry-hud-housekeeping`
-is published in [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25).
-No merge or deployment yet; check the PR's final-head CI separately.
-The last published baseline remains `891198b`.
+authorized squash merge on 2026-10-13. [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25)
+merged as `4ea9a58`; its tree matches reviewed head `06abd38`.
+[Main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647078)
+and [Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647051)
+passed at that exact merge SHA. The 14 published files matched the local build.
+The follow-up changes release documentation only and receives its own CI/Pages checks;
+final follow-up SHA and run evidence are recorded in the Vault iteration log.
 
 ## Audit History
 
@@ -40,7 +43,6 @@ device reports and CI run IDs describe their own dated commits only.
 
 ## Open Work
 
-- User-authorized merge/release of PR #25 after checking final-head CI, with status wording and release evidence updated at each step.
 - Physical iOS/Android touch, browser-chrome resizing and native-GPU recovery acceptance.
 - Promote selected browser smoke checks into a reproducible CI gate; current scripts use an external Playwright installation.
 - Profile first before lazy-loading more 3D code or replacing the state architecture; the existing Three chunk warning is not an FPS measurement.

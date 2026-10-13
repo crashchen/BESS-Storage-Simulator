@@ -99,6 +99,6 @@ npm audit --omit=dev
 
 CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from its own successful reusable CI run. Unit/jsdom green does not certify WebGL, responsive geometry or physical-phone behavior; dated browser evidence records those limits separately.
 
-**CC-reviewed PR, not released:** the user-provided final review approved the complete 2026-10-11 changes, including all three follow-ups. The branch is pushed and [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25) is open against main; it has not been merged or deployed. Live Pages remains at `891198b`. See the [review and submission record](docs/audits/2026-10-11/README.md) for local checks and limitations, and the PR checks for exact-head CI status.
+**Released on 2026-10-13:** [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25) was squash-merged as `4ea9a58` after the user-arranged CC review. That exact merge passed [main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647078) and [Pages deployment](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647051), with 302 tests in 25 files. All 14 published files matched the local Pages-path build. See the [release record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布) for evidence and the separate documentation follow-up. Physical-phone touch and native-GPU acceptance remain open.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

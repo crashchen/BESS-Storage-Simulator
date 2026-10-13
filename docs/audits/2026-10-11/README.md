@@ -1,12 +1,12 @@
-# 2026-10-11 修复、CC复审与PR #25记录
+# 2026-10-11 修复、CC复审与PR #25发布记录
 
 ## 状态与范围
 
-- 基线：`891198b30731637848148b9b26f279cfc37e34fc`；实现提交`af0830f`及后续状态文档提交位于已推送分支`codex/telemetry-hud-housekeeping`，见[PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25)。
-- 用户授权：修图表时间轴、定向依赖升级、HUD重叠，整理repo与Vault文档；经用户安排CC两轮复审后，先本地提交，随后明确授权push、开PR与推送Vault housekeeping。
-- 已push并开PR #25；未merge、未部署。Codex没有自动调用CC或其他外部审查模型。
+- 基线：`891198b30731637848148b9b26f279cfc37e34fc`；实现提交`af0830f`及状态文档`06abd38`经[PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25)于2026-10-13 squash合并为`4ea9a58`，合并树与已复审head完全一致。
+- 用户授权：修图表时间轴、定向依赖升级、HUD重叠，整理repo与Vault文档；经用户安排CC两轮复审后，先本地提交、push/开PR，随后明确授权squash merge并同步合并后的housekeeping。
+- PR #25已合并并发布；同合并SHA的main CI和Pages均通过，详见下方发布节点。Codex没有自动调用CC或其他外部审查模型。
 - 用户已转交CC最终通过报告：初批及三项P3补充均无阻塞，302/25、按锁文件安装、lint/type-check/Pages build及两范围audit均由CC独立复现。新增浏览器检查的范围与归属见下。
-- 已发布版本仍是891198b；其历史CI/Pages成功不能算作本PR的CI结果，后者须核对PR最新head。
+- PR head `06abd38`的CI38133996334与合并SHA的CI/Pages分别核验；不混用旧head或旧发布基线的成功记录。
 - 不改dispatch策略、reducer、tick、PCC/金额结算、GridState字段、GLB资产、相机或Switchyard。
 
 ## 改动及审查重点
@@ -41,7 +41,7 @@ Pause不累计图表时间；Stop/Reset/preset的resetHistory副作用同时重�
 - 新增docs/README证据索引；旧审计文件/截图未删，原长README/CLAUDE仍可从基线Git树追溯。
 - package描述/关键词统一为illustrative value / energy arbitrage，不再暗示完整project finance。
 - Vault仅整理项目五篇笔记，保留已有frontmatter字段与aliases/tags，以及本轮开始前已有的PR23/24 housekeeping和历史记录。当前验证汇总集中在迭代记录；其他四篇各司其职。
-- Vault部署hash不前移，代码验证hash回填PR最新提交；状态为CC完整复审通过、PR #25待合并。没有修改无关笔记或memory。
+- 推送阶段Vault保留旧部署hash、记录PR head；2026-10-13合并后只在同提交CI/Pages成功后前移，记录见下。没有修改无关笔记或memory。
 
 ## 初批验证（CC已复现）
 
@@ -68,7 +68,7 @@ Pause不累计图表时间；Stop/Reset/preset的resetHistory副作用同时重�
 1. HUD：高度超过430px的横屏同样可能换行。清除组件中固定top/height的重复配置，统一由CSS消费测量值；补全普通横屏高度扣减契约。
 2. 时间轴：1–3×下200点窗口会跨过一分钟。增加30/75/240/599秒和600秒边界测试，前四者显示秒、600秒开始显示分钟；数值坐标与累计时间不变。
 3. Vault：在PR #21/#22历史段补回CI/Pages四个编号36176889549 / 36176889988 / 36177570989 / 36177571484。来源为Vault原Git版本，前两项亦有repo历史审计支持；没有声称本轮重跑这些历史流水线。跨五篇原工作树及旧Git元数据的10个历史run ID均已确认留存，不再只检查迭代正文。
-4. 状态措辞：repo README、CLAUDE、docs索引及Vault五篇随实际节点更新，现为CC完整复审通过、PR #25待合并。将来获准合并时，再按同提交CI/Pages结果更新发布状态。
+4. 状态措辞：repo README、CLAUDE、docs索引及Vault五篇随实际节点更新。2026-10-11节点为CC完整复审通过、PR待合并；2026-10-13获准合并后，再按同提交CI/Pages结果更新为已发布。
 
 本轮单元/组件测试302/302（25文件），比CC复现版本增加5项；lint及Pages子路径构建通过，全量及omit=dev audit重跑均0。物理模型、价格、锁文件和GLB均未因这些补充发生变化。
 
@@ -97,9 +97,25 @@ Pause不累计图表时间；Stop/Reset/preset的resetHistory副作用同时重�
 
 用户随后授权提交。提交轮只更新复审/提交状态，不再修改运行代码；Node24 lint、302/25和Pages构建再次通过。项目提交为`af0830f`，Vault五篇的本地提交为`af632a6`，排除其他九个脏文件。该提交节点尚无远端CI；后续推送节点见下。真机触摸和真实GPU验收仍待人工完成。
 
-## PR #25推送节点
+## PR #25推送节点（2026-10-11历史）
 
 用户另行授权后，已推送实现提交并创建[PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25)，base为main。后续文档提交只回填PR状态，不改运行代码；本地lint、302/25和Pages构建再次通过，14个dist文件与已验证构建逐字节一致。远端CI须与PR最新head一致，不将旧head通过当成新head通过；确切run链接/提交号同步到Vault迭代记录，并可从PR检查查看。未启用自动合并，未合并或触发本批Pages发布，main仍是`891198b`。
+
+## 2026-10-13 合并与发布
+
+用户明确授权squash merge PR #25、核验合并后CI/Pages并同步repo与Vault housekeeping。合并前再次确认PR head为`06abd38c4cc10bfe4cbd981273136232e93d5e77`、检查成功且可合并；以`--match-head-commit`限定该head执行squash，得到`4ea9a58e07f08ce65ab3d020f58d131547687a87`，保留Codex co-author。时间为2026-10-13 14:45 CEST（12:45 UTC）。本地main fast-forward至合并提交，文件树与已复审head逐项相同。
+
+| 验证 | 精确提交 / 结果 |
+| --- | --- |
+| 合并后main CI | [38399647078](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647078)，headSha=`4ea9a58e07f08ce65ab3d020f58d131547687a87`，SUCCESS；Node24.21.0、302/25、lint及type-check/build通过 |
+| 合并后Pages | [38399647051](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647051)，同一headSha，quality/build/deploy均SUCCESS；发布该run质量门禁产物 |
+| 线上资产 | HTML、JS、CSS、三台GLB及models说明共14文件全部HTTP200，逐文件SHA256与合并提交的本地Pages子路径构建一致 |
+
+此次收尾只更新README、CLAUDE、docs索引与本页，不改代码、配置、依赖或模型。文档提交会再触发main CI/Pages，必须在最终文档head再次核验后才结束交付；其最终SHA与run编号在Vault迭代记录集中回填，避免公共文档为记录自身hash而循环提交。
+
+已知Actions Node20运行时和ubuntu-latest迁移提醒仍为非阻塞后续项，本轮不顺带改工作流。2026-10-11的audit和浏览器记录保留原日期；本轮线上检查是HTTP/资产一致性smoke，未重跑布局脚本，不代表真机触摸、原生GPU或用户观感验收。
+
+## 浏览器复验方式
 
 浏览器脚本：[browser-check.mjs](browser-check.mjs)。使用已安装的外部Playwright，不引入项目依赖，也不是CI gate：
 
@@ -125,4 +141,4 @@ node docs/audits/2026-10-11/browser-check.mjs \
 - 新日期的零audit取代当前健康判断，不回改2026-09-19的历史audit快照。
 - Three大chunk提示、阴影弃用警告仍保留；本轮不做性能状态库迁移或灯光风格调整。
 - CC最终复审通过。真实手机、原生GPU故障、任意相机姿态的自动避让仍不在验收范围。
-- PR #25已推送待合并；merge和部署尚未进行。后续更新必须保持repo/Vault分别圈定路径，不对Vault全量stage。
+- PR #25已合并且同提交CI/Pages成功。后续更新仍保持repo/Vault分别圈定路径，不对Vault全量stage；文档收尾的最后提交也要独立核验CI/Pages。

@@ -1,8 +1,8 @@
 # Contributor and Agent Guidance
 
-Current architecture and invariants, not a changelog. Read [README](README.md) for operation, [audit index](docs/README.md) for historical decisions, and the [2026-10-11 record](docs/audits/2026-10-11/README.md) for the pushed `codex/telemetry-hud-housekeeping` branch in [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25). The deployed baseline is still `891198b`.
+Current architecture and invariants, not a changelog. Read [README](README.md) for operation, [audit index](docs/README.md) for historical decisions, and the [release record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布) for [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25), squash-merged and deployed as `4ea9a58` on 2026-10-13. Later status-only documentation commits do not change the released implementation.
 
-The user supplied CC's final approval of the complete batch, including all three follow-ups, and subsequently authorized push and PR creation. PR #25 is open, not merged or released; use its checks for the latest exact-head CI status. Merge and deployment still require authorization. CC's software-rendered checks do not replace native-device acceptance.
+The user supplied CC's final approval of the complete batch, including all three follow-ups, then explicitly authorized squash merge and housekeeping. The reviewed head `06abd38` and merge `4ea9a58` have identical trees. Post-merge main CI and Pages both passed at the merge SHA; PR-head CI is retained as separate historical evidence. The status-only follow-up must also pass its own CI/Pages checks. Neither software-rendered checks nor HTTP/asset verification replace native-device acceptance.
 
 ## Ownership and Workflow
 
