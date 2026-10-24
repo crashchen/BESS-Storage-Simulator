@@ -10,13 +10,14 @@ import { Text, Grid, Line, useGLTF } from '@react-three/drei';
 import { EquipmentModel, EquipmentModelPlaceholder } from './EquipmentModel';
 import { SceneLabel } from './SceneLabel';
 import { SceneCameraControls } from './SceneCameraControls';
-import { type AmbientLight, BackSide, Color, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
+import { type AmbientLight, BackSide, Color, type DirectionalLight, Fog, type HemisphereLight, type Mesh, type MeshStandardMaterial, Vector3, CatmullRomCurve3 } from 'three';
 import { SCENE_3D, SOLAR } from '../config';
 import type { BatteryMode, MicrogridSceneProps, SceneAssetId } from '../types';
 import { getVisibleEnergyFlows } from '../utils/energyFlowTelemetry';
 import { FLOW_COLORS } from '../utils/sceneFlowVisuals';
 import { selectBessPower } from '../utils/bessDisplay';
 import { equipmentModelUrl } from '../utils/equipmentModels';
+import { createSceneLighting, getSceneLighting, HEMISPHERE_GROUND_COLOR, SUN_LIGHT_COLOR } from '../utils/sceneLighting';
 
 // ── Color palette ────────────────────────────────────────────
 const COLOR_CHARGE = new Color('#22c55e');
@@ -42,30 +43,6 @@ function socHealthColor(soc: number): Color {
         return _socColor.copy(SOC_COLOR_LOW).lerp(SOC_COLOR_MID, soc / 50);
     }
     return _socColor.copy(SOC_COLOR_MID).lerp(SOC_COLOR_HIGH, (soc - 50) / 50);
-}
-
-// ── Helper: Sun position from timeOfDay ──────────────────────
-function sunPosition(tod: number): [number, number, number] {
-    const angle = ((tod - 6) / 12) * Math.PI; // 6AM=0, 18PM=π
-    const x = Math.cos(angle) * 80;
-    const y = Math.sin(angle) * 80;
-    const z = 30;
-    return [x, Math.max(y, -10), z];
-}
-
-const SKY_NIGHT = new Color('#0a0a1a');
-const SKY_DAWN_A = new Color('#1a1a3e');
-const SKY_DAWN_B = new Color('#4a6fa5');
-const SKY_DAY_A = new Color('#87CEEB');
-const SKY_DAY_B = new Color('#4a9edb');
-const _skyResult = new Color();
-const _skyTmp = new Color();
-
-function skyColor(tod: number): Color {
-    if (tod < 5 || tod > 20) return _skyResult.copy(SKY_NIGHT);
-    if (tod < 7) return _skyResult.copy(SKY_DAWN_A).lerp(_skyTmp.copy(SKY_DAWN_B), (tod - 5) / 2);
-    if (tod > 18) return _skyResult.copy(SKY_DAWN_B).lerp(_skyTmp.copy(SKY_DAWN_A), (tod - 18) / 2);
-    return _skyResult.copy(SKY_DAY_A).lerp(_skyTmp.copy(SKY_DAY_B), Math.abs(tod - 12) / 6);
 }
 
 // ── Interactive asset helpers ───────────────────────────────
@@ -1028,13 +1005,7 @@ export function MicrogridScene({
         gridOverloadWarning,
     } = gridState;
 
-    const sunPos = sunPosition(timeOfDay);
-    const ambientIntensity = timeOfDay > 6 && timeOfDay < 19
-        ? 0.4 + 0.5 * Math.sin(((timeOfDay - 6) / 12) * Math.PI)
-        : 0.15;
-    const sunIntensity = timeOfDay > 5.5 && timeOfDay < 19.5
-        ? 2.0 * Math.sin(((timeOfDay - 5.5) / 14) * Math.PI)
-        : 0.1;
+    const night = SCENE_3D.nightLighting;
 
     const maxBessMw = Math.min(batteryPowerRatingMw, gridBessConnectionMw);
     const maxGridMw = gridPvEvacuationMw + gridBessConnectionMw;
@@ -1057,22 +1028,35 @@ export function MicrogridScene({
     const fogRef = useRef<Fog>(null);
     const ambientRef = useRef<AmbientLight>(null);
     const hemiRef = useRef<HemisphereLight>(null);
+    const sunRef = useRef<DirectionalLight>(null);
+    const moonRef = useRef<DirectionalLight>(null);
+    const lighting = useMemo(() => createSceneLighting(), []);
 
     useFrame(() => {
-        const sky = skyColor(timeOfDay);
-        if (fogRef.current) fogRef.current.color.copy(sky);
-        if (ambientRef.current) ambientRef.current.color.copy(sky);
-        if (hemiRef.current) hemiRef.current.color.copy(sky);
+        getSceneLighting(timeOfDay, lighting);
+        if (fogRef.current) fogRef.current.color.copy(lighting.skyColor);
+        if (ambientRef.current) {
+            ambientRef.current.color.copy(lighting.ambientColor);
+            ambientRef.current.intensity = lighting.ambientIntensity;
+        }
+        if (hemiRef.current) {
+            hemiRef.current.color.copy(lighting.hemisphereSkyColor);
+            hemiRef.current.intensity = lighting.hemisphereIntensity;
+        }
+        if (sunRef.current) {
+            sunRef.current.position.fromArray(lighting.sunPosition);
+            sunRef.current.intensity = lighting.sunIntensity;
+        }
+        if (moonRef.current) moonRef.current.intensity = lighting.moonIntensity;
     });
 
     return (
         <>
             {/* Lighting — boosted for visibility */}
-            <ambientLight ref={ambientRef} intensity={ambientIntensity} />
+            <ambientLight ref={ambientRef} />
             <directionalLight
-                position={sunPos}
-                intensity={sunIntensity}
-                color="#fff4e0"
+                ref={sunRef}
+                color={SUN_LIGHT_COLOR}
                 castShadow
                 shadow-mapSize-width={SCENE_3D.shadows.mapSize}
                 shadow-mapSize-height={SCENE_3D.shadows.mapSize}
@@ -1085,11 +1069,15 @@ export function MicrogridScene({
             />
             <hemisphereLight
                 ref={hemiRef}
-                groundColor="#1a1a2e"
-                intensity={0.35}
+                groundColor={HEMISPHERE_GROUND_COLOR}
             />
-            {/* Fill light so objects are always somewhat visible */}
-            <pointLight position={[0, 10, 10]} intensity={0.5} color="#94a3b8" />
+            {/* Shadowless moon key. It replaces a 0.5cd point fill whose physical
+                decay left it almost no light at the equipment. */}
+            <directionalLight
+                ref={moonRef}
+                position={night.moonPosition}
+                color={night.moonColor}
+            />
 
             {/* Fog */}
             <fog ref={fogRef} attach="fog" args={[SCENE_3D.fog.color, SCENE_3D.fog.near, SCENE_3D.fog.far]} />

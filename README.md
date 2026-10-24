@@ -101,6 +101,6 @@ CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from
 
 **Published baseline:** PR #25 / `4ea9a58`, followed by documentation-only `c10efb0`; exact-head CI/Pages and the historical 302-test evidence are in the [release record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布).
 
-PCS/MV v2 geometry and self-shadow changes are documented in the [initial review](docs/audits/2026-10-23/README.md) and [CC follow-up](docs/audits/2026-10-24/README.md). Those dated records distinguish the reviewed asset, subsequent fixes and release evidence. Static native-GPU screenshots do not establish motion, night or physical-phone acceptance.
+PCS/MV v2 geometry and self-shadow changes are documented in the [initial review](docs/audits/2026-10-23/README.md) and [CC follow-up](docs/audits/2026-10-24/README.md). The [lighting follow-up](docs/audits/2026-10-24-lighting/README.md) covers night fill and dawn/dusk transitions. These dated records distinguish reviewed changes, model/browser checks and release evidence. Static screenshots do not establish native-GPU motion or physical-phone acceptance.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

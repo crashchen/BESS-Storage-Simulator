@@ -13,6 +13,16 @@ records the supplied review, strengthened geometry tests and rebuilt asset.
 Dated records distinguish reviewed code, subsequent fixes and deployment;
 this index does not duplicate transient workflow status.
 
+## Day/Night Lighting
+
+[2026-10-24 lighting follow-up](audits/2026-10-24-lighting/README.md) records the
+explicit PCF shadow setting, night fill and continuous dawn/dusk lighting.
+It separates combined-light model checks, controlled browser fixtures, live
+simulation smoke checks and the remaining native-device visual acceptance.
+The [subsequent CC review and colour-constant cleanup](audits/2026-10-24-lighting/cc-followup/README.md)
+records the user-supplied approval, native-GPU coverage and the narrowly scoped
+local follow-up; the earlier evidence remains frozen at its original state.
+
 ## Published Baseline
 
 [2026-10-11 review and release record](audits/2026-10-11/README.md): simulated-time chart,

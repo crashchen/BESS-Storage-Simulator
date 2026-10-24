@@ -1,0 +1,626 @@
+{
+  "auditDate": "2026-10-24",
+  "generatedAt": "2026-10-24T11:43:03.959Z",
+  "passed": true,
+  "reproduction": "From repository root with installed locked dependencies: node docs/audits/2026-10-24-lighting/lighting-curve-check.mjs (Node 24.21.0)",
+  "versions": {
+    "node": "v24.21.0",
+    "esbuild": "0.28.2",
+    "threeRevision": "183",
+    "three": "0.183.2",
+    "r3f": "9.5.0"
+  },
+  "method": {
+    "candidate": "Installed esbuild bundles actual src/utils/sceneLighting.ts and config in memory with write:false; imported by data URL. Candidate formula is not duplicated.",
+    "comparator": "Independent pre-turn CC formulas/constants embedded above, transcribed from the hashed snapshot. Regeneration does not require the temporary snapshot; any still-present files are hash-checked.",
+    "metric": "Relative linear-luminance illumination proxy in arbitrary units, not lux or measured screenshot brightness. Linear RGB converted with installed Three; Rec.709 luminance weights 0.2126/0.7152/0.0722.",
+    "model": "Ambient plus hemisphere(normal.y/2+1/2) plus Lambert cosine-clamped sun and moon. Directions point from scene origin to each directional light.",
+    "allDaySampleStepSeconds": 3,
+    "allDaySamples": 28801,
+    "csvStepMinutes": 5,
+    "continuityEpsilonHours": 0.000001,
+    "continuityTolerance": 0.00001,
+    "numericTolerance": 1e-12,
+    "limitations": [
+      "No material BRDF, metalness, shadows, occlusion, fog, exposure/tone mapping or output colour transform. Ratios are model values, not pixel photometry or native-GPU acceptance.",
+      "Monotone dawn brightening/dusk dimming is asserted only for six cardinal normals. Tilted normals are tested for endpoint convexity/bounds; moon-facing tilted surfaces can be brighter at night than at the dawn endpoint.",
+      "Continuity covers values, not C1 derivative continuity at 7h/17h. Inactive sun pose is excluded at midnight because its intensity is zero.",
+      "Frozen daylight sun direction during each crossfade prevents a geometric top-face dip. Night sunlight is removed; front/noon ratio changes from the earlier CC claim to about 17%, while top/rear remain about 13%/10%.",
+      "Dense sampled checks supplement the linear endpoint-mix identity; discrete mathematical samples do not establish continuous-camera motion or screen flicker acceptance."
+    ]
+  },
+  "sourceSnapshots": {
+    "currentSHA256": {
+      "src/utils/sceneLighting.ts": "cd645178ddfcc76427201ccddcfc00f472b652b7c0bc7e6f3036447afe228f9a",
+      "src/config.ts": "d058de67c950c718ffb66571f304ad164a44dce738a488537d308bb23b26f555",
+      "src/components/MicrogridScene.tsx": "8e549de543e8c8ca231b17e210bd921af134e88f623a3e1304e1dc8a1d7b5893",
+      "src/components/SimulationViewport.tsx": "ac914570861fbe13a7813e8bd7d5e7d6dda54bc0cb7b9af561c461d0b02d1c80",
+      "package-lock.json": "0944cc0abc03689b96f0baa69c776783719f681e4bbd4f0e9e99df73662c7684",
+      "docs/audits/2026-10-24-lighting/lighting-curve-check.mjs": "b47bbd7ab4d92f076561c463c468a9eb818396a88c0f6eced87dd7cadeeca5d6"
+    },
+    "legacyDirectory": "/private/tmp/bess-lighting-repo-before",
+    "legacySHA256": {
+      "src/utils/sceneLighting.ts": "1a58ab4cbed009cdd66a8c905b3d25df5933badab5d36646464e2bb278959887",
+      "src/config.ts": "a52ec686d882647307d870033efb4803d2dcae7f73eaa24cc6b750b5e34114cc",
+      "src/components/MicrogridScene.tsx": "3e877e194c0b39afbe5973da7ea834f15e4f00321a65620903f7f0bb0ee5709e"
+    },
+    "legacyTemporaryFilesVerified": {
+      "src/utils/sceneLighting.ts": true,
+      "src/config.ts": true,
+      "src/components/MicrogridScene.tsx": true
+    }
+  },
+  "checks": {
+    "allDayFiniteAndNonnegative": true,
+    "daytimeSevenToSeventeenUnchanged": true,
+    "stableFullNight": true,
+    "activeLightingAndSkyContinuous": true,
+    "sixCardinalFacesMonotoneAcrossBothTransitions": true,
+    "cardinalEndpointConvexity": true,
+    "sampledTiltedNormalsStayInsideEndpointBounds": true,
+    "legacyTopTroughReproduced": true
+  },
+  "allDay": {
+    "nonFiniteOrNegative": 0,
+    "maximumDaytimeDifference": 1.0302869668521453e-13,
+    "maximumNightDrift": 0
+  },
+  "boundaries": [
+    {
+      "hour": 0,
+      "candidateMaximumActiveRadianceOrProxyDelta": 0,
+      "candidateSkyRGBDelta": 0,
+      "legacyMaximumActiveRadianceOrProxyDelta": 6.049712936162521e-8,
+      "legacySkyRGBDelta": 0
+    },
+    {
+      "hour": 5,
+      "candidateMaximumActiveRadianceOrProxyDelta": 5.504346978213448e-13,
+      "candidateSkyRGBDelta": 5.387912338505885e-13,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.03784216523892381,
+      "legacySkyRGBDelta": 0.03784216523892381
+    },
+    {
+      "hour": 5.5,
+      "candidateMaximumActiveRadianceOrProxyDelta": 8.257065869377023e-7,
+      "candidateSkyRGBDelta": 8.082505954520869e-7,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.09999955120104943,
+      "legacySkyRGBDelta": 3.2809029881786245e-7
+    },
+    {
+      "hour": 6,
+      "candidateMaximumActiveRadianceOrProxyDelta": 0.0000011009421159169364,
+      "candidateSkyRGBDelta": 0.0000010776674606027825,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.05305436140406602,
+      "legacySkyRGBDelta": 3.2809029881786245e-7
+    },
+    {
+      "hour": 7,
+      "candidateMaximumActiveRadianceOrProxyDelta": 4.2361432717186176e-7,
+      "candidateSkyRGBDelta": 4.588231150570721e-8,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.35251285749690064,
+      "legacySkyRGBDelta": 0.35251285749690064
+    },
+    {
+      "hour": 12,
+      "candidateMaximumActiveRadianceOrProxyDelta": 4.450040550496581e-7,
+      "candidateSkyRGBDelta": 0,
+      "legacyMaximumActiveRadianceOrProxyDelta": 4.4500405582681424e-7,
+      "legacySkyRGBDelta": 0
+    },
+    {
+      "hour": 17,
+      "candidateMaximumActiveRadianceOrProxyDelta": 3.941647912508728e-7,
+      "candidateSkyRGBDelta": 4.5882311339173754e-8,
+      "legacyMaximumActiveRadianceOrProxyDelta": 7.883288979382286e-7,
+      "legacySkyRGBDelta": 9.176404591748621e-8
+    },
+    {
+      "hour": 18,
+      "candidateMaximumActiveRadianceOrProxyDelta": 0.000001596096225409127,
+      "candidateSkyRGBDelta": 0.0000010776674568280242,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.3321138413493466,
+      "legacySkyRGBDelta": 0.3321138413493466
+    },
+    {
+      "hour": 19,
+      "candidateMaximumActiveRadianceOrProxyDelta": 7.980009268629072e-13,
+      "candidateSkyRGBDelta": 5.387912338505885e-13,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.025591441997622255,
+      "legacySkyRGBDelta": 3.280902990954182e-7
+    },
+    {
+      "hour": 19.5,
+      "candidateMaximumActiveRadianceOrProxyDelta": 0,
+      "candidateSkyRGBDelta": 0,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.09999955120104886,
+      "legacySkyRGBDelta": 3.280902990954182e-7
+    },
+    {
+      "hour": 20,
+      "candidateMaximumActiveRadianceOrProxyDelta": 0,
+      "candidateSkyRGBDelta": 0,
+      "legacyMaximumActiveRadianceOrProxyDelta": 0.03784216523892396,
+      "legacySkyRGBDelta": 0.03784216523892396
+    },
+    {
+      "hour": 24,
+      "candidateMaximumActiveRadianceOrProxyDelta": 0,
+      "candidateSkyRGBDelta": 0,
+      "legacyMaximumActiveRadianceOrProxyDelta": 6.049712930611406e-8,
+      "legacySkyRGBDelta": 0
+    }
+  ],
+  "transitions": [
+    {
+      "name": "dawn",
+      "startHour": 5,
+      "endHour": 7,
+      "samples": 2401,
+      "cardinal": {
+        "front": {
+          "start": 0.21032263163162504,
+          "end": 0.46090831450018155,
+          "minimum": 0.21032263163162504,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 4.440892098500626e-16
+        },
+        "top": {
+          "start": 0.3052158162976613,
+          "end": 0.4546187424111486,
+          "minimum": 0.3052158162976613,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 2.7755575615628914e-16
+        },
+        "rear": {
+          "start": 0.06079485917692223,
+          "end": 0.2490492665619662,
+          "minimum": 0.06079485917692223,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 3.0531133177191805e-16
+        },
+        "left": {
+          "start": 0.14623930057960954,
+          "end": 0.2490492665619662,
+          "minimum": 0.14623930057960954,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 1.942890293094024e-16
+        },
+        "right": {
+          "start": 0.06079485917692223,
+          "end": 0.7947562690593954,
+          "minimum": 0.06079485917692223,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 1.1657341758564144e-15
+        },
+        "bottom": {
+          "start": 0.008623895212229584,
+          "end": 0.18970154133597864,
+          "minimum": 0.008623895212229584,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 3.0531133177191805e-16
+        }
+      },
+      "tilted": {
+        "normalCount": 264,
+        "maximumEndpointResidual": 1.3322676295501878e-15,
+        "maximumEndpointBoundViolation": 0
+      }
+    },
+    {
+      "name": "dusk",
+      "startHour": 17,
+      "endHour": 19,
+      "samples": 2401,
+      "cardinal": {
+        "front": {
+          "start": 0.5903237286361964,
+          "end": 0.21032263163162504,
+          "minimum": 0.21032263163162504,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 1.1102230246251565e-15
+        },
+        "top": {
+          "start": 0.5439392061664305,
+          "end": 0.3052158162976613,
+          "minimum": 0.3052158162976613,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 7.771561172376096e-16
+        },
+        "rear": {
+          "start": 0.24904926656196624,
+          "end": 0.06079485917692223,
+          "minimum": 0.06079485917692223,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 5.551115123125783e-16
+        },
+        "left": {
+          "start": 1.128104777949721,
+          "end": 0.14623930057960954,
+          "minimum": 0.14623930057960954,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 2.7755575615628914e-15
+        },
+        "right": {
+          "start": 0.24904926656196624,
+          "end": 0.06079485917692223,
+          "minimum": 0.06079485917692223,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 5.551115123125783e-16
+        },
+        "bottom": {
+          "start": 0.1897015413359787,
+          "end": 0.008623895212229584,
+          "minimum": 0.008623895212229584,
+          "reverseSteps": 0,
+          "maximumReverseStep": 0,
+          "maximumEndpointResidual": 5.273559366969494e-16
+        }
+      },
+      "tilted": {
+        "normalCount": 264,
+        "maximumEndpointResidual": 2.9976021664879227e-15,
+        "maximumEndpointBoundViolation": 0
+      }
+    }
+  ],
+  "nightToNoonRatios": {
+    "front": 0.17046333089252236,
+    "top": 0.1276553632140708,
+    "rear": 0.10193504399095782,
+    "left": 0.245200165599661,
+    "right": 0.10193504399095779,
+    "bottom": 0.01719038077492139
+  },
+  "legacyTrough": {
+    "face": "top",
+    "searchHours": [
+      17,
+      20
+    ],
+    "minimum": {
+      "hour": 18.000833333333333,
+      "value": 0.24134838274214448
+    },
+    "fullNightReference": 0.3052158162976613,
+    "deficitFractionOfNight": 0.20925335498744335,
+    "at1815": 0.2723251402724739,
+    "at1845": 0.32314095348744787
+  },
+  "representativeValues": [
+    {
+      "hour": 0,
+      "candidate": {
+        "front": 0.21032263163162504,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.14623930057960954,
+        "right": 0.06079485917692223,
+        "bottom": 0.008623895212229584
+      },
+      "legacy": {
+        "front": 0.29697838618698114,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.14623930057960954,
+        "right": 0.06079485917692224,
+        "bottom": 0.03750914673068162
+      }
+    },
+    {
+      "hour": 5,
+      "candidate": {
+        "front": 0.21032263163162504,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.14623930057960954,
+        "right": 0.06079485917692223,
+        "bottom": 0.008623895212229584
+      },
+      "legacy": {
+        "front": 0.24456783451980707,
+        "top": 0.30664082813819116,
+        "rear": 0.06221987101745208,
+        "left": 0.1476643124201394,
+        "right": 0.14675819143523483,
+        "bottom": 0.020988970735310163
+      }
+    },
+    {
+      "hour": 5.5,
+      "candidate": {
+        "front": 0.24947664457983695,
+        "top": 0.3285600235028937,
+        "rear": 0.09020961033083533,
+        "left": 0.16230335776435276,
+        "right": 0.17547632947105862,
+        "bottom": 0.03691727741906537
+      },
+      "legacy": {
+        "front": 0.21546205155162523,
+        "top": 0.26186662607464417,
+        "rear": 0.057205388477056696,
+        "left": 0.12929913591057413,
+        "right": 0.14205351749225303,
+        "bottom": 0.02545261762685444
+      }
+    },
+    {
+      "hour": 6,
+      "candidate": {
+        "front": 0.3356154730659033,
+        "top": 0.3799172793544049,
+        "rear": 0.1549220628694442,
+        "left": 0.19764428357078787,
+        "right": 0.4277755641181588,
+        "bottom": 0.09916271827410411
+      },
+      "legacy": {
+        "front": 0.1943903884325579,
+        "top": 0.17303487029000708,
+        "rear": 0.047806365712970186,
+        "left": 0.09052858641431386,
+        "right": 0.23932672969226698,
+        "bottom": 0.018702857713956522
+      }
+    },
+    {
+      "hour": 6.5,
+      "candidate": {
+        "front": 0.4217543015519695,
+        "top": 0.4312745352059162,
+        "rear": 0.2196345154080531,
+        "left": 0.232985209377223,
+        "right": 0.680074798765259,
+        "bottom": 0.16140815912914286
+      },
+      "legacy": {
+        "front": 0.24972521070972928,
+        "top": 0.18654314411949957,
+        "rear": 0.0836244031666131,
+        "left": 0.09697509713578299,
+        "right": 0.4610002897760107,
+        "bottom": 0.06042720164574396
+      }
+    },
+    {
+      "hour": 7,
+      "candidate": {
+        "front": 0.46090831450018155,
+        "top": 0.4546187424111486,
+        "rear": 0.2490492665619662,
+        "left": 0.2490492665619662,
+        "right": 0.7947562690593954,
+        "bottom": 0.18970154133597864
+      },
+      "legacy": {
+        "front": 0.46090831450018155,
+        "top": 0.4546187424111486,
+        "rear": 0.2490492665619662,
+        "left": 0.2490492665619662,
+        "right": 0.7947562690593954,
+        "bottom": 0.18970154133597864
+      }
+    },
+    {
+      "hour": 12,
+      "candidate": {
+        "front": 1.2338291791577984,
+        "top": 2.390936100239139,
+        "rear": 0.5964078377433678,
+        "left": 0.5964078377433678,
+        "right": 0.5964078377433679,
+        "bottom": 0.5016698190194115
+      },
+      "legacy": {
+        "front": 1.2338291791577984,
+        "top": 2.390936100239139,
+        "rear": 0.5964078377433678,
+        "left": 0.5964078377433678,
+        "right": 0.5964078377433679,
+        "bottom": 0.5016698190194115
+      }
+    },
+    {
+      "hour": 17,
+      "candidate": {
+        "front": 0.5903237286361964,
+        "top": 0.5439392061664305,
+        "rear": 0.24904926656196624,
+        "left": 1.128104777949721,
+        "right": 0.24904926656196624,
+        "bottom": 0.1897015413359787
+      },
+      "legacy": {
+        "front": 0.5903237286361964,
+        "top": 0.5439392061664305,
+        "rear": 0.24904926656196624,
+        "left": 1.128104777949721,
+        "right": 0.24904926656196624,
+        "bottom": 0.1897015413359787
+      }
+    },
+    {
+      "hour": 17.5,
+      "candidate": {
+        "front": 0.5309485572292322,
+        "top": 0.5066386764994354,
+        "rear": 0.21963451540805312,
+        "left": 0.9746882971106411,
+        "right": 0.21963451540805312,
+        "bottom": 0.1614081591291429
+      },
+      "legacy": {
+        "front": 0.5192685876461128,
+        "top": 0.4036597394366884,
+        "rear": 0.21758812087200952,
+        "left": 0.966767385320909,
+        "right": 0.21758812087200952,
+        "bottom": 0.1584292328377824
+      }
+    },
+    {
+      "hour": 18,
+      "candidate": {
+        "front": 0.40032318013391077,
+        "top": 0.4245775112320459,
+        "rear": 0.15492206286944424,
+        "left": 0.6371720392646653,
+        "right": 0.15492206286944424,
+        "bottom": 0.09916271827410414
+      },
+      "legacy": {
+        "front": 0.47555265385235845,
+        "top": 0.34382107764636993,
+        "rear": 0.18892971968679162,
+        "left": 0.7966094015567098,
+        "right": 0.18892971968679162,
+        "bottom": 0.1301633583052365
+      }
+    },
+    {
+      "hour": 18.25,
+      "candidate": {
+        "front": 0.3305573537307277,
+        "top": 0.3807493888733266,
+        "rear": 0.12035973026359632,
+        "left": 0.45690767427874635,
+        "right": 0.12035973026359632,
+        "bottom": 0.06591799418107207
+      },
+      "legacy": {
+        "front": 0.37892441362223384,
+        "top": 0.2723251402724739,
+        "rear": 0.09913073025288692,
+        "left": 0.6300659517105553,
+        "right": 0.09913073025288692,
+        "bottom": 0.08832820006467608
+      }
+    },
+    {
+      "hour": 18.5,
+      "candidate": {
+        "front": 0.26969780303858926,
+        "top": 0.3425163459646565,
+        "rear": 0.09020961033083534,
+        "left": 0.2996557814186894,
+        "right": 0.09020961033083534,
+        "bottom": 0.03691727741906538
+      },
+      "legacy": {
+        "front": 0.36259585015705464,
+        "top": 0.30185582533344424,
+        "rear": 0.09360626310123672,
+        "left": 0.5433097087929011,
+        "right": 0.09360626310123672,
+        "bottom": 0.09517614227683088
+      }
+    },
+    {
+      "hour": 18.75,
+      "candidate": {
+        "front": 0.22665080376854024,
+        "top": 0.31547346195608506,
+        "rear": 0.06888391574424833,
+        "left": 0.18842883281035655,
+        "right": 0.06888391574424833,
+        "bottom": 0.01640457531910943
+      },
+      "legacy": {
+        "front": 0.34058668754493504,
+        "top": 0.32314095348744787,
+        "rear": 0.0889637311472763,
+        "left": 0.4545634519697059,
+        "right": 0.0889637311472763,
+        "bottom": 0.0749491618749337
+      }
+    },
+    {
+      "hour": 19,
+      "candidate": {
+        "front": 0.21032263163162504,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.14623930057960954,
+        "right": 0.06079485917692223,
+        "bottom": 0.008623895212229584
+      },
+      "legacy": {
+        "front": 0.29591790524003814,
+        "top": 0.3173171799808573,
+        "rear": 0.0728962228601182,
+        "left": 0.34764643938741807,
+        "right": 0.0728962228601182,
+        "bottom": 0.045223228870497935
+      }
+    },
+    {
+      "hour": 19.5,
+      "candidate": {
+        "front": 0.21032263163162504,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.14623930057960954,
+        "right": 0.06079485917692223,
+        "bottom": 0.008623895212229584
+      },
+      "legacy": {
+        "front": 0.25117283731533313,
+        "top": 0.3119790040595242,
+        "rear": 0.06755804693878513,
+        "left": 0.23698195016104096,
+        "right": 0.06755804693878513,
+        "bottom": 0.026749422281374228
+      }
+    },
+    {
+      "hour": 20,
+      "candidate": {
+        "front": 0.21032263163162504,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.14623930057960954,
+        "right": 0.06079485917692223,
+        "bottom": 0.008623895212229584
+      },
+      "legacy": {
+        "front": 0.2477294870678422,
+        "top": 0.30664082813819116,
+        "rear": 0.06221987101745208,
+        "left": 0.2307608207637757,
+        "right": 0.06221987101745208,
+        "bottom": 0.022042854917988533
+      }
+    },
+    {
+      "hour": 24,
+      "candidate": {
+        "front": 0.21032263163162504,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.14623930057960954,
+        "right": 0.06079485917692223,
+        "bottom": 0.008623895212229584
+      },
+      "legacy": {
+        "front": 0.29697838618698114,
+        "top": 0.3052158162976613,
+        "rear": 0.06079485917692223,
+        "left": 0.1462393005796096,
+        "right": 0.06079485917692223,
+        "bottom": 0.03750914673068162
+      }
+    }
+  ]
+}
