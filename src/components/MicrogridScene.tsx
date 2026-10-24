@@ -1076,6 +1076,7 @@ export function MicrogridScene({
                 castShadow
                 shadow-mapSize-width={SCENE_3D.shadows.mapSize}
                 shadow-mapSize-height={SCENE_3D.shadows.mapSize}
+                shadow-normalBias={SCENE_3D.shadows.normalBias}
                 shadow-camera-far={SCENE_3D.shadows.cameraFar}
                 shadow-camera-left={-SCENE_3D.shadows.cameraBounds}
                 shadow-camera-right={SCENE_3D.shadows.cameraBounds}

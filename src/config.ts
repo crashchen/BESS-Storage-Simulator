@@ -180,6 +180,8 @@ export const SCENE_3D = {
         mapSize: 2048,
         cameraFar: 200,
         cameraBounds: 30,
+        // Metre-scale normal offset avoids self-shadow striping on flat GLB panels.
+        normalBias: 0.035,
     },
     fog: {
         color: '#0a0a1a',
@@ -251,7 +253,7 @@ export const SCENE_3D = {
             unitEnergyMwh: 5,
         },
         pcsMvSkid: {
-            file: 'models/generic-pcs-mv-skid-5mw-v1.glb',
+            file: 'models/generic-pcs-mv-skid-5mw-v2.glb',
             size: [6, 3, 3] as const,
             unitRatingMw: 5,
         },
