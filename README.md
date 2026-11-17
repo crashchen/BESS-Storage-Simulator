@@ -99,7 +99,7 @@ npm audit --omit=dev
 
 CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from its own successful reusable CI run. Unit/jsdom green does not certify WebGL, responsive geometry or physical-phone behavior; dated browser evidence records those limits separately.
 
-**Published baseline:** PR #25 / `4ea9a58`, followed by documentation-only `c10efb0`; exact-head CI/Pages and the historical 302-test evidence are in the [release record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布).
+**Published release:** PR #26 squash-merged as `0f22291` (PCS/MV v2, explicit PCF shadows, day/night lighting); main CI, Pages and the 14-file live check are in the [release record](docs/audits/2026-11-17/README.md). Earlier PR #25 evidence (`4ea9a58`, `c10efb0`, 302 tests) stays in the [2026-10-11 record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布).
 
 PCS/MV v2 geometry and self-shadow changes are documented in the [initial review](docs/audits/2026-10-23/README.md) and [CC follow-up](docs/audits/2026-10-24/README.md). The [lighting follow-up](docs/audits/2026-10-24-lighting/README.md) covers night fill and dawn/dusk transitions. These dated records distinguish reviewed changes, model/browser checks and release evidence. Static screenshots do not establish native-GPU motion or physical-phone acceptance.
 

@@ -23,13 +23,16 @@ The [subsequent CC review and colour-constant cleanup](audits/2026-10-24-lightin
 records the user-supplied approval, native-GPU coverage and the narrowly scoped
 local follow-up; the earlier evidence remains frozen at its original state.
 
-## Published Baseline
+## Published Releases
 
-[2026-10-11 review and release record](audits/2026-10-11/README.md): simulated-time chart,
-development dependency patch, responsive HUD clearance and documentation cleanup.
-PR #25 merged as `4ea9a58` after CC review; documentation follow-up `c10efb0`
-is the last published snapshot. Exact-head CI/Pages, hashes and 14-file asset
-checks stay in that dated record and the Vault iteration log, not duplicated here.
+[2026-11-17 PR #26 release record](audits/2026-11-17/README.md) covers the PCS/MV
+v2 model, explicit PCF shadow selection, day/night lighting and Pages release
+from `0f22291`. The dated record lists the checks and open visual acceptance work.
+
+[2026-10-11 PR #25 review and release record](audits/2026-10-11/README.md) covers
+the simulated-time chart, dependency patch, responsive HUD clearance and
+documentation cleanup. The release history includes squash commit `4ea9a58`
+and documentation follow-up `c10efb0`.
 
 ## Audit History
 
