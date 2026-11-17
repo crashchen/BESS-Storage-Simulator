@@ -180,6 +180,20 @@ export const SCENE_3D = {
         mapSize: 2048,
         cameraFar: 200,
         cameraBounds: 30,
+        // Metre-scale normal offset avoids self-shadow striping on flat GLB panels.
+        normalBias: 0.035,
+    },
+    // Display-only night rig. sceneLighting crossfades complete radiances at
+    // dawn/dusk; the daytime rig is held at 7h/17h during those windows.
+    // No below-horizon sun, material changes or extra shadow pass at night.
+    nightLighting: {
+        dawn: [5, 7] as const,
+        dusk: [17, 19] as const,
+        moonPosition: [-20, 45, 35] as const,
+        moonColor: '#a9bcff',
+        moonIntensity: 0.5,
+        hemisphereSkyColor: '#5b6f9e',
+        hemisphereIntensity: { day: 0.35, night: 0.7 },
     },
     fog: {
         color: '#0a0a1a',
@@ -251,7 +265,7 @@ export const SCENE_3D = {
             unitEnergyMwh: 5,
         },
         pcsMvSkid: {
-            file: 'models/generic-pcs-mv-skid-5mw-v1.glb',
+            file: 'models/generic-pcs-mv-skid-5mw-v2.glb',
             size: [6, 3, 3] as const,
             unitRatingMw: 5,
         },

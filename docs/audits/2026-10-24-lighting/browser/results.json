@@ -1,0 +1,3646 @@
+{
+  "url": "http://127.0.0.1:4173/BESS-Storage-Simulator/",
+  "method": "unchanged production app; paused React state time fixtures; fixed non-time simulation state",
+  "toolchain": {
+    "node": "v24.21.0",
+    "playwright": "1.61.1",
+    "browser": "149.0.7827.55"
+  },
+  "rendererRequested": "SwiftShader (software WebGL)",
+  "limitations": "Discrete frames do not establish native-GPU continuous-orbit/flicker acceptance. PV output and flow telemetry retain their initial daytime values at every fixture time, so yellow active PV panels at night do not represent real night simulation output. Use the separate real-RAF smoke evidence for natural night PV appearance.",
+  "console": [
+    {
+      "type": "warning",
+      "text": "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c00464e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c00464e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c00464e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c00464e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [],
+  "models": [
+    {
+      "url": "http://127.0.0.1:4173/BESS-Storage-Simulator/models/generic-bess-5mwh-v1.glb",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4173/BESS-Storage-Simulator/models/generic-pcs-mv-skid-5mw-v2.glb",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4173/BESS-Storage-Simulator/models/generic-main-transformer-50mva-33-220kv-v1.glb",
+      "status": 200
+    }
+  ],
+  "frames": [
+    {
+      "name": "front-00-00",
+      "maxCameraDelta": 0,
+      "hour": 0,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            77.27406610312546,
+            20.70552360820166,
+            30
+          ],
+          "direction": [
+            0.904424534521943,
+            0.2423398236400487,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-05-00",
+      "maxCameraDelta": 0,
+      "hour": 5,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            77.27406610312546,
+            20.70552360820166,
+            30
+          ],
+          "direction": [
+            0.904424534521943,
+            0.2423398236400487,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-06-00",
+      "maxCameraDelta": 0,
+      "hour": 6,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.05024029922080736,
+        0.19541585882616003,
+        0.3695523095297823
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.3397047612756302,
+          "color": [
+            0.07660148060949552,
+            0.30284889441722007,
+            0.5701565512574294
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.3302790619551671,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            77.27406610312546,
+            20.70552360820166,
+            30
+          ],
+          "direction": [
+            0.904424534521943,
+            0.2423398236400487,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.5249999999999999,
+          "color": [
+            0.10222609892349792,
+            0.23523937263952466,
+            0.470867881943079
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.25,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-07-00",
+      "maxCameraDelta": 0,
+      "hour": 7,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0974453286063206,
+        0.38779644781702594,
+        0.7287747960332001
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.5294095225512604,
+          "color": [
+            0.0974453286063206,
+            0.38779644781702594,
+            0.7287747960332001
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.6605581239103342,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            77.27406610312546,
+            20.70552360820166,
+            30
+          ],
+          "direction": [
+            0.904424534521943,
+            0.2423398236400487,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.35,
+          "color": [
+            0.0974453286063206,
+            0.38779644781702594,
+            0.7287747960332001
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-12-00",
+      "maxCameraDelta": 0,
+      "hour": 12,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.24228112245478564,
+        0.6172065624120635,
+        0.8307698767709715
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.9,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 1.9874244197864852,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            4.898587196589413e-15,
+            80,
+            30
+          ],
+          "direction": [
+            5.733362651291021e-17,
+            0.9363291775690445,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.35,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-17-00",
+      "maxCameraDelta": 0,
+      "hour": 17,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0974453286063206,
+        0.38779644781702594,
+        0.7287747960332001
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.5294095225512605,
+          "color": [
+            0.0974453286063206,
+            0.38779644781702594,
+            0.7287747960332001
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 1.0640641530306734,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.35,
+          "color": [
+            0.0974453286063206,
+            0.38779644781702594,
+            0.7287747960332001
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-18-00",
+      "maxCameraDelta": 0,
+      "hour": 18,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.05024029922080736,
+        0.19541585882616003,
+        0.3695523095297823
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.33970476127563026,
+          "color": [
+            0.07660148060949552,
+            0.3028488944172201,
+            0.5701565512574294
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5320320765153367,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.5249999999999999,
+          "color": [
+            0.10222609892349792,
+            0.23523937263952466,
+            0.470867881943079
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.25,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-18-15",
+      "maxCameraDelta": 0,
+      "hour": 18.25,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.03290720249331422,
+        0.12477611130607646,
+        0.2376503027668086
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.27004754424473476,
+          "color": [
+            0.061597126601648206,
+            0.24169976477928837,
+            0.45597589243274605
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.3366765484198615,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.5892578125,
+          "color": [
+            0.10326877272817231,
+            0.201967063900116,
+            0.41461904221112683
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.341796875,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-18-45",
+      "maxCameraDelta": 0,
+      "hour": 18.75,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.007091952048111666,
+        0.019567976701696632,
+        0.041200505460252
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.16630275292212449,
+          "color": [
+            0.01594934465181635,
+            0.05566562197817614,
+            0.10860380202543189
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.045721506575536745,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.6849609375,
+          "color": [
+            0.10445903356265858,
+            0.16398516986200906,
+            0.35040836518242363
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.478515625,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-19-00",
+      "maxCameraDelta": 0,
+      "hour": 19,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-20-00",
+      "maxCameraDelta": 0,
+      "hour": 20,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "front-23-00",
+      "maxCameraDelta": 0,
+      "hour": 23,
+      "camera": {
+        "position": [
+          6.323321132931399,
+          14.602141054223305,
+          25.876788166644083
+        ],
+        "quaternion": [
+          -0.1922421026035233,
+          0.10889806219795406,
+          0.021470473015576315,
+          0.975050360147923
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "rear-12-00",
+      "maxCameraDelta": 0,
+      "hour": 12,
+      "camera": {
+        "position": [
+          -6.423321132931398,
+          14.602141054223303,
+          -30.47678816664408
+        ],
+        "quaternion": [
+          0.02147047301557631,
+          0.975050360147923,
+          0.1922421026035233,
+          -0.10889806219795405
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.24228112245478564,
+        0.6172065624120635,
+        0.8307698767709715
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.9,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 1.9874244197864852,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            4.898587196589413e-15,
+            80,
+            30
+          ],
+          "direction": [
+            5.733362651291021e-17,
+            0.9363291775690445,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.35,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "rear-23-00",
+      "maxCameraDelta": 0,
+      "hour": 23,
+      "camera": {
+        "position": [
+          -6.423321132931398,
+          14.602141054223303,
+          -30.47678816664408
+        ],
+        "quaternion": [
+          0.02147047301557631,
+          0.975050360147923,
+          0.1922421026035233,
+          -0.10889806219795405
+        ],
+        "target": [
+          -0.05000000000000071,
+          2.75,
+          -2.3
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "pcs-front-12-00",
+      "maxCameraDelta": 0,
+      "hour": 12,
+      "camera": {
+        "position": [
+          13.150000000000002,
+          5.38,
+          7.350000000000001
+        ],
+        "quaternion": [
+          -0.1539878949792352,
+          0.33582905163930554,
+          0.055751307395941696,
+          0.9275766103123514
+        ],
+        "target": [
+          5.65,
+          1.38,
+          -1.65
+        ]
+      },
+      "fog": [
+        0.24228112245478564,
+        0.6172065624120635,
+        0.8307698767709715
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.9,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 1.9874244197864852,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            4.898587196589413e-15,
+            80,
+            30
+          ],
+          "direction": [
+            5.733362651291021e-17,
+            0.9363291775690445,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.35,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "pcs-front-23-00",
+      "maxCameraDelta": 0,
+      "hour": 23,
+      "camera": {
+        "position": [
+          13.150000000000002,
+          5.38,
+          7.350000000000001
+        ],
+        "quaternion": [
+          -0.1539878949792352,
+          0.33582905163930554,
+          0.055751307395941696,
+          0.9275766103123514
+        ],
+        "target": [
+          5.65,
+          1.38,
+          -1.65
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "pcs-rear-12-00",
+      "maxCameraDelta": 0,
+      "hour": 12,
+      "camera": {
+        "position": [
+          -1.8499999999999988,
+          5.379999999999999,
+          -10.650000000000002
+        ],
+        "quaternion": [
+          0.05575130739594168,
+          0.9275766103123515,
+          0.1539878949792352,
+          -0.33582905163930543
+        ],
+        "target": [
+          5.65,
+          1.38,
+          -1.65
+        ]
+      },
+      "fog": [
+        0.24228112245478564,
+        0.6172065624120635,
+        0.8307698767709715
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.9,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 1.9874244197864852,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            4.898587196589413e-15,
+            80,
+            30
+          ],
+          "direction": [
+            5.733362651291021e-17,
+            0.9363291775690445,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.35,
+          "color": [
+            0.24228112245478564,
+            0.6172065624120635,
+            0.8307698767709715
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    },
+    {
+      "name": "pcs-rear-23-00",
+      "maxCameraDelta": 0,
+      "hour": 23,
+      "camera": {
+        "position": [
+          -1.8499999999999988,
+          5.379999999999999,
+          -10.650000000000002
+        ],
+        "quaternion": [
+          0.05575130739594168,
+          0.9275766103123515,
+          0.1539878949792352,
+          -0.33582905163930543
+        ],
+        "target": [
+          5.65,
+          1.38,
+          -1.65
+        ]
+      },
+      "fog": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537
+      ],
+      "background": null,
+      "lights": [
+        {
+          "type": "AmbientLight",
+          "intensity": 0.15,
+          "color": [
+            0.0030352698352941175,
+            0.0030352698352941175,
+            0.010329823026364548
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0,
+          "color": [
+            1,
+            0.9046611743890203,
+            0.7454042095350284
+          ],
+          "position": [
+            -77.27406610312545,
+            20.70552360820168,
+            30
+          ],
+          "direction": [
+            -0.9044245345219429,
+            0.24233982364004894,
+            0.3511234415883917
+          ],
+          "castShadow": true
+        },
+        {
+          "type": "HemisphereLight",
+          "intensity": 0.7,
+          "color": [
+            0.10461648408208657,
+            0.158960835050774,
+            0.34191442489801843
+          ],
+          "groundColor": [
+            0.010329823026364548,
+            0.010329823026364548,
+            0.02732089163382382
+          ],
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "castShadow": false
+        },
+        {
+          "type": "DirectionalLight",
+          "intensity": 0.5,
+          "color": [
+            0.3967552307153359,
+            0.5028864580233624,
+            1
+          ],
+          "position": [
+            -20,
+            45,
+            35
+          ],
+          "direction": [
+            -0.3310423554409472,
+            0.7448452997421311,
+            0.5793241220216575
+          ],
+          "castShadow": false
+        }
+      ],
+      "shadowMapType": 1,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "programs": [
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "safety-yellow",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "porcelain-shell",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        },
+        {
+          "name": "",
+          "runnable": null,
+          "programLog": ""
+        }
+      ],
+      "contextLost": false
+    }
+  ],
+  "boundaries": [
+    {
+      "hour": 0,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0,
+      "beforeChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "afterChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "savedScreenshotPair": false
+    },
+    {
+      "hour": 5,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 4.157282695871345e-8,
+      "beforeChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "afterChannels": [
+        0.0030352752983333064,
+        0.0030352920995043164,
+        0.010329864599191496,
+        0.15000002195453657,
+        0.00045529343411702635,
+        0.000455302328816943,
+        0.001549495689791646,
+        3.8223203769557344e-8,
+        3.8223203769557344e-8,
+        3.457904841107857e-8,
+        2.849173699174321e-8,
+        3.457000327721928e-8,
+        9.263004460472172e-9,
+        1.3421062856101361e-8,
+        0.6999999797472458,
+        0.07323153659345301,
+        0.11127258595069849,
+        0.2393400983388921,
+        0.007230875909247817,
+        0.007230875909247817,
+        0.01912462359035337,
+        0.499999971067494,
+        0.19837760387854486,
+        0.25144321446191575,
+        0.499999971067494,
+        -0.16552116814258866,
+        0.37242262832082446,
+        0.2896620442495301
+      ],
+      "savedScreenshotPair": true
+    },
+    {
+      "hour": 5.5,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0.0002245140463659201,
+      "beforeChannels": [
+        0.0177720926788624,
+        0.06309409609607747,
+        0.12247461382383795,
+        0.20922346614105342,
+        0.00843686402114961,
+        0.03243076421132404,
+        0.061531761530901,
+        0.10310901377103951,
+        0.10310901377103951,
+        0.09327872148820227,
+        0.07685789290593806,
+        0.09325432178488903,
+        0.024987420212973066,
+        0.03620399177407227,
+        0.6453671773708098,
+        0.0671242645733606,
+        0.11509004087272556,
+        0.2417956213372889,
+        0.006666528729264885,
+        0.006666528729264885,
+        0.017632006716974652,
+        0.4219531105297285,
+        0.16741210371927606,
+        0.2121945052062355,
+        0.4219531105297285,
+        -0.13968435159539566,
+        0.3142897910896402,
+        0.24444761529194237
+      ],
+      "afterChannels": [
+        0.017801595821216668,
+        0.06321433396007381,
+        0.12269912787020387,
+        0.20934203161278503,
+        0.008452843143857004,
+        0.03249477915969476,
+        0.0616518461653337,
+        0.10331543817768314,
+        0.10331543817768314,
+        0.09346546563433905,
+        0.077011762527601,
+        0.09344101708278166,
+        0.025037445067274088,
+        0.03627647222216082,
+        0.6452578023745604,
+        0.06711203780070323,
+        0.11509768342627615,
+        0.24180053729999007,
+        0.006665398904910119,
+        0.006665398904910119,
+        0.01762901849455467,
+        0.42179686053508636,
+        0.16735011071660255,
+        0.21211592919986375,
+        0.42179686053508636,
+        -0.1396326262291317,
+        0.31417340901554625,
+        0.24435709590098043
+      ],
+      "savedScreenshotPair": false
+    },
+    {
+      "hour": 6,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0.0002993520643878034,
+      "beforeChannels": [
+        0.050220630459069215,
+        0.19533570024947527,
+        0.3694026334975884,
+        0.33962571762713145,
+        0.02601123493524557,
+        0.10283653474797727,
+        0.19360483871100018,
+        0.3301414456828915,
+        0.3301414456828915,
+        0.29866614796597357,
+        0.24608882335400725,
+        0.2985880233381505,
+        0.08000641972306265,
+        0.11592040061914395,
+        0.5250729166647914,
+        0.053676853116677865,
+        0.12349557560000636,
+        0.2472023607116209,
+        0.005423910305084355,
+        0.005423910305084355,
+        0.01434546025605457,
+        0.2501041666639878,
+        0.09923013634763732,
+        0.12577399851053755,
+        0.2501041666639878,
+        -0.08279507243804175,
+        0.1862889129855939,
+        0.14489137676657304
+      ],
+      "afterChannels": [
+        0.050259967982545506,
+        0.19549601740284478,
+        0.3697019855619762,
+        0.33978380492412896,
+        0.026032540432371416,
+        0.10292188801320332,
+        0.19376495155828313,
+        0.3304166782274427,
+        0.3304166782274427,
+        0.29891514016295734,
+        0.24629398285131676,
+        0.2988369504041415,
+        0.08007311952936919,
+        0.11601704121742389,
+        0.5249270833352084,
+        0.053660550752994925,
+        0.12350576567149449,
+        0.24720891532861192,
+        0.005422403872598418,
+        0.005422403872598418,
+        0.014341475959460436,
+        0.24989583333601217,
+        0.09914747901003064,
+        0.12566923050114365,
+        0.24989583333601217,
+        -0.08272610528243184,
+        0.18613373688547163,
+        0.1447706842442557
+      ],
+      "savedScreenshotPair": true
+    },
+    {
+      "hour": 7,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0.00011770745319994447,
+      "beforeChannels": [
+        0.09744532314328141,
+        0.38779642555281574,
+        0.7287747544603731,
+        0.5294095005967239,
+        0.05158848193349996,
+        0.20530312043236365,
+        0.38582029457949163,
+        0.6605580856871304,
+        0.6605580856871304,
+        0.5975812535498825,
+        0.49238277771358696,
+        0.5974249391722887,
+        0.16007952998942734,
+        0.23193742841550496,
+        0.3500000202527542,
+        0.034105867276219795,
+        0.13572875532080236,
+        0.2550711777013408,
+        0.003615438268434958,
+        0.003615438268434958,
+        0.00956231262516164,
+        2.8932506002110614e-8,
+        1.1479123094040237e-8,
+        1.454976546514108e-8,
+        2.8932506002110614e-8,
+        -9.577884935748039e-9,
+        2.1550241105433088e-8,
+        1.6761298637559068e-8
+      ],
+      "afterChannels": [
+        0.09745337503931223,
+        0.3878091928233924,
+        0.7287804624265743,
+        0.5294446442632028,
+        0.05159616747993715,
+        0.20532350013638082,
+        0.3858489126754101,
+        0.6606757931403303,
+        0.6606757931403303,
+        0.5976877389127286,
+        0.4924705173446959,
+        0.5975197517145056,
+        0.16015150847887383,
+        0.23197875826157313,
+        0.35,
+        0.03410868126375928,
+        0.1357332174881873,
+        0.255073161849301,
+        0.0036154380592275915,
+        0.0036154380592275915,
+        0.009562312071838336,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "savedScreenshotPair": true
+    },
+    {
+      "hour": 12,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0.0002706545291529472,
+      "beforeChannels": [
+        0.24227307602179413,
+        0.6171938174056972,
+        0.8307642103775972,
+        0.8999999986778757,
+        0.2180457680992996,
+        0.5554744348491206,
+        0.747687788241464,
+        1.9874104577201184,
+        1.9874104577201184,
+        1.7979330786741026,
+        1.4814241212585137,
+        0.0001353263141373423,
+        1.860870394448593,
+        0.6978263997634488,
+        0.35,
+        0.08479557660762795,
+        0.21601783609199401,
+        0.290767473632159,
+        0.0036154380592275915,
+        0.0036154380592275915,
+        0.009562312071838336,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "afterChannels": [
+        0.24227307602179413,
+        0.6171938174056972,
+        0.8307642103775972,
+        0.8999999986778757,
+        0.2180457680992996,
+        0.5554744348491206,
+        0.747687788241464,
+        1.987438374130861,
+        1.987438374130861,
+        1.7979583335670297,
+        1.4814449302685964,
+        -0.00013532821501560495,
+        1.8608965333984353,
+        0.6978362018696656,
+        0.35,
+        0.08479557660762795,
+        0.21601783609199401,
+        0.290767473632159,
+        0.0036154380592275915,
+        0.0036154380592275915,
+        0.009562312071838336,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "savedScreenshotPair": false
+    },
+    {
+      "hour": 17,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0.00010561754151039437,
+      "beforeChannels": [
+        0.09745337503931231,
+        0.38780919282339255,
+        0.7287804624265743,
+        0.5294446442632034,
+        0.05159616747993725,
+        0.2053235001363811,
+        0.3858489126754105,
+        1.0641697090000988,
+        1.0641697090000988,
+        0.9627130186932513,
+        0.7932365807483398,
+        -0.9624424368288859,
+        0.25796069107331604,
+        0.37365493065823197,
+        0.35,
+        0.03410868126375931,
+        0.13573321748818737,
+        0.255073161849301,
+        0.0036154380592275915,
+        0.0036154380592275915,
+        0.009562312071838336,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "afterChannels": [
+        0.09744532314328141,
+        0.38779642555281574,
+        0.7287747544603731,
+        0.529409500596724,
+        0.05158848193349997,
+        0.20530312043236368,
+        0.38582029457949174,
+        1.0640640914585884,
+        1.0640640914585884,
+        0.9626174706041124,
+        0.7931578529882972,
+        -0.962365670618948,
+        0.25786510426578324,
+        0.3736178458635647,
+        0.3500000202527542,
+        0.034105867276219795,
+        0.13572875532080236,
+        0.2550711777013408,
+        0.003615438268434958,
+        0.003615438268434958,
+        0.00956231262516164,
+        2.8932506002305845e-8,
+        1.1479123094117696e-8,
+        1.454976546523926e-8,
+        2.8932506002305845e-8,
+        -9.57788493581267e-9,
+        2.1550241105578503e-8,
+        1.676129863767217e-8
+      ],
+      "savedScreenshotPair": true
+    },
+    {
+      "hour": 18,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0.0004433600523665593,
+      "beforeChannels": [
+        0.050259967982545756,
+        0.1954960174028458,
+        0.3697019855619781,
+        0.33978380492412996,
+        0.02603254043237156,
+        0.10292188801320389,
+        0.1937649515582842,
+        0.53225375654152,
+        0.53225375654152,
+        0.48150930846581913,
+        0.39674419066688116,
+        -0.4813833560076197,
+        0.12898628149202548,
+        0.18688677079520843,
+        0.5249270833352075,
+        0.05366055075299482,
+        0.12350576567149454,
+        0.247208915328612,
+        0.005422403872598409,
+        0.005422403872598409,
+        0.014341475959460412,
+        0.24989583333601084,
+        0.09914747901003011,
+        0.12566923050114298,
+        0.24989583333601084,
+        -0.08272610528243139,
+        0.18613373688547064,
+        0.14477068424425493
+      ],
+      "afterChannels": [
+        0.050220630459068966,
+        0.19533570024947425,
+        0.3694026334975865,
+        0.3396257176271305,
+        0.02601123493524544,
+        0.10283653474797676,
+        0.19360483871099918,
+        0.5318103964891534,
+        0.5318103964891534,
+        0.481108217840168,
+        0.39641370821750743,
+        -0.4809823702986325,
+        0.12887883769512593,
+        0.1867310966877587,
+        0.5250729166647924,
+        0.053676853116677976,
+        0.1234955756000063,
+        0.2472023607116209,
+        0.005423910305084365,
+        0.005423910305084365,
+        0.014345460256054599,
+        0.25010416666398916,
+        0.09923013634763785,
+        0.12577399851053822,
+        0.25010416666398916,
+        -0.0827950724380422,
+        0.1862889129855949,
+        0.14489137676657382
+      ],
+      "savedScreenshotPair": true
+    },
+    {
+      "hour": 19,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 6.15720849883814e-8,
+      "beforeChannels": [
+        0.0030352752983333064,
+        0.0030352920995043164,
+        0.010329864599191496,
+        0.15000002195453657,
+        0.00045529343411702635,
+        0.000455302328816943,
+        0.001549495689791646,
+        6.15720849883814e-8,
+        6.15720849883814e-8,
+        5.570187471516969e-8,
+        4.589609134018803e-8,
+        -5.568730430516236e-8,
+        1.4921368217234454e-8,
+        2.1619402386893428e-8,
+        0.6999999797472458,
+        0.07323153659345301,
+        0.11127258595069849,
+        0.2393400983388921,
+        0.007230875909247817,
+        0.007230875909247817,
+        0.01912462359035337,
+        0.499999971067494,
+        0.19837760387854486,
+        0.25144321446191575,
+        0.499999971067494,
+        -0.16552116814258866,
+        0.37242262832082446,
+        0.2896620442495301
+      ],
+      "afterChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "savedScreenshotPair": true
+    },
+    {
+      "hour": 19.5,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0,
+      "beforeChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "afterChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "savedScreenshotPair": false
+    },
+    {
+      "hour": 20,
+      "secondsEitherSide": 1,
+      "maxChannelDelta": 0,
+      "beforeChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "afterChannels": [
+        0.0030352698352941188,
+        0.0030352698352941188,
+        0.010329823026364537,
+        0.15,
+        0.0004552904752941176,
+        0.0004552904752941176,
+        0.0015494734539546822,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.7,
+        0.07323153885746059,
+        0.11127258453554179,
+        0.2393400974286129,
+        0.007230876118455183,
+        0.007230876118455183,
+        0.01912462414367667,
+        0.5,
+        0.19837761535766796,
+        0.2514432290116812,
+        0.5,
+        -0.1655211777204736,
+        0.37242264987106555,
+        0.28966206101082875
+      ],
+      "savedScreenshotPair": true
+    }
+  ],
+  "rendererReported": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+  "fixedState": {
+    "projectName": "Romania Hybrid Solar + BESS",
+    "projectLocation": "Romania",
+    "solarDcCapacityMwp": 117,
+    "solarAcCapacityMw": 102,
+    "batteryPowerRatingMw": 188,
+    "batteryEnergyCapacityMwh": 744,
+    "gridPvEvacuationMw": 102,
+    "gridBessConnectionMw": 186,
+    "siteYieldKwhPerKwYear": 1380,
+    "simulationStatus": "stopped",
+    "solarOutputMw": 62.24775295229438,
+    "gridDemandMw": 151.9876062761244,
+    "dispatchScalePercent": 100,
+    "batterySocPercent": 65,
+    "batteryPowerMw": 0,
+    "batteryChargeFromSolarMw": 0,
+    "batteryChargeFromGridMw": 0,
+    "batteryDischargeToLoadMw": 0,
+    "batteryDischargeToExportMw": 0,
+    "solarExportMw": 0,
+    "solarCurtailedMw": 0,
+    "gridImportMw": 89.73985332383003,
+    "gridExportMw": 0,
+    "gridOverloadMw": 0,
+    "gridOverloadWarning": false,
+    "projectNetExportMw": -89.73985332383003,
+    "batteryMode": "idle",
+    "dispatchMode": "auto",
+    "timeOfDay": 8,
+    "timeSpeed": 240,
+    "timestamp": 1792842249470,
+    "tariffPeriod": "mid-peak",
+    "tariffRatesEurMwh": {
+      "off-peak": 80,
+      "mid-peak": 150,
+      "peak": 350
+    },
+    "currentPriceEurMwh": 150,
+    "cumulativeRevenueEur": 0,
+    "cumulativeBessMarginEur": 0,
+    "cumulativeSolarExportRevenueEur": 0,
+    "cumulativeBessDischargeRevenueEur": 0,
+    "cumulativeBessExportRevenueEur": 0,
+    "cumulativeBessAvoidedImportCostEur": 0,
+    "cumulativeBessRestoredLoadAssumedValueEur": 0,
+    "cumulativeBessGridChargeCostEur": 0,
+    "cumulativeSolarOpportunityCostEur": 0
+  },
+  "shaderErrors": [],
+  "deprecations": [
+    {
+      "type": "warning",
+      "text": "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+    }
+  ],
+  "shadowWarnings": [],
+  "passed": true
+}

@@ -62,7 +62,7 @@ The tariff-only AUTO heuristic does not guarantee better value under every load,
 
 Seven simultaneous routes distinguish **PV -> BESS / local load / grid**, **BESS -> local load / grid**, and **grid -> BESS / local load**. They pass through the schematic PCS/MV collection node. Particle motion indicates direction; red particles show curtailment. A blue import route ending at **LOCAL LOAD** is not battery charging.
 
-The three GLBs are supplier-neutral representative units, not a detailed electrical installation. Info cards show station-level totals and approximate equipment equivalence. [Asset provenance and regeneration](public/models/README.md) describe the downstream conversion; Switchyard sources remain unchanged.
+The three GLBs are supplier-neutral representative units, not a detailed electrical installation. Info cards show station-level totals and approximate equipment equivalence. The PCS/MV model has full-depth cabinets and an open guard exposing its transformer. [Asset provenance and regeneration](public/models/README.md) cover the independent PCS builder and downstream BESS conversion; Switchyard sources remain unchanged.
 
 Power history uses a **numeric, unwrapped simulated-time axis**. `D1 08:00` means day 1 at 08:00, `D2 00:00` the next midnight. Windows shorter than ten minutes and all tooltips include seconds. Changing speed changes the simulated interval, not its geometric meaning. Pause adds no time; Stop/Reset/preset loading clear and re-anchor history. Only the latest 200 samples are retained, so this is not a full-run energy report.
 
@@ -99,6 +99,8 @@ npm audit --omit=dev
 
 CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from its own successful reusable CI run. Unit/jsdom green does not certify WebGL, responsive geometry or physical-phone behavior; dated browser evidence records those limits separately.
 
-**Released on 2026-10-13:** [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25) was squash-merged as `4ea9a58` after the user-arranged CC review. That exact merge passed [main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647078) and [Pages deployment](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647051), with 302 tests in 25 files. All 14 published files matched the local Pages-path build. See the [release record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布) for evidence and the separate documentation follow-up. Physical-phone touch and native-GPU acceptance remain open.
+**Published baseline:** PR #25 / `4ea9a58`, followed by documentation-only `c10efb0`; exact-head CI/Pages and the historical 302-test evidence are in the [release record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布).
+
+PCS/MV v2 geometry and self-shadow changes are documented in the [initial review](docs/audits/2026-10-23/README.md) and [CC follow-up](docs/audits/2026-10-24/README.md). The [lighting follow-up](docs/audits/2026-10-24-lighting/README.md) covers night fill and dawn/dusk transitions. These dated records distinguish reviewed changes, model/browser checks and release evidence. Static screenshots do not establish native-GPU motion or physical-phone acceptance.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

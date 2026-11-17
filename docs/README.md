@@ -4,18 +4,32 @@ Use the [project README](../README.md) to run the demo and understand its limits
 and [CLAUDE.md](../CLAUDE.md) for contributor invariants. Dated records below are
 historical evidence, not interchangeable claims about the current checkout.
 
-## Current Release
+## PCS/MV Review Records
+
+[2026-10-23 PCS/MV rebuild](audits/2026-10-23/README.md): independent generic
+asset, open transformer guards, solid cabinets, shadow correction and scoped
+documentation housekeeping. [2026-10-24 CC follow-up](audits/2026-10-24/README.md)
+records the supplied review, strengthened geometry tests and rebuilt asset.
+Dated records distinguish reviewed code, subsequent fixes and deployment;
+this index does not duplicate transient workflow status.
+
+## Day/Night Lighting
+
+[2026-10-24 lighting follow-up](audits/2026-10-24-lighting/README.md) records the
+explicit PCF shadow setting, night fill and continuous dawn/dusk lighting.
+It separates combined-light model checks, controlled browser fixtures, live
+simulation smoke checks and the remaining native-device visual acceptance.
+The [subsequent CC review and colour-constant cleanup](audits/2026-10-24-lighting/cc-followup/README.md)
+records the user-supplied approval, native-GPU coverage and the narrowly scoped
+local follow-up; the earlier evidence remains frozen at its original state.
+
+## Published Baseline
 
 [2026-10-11 review and release record](audits/2026-10-11/README.md): simulated-time chart,
 development dependency patch, responsive HUD clearance and documentation cleanup.
-The user supplied CC's final approval, including all three follow-ups, and
-authorized squash merge on 2026-10-13. [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25)
-merged as `4ea9a58`; its tree matches reviewed head `06abd38`.
-[Main CI](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647078)
-and [Pages](https://github.com/crashchen/BESS-Storage-Simulator/actions/runs/38399647051)
-passed at that exact merge SHA. The 14 published files matched the local build.
-The follow-up changes release documentation only and receives its own CI/Pages checks;
-final follow-up SHA and run evidence are recorded in the Vault iteration log.
+PR #25 merged as `4ea9a58` after CC review; documentation follow-up `c10efb0`
+is the last published snapshot. Exact-head CI/Pages, hashes and 14-file asset
+checks stay in that dated record and the Vault iteration log, not duplicated here.
 
 ## Audit History
 

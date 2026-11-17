@@ -201,7 +201,9 @@ export function SimulationViewport({
         <CanvasErrorBoundary onError={handleError}>
           <Canvas
             key={canvasKey}
-            shadows
+            // Boolean `shadows` means PCFSoft, which three r183 downgrades to PCF
+            // with a warning on every Canvas reconfigure (each React publish).
+            shadows="percentage"
             camera={{
               position: SCENE_3D.camera.position,
               fov: SCENE_3D.camera.fov,

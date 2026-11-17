@@ -1,8 +1,6 @@
 # Contributor and Agent Guidance
 
-Current architecture and invariants, not a changelog. Read [README](README.md) for operation, [audit index](docs/README.md) for historical decisions, and the [release record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布) for [PR #25](https://github.com/crashchen/BESS-Storage-Simulator/pull/25), squash-merged and deployed as `4ea9a58` on 2026-10-13. Later status-only documentation commits do not change the released implementation.
-
-The user supplied CC's final approval of the complete batch, including all three follow-ups, then explicitly authorized squash merge and housekeeping. The reviewed head `06abd38` and merge `4ea9a58` have identical trees. Post-merge main CI and Pages both passed at the merge SHA; PR-head CI is retained as separate historical evidence. The status-only follow-up must also pass its own CI/Pages checks. Neither software-rendered checks nor HTTP/asset verification replace native-device acceptance.
+Current architecture and invariants, not a changelog. Read [README](README.md) for operation and [audit index](docs/README.md) for dated review and release evidence.
 
 ## Ownership and Workflow
 
@@ -84,9 +82,10 @@ Retry 3D remounts Canvas without resetting simulation/history. Render/model erro
 
 ## 3D and Bundle Invariants
 
-- GLBs are metre-scale, centre-ground, self-contained and texture-free. Load through `equipmentModels.ts` using BASE_URL. Provenance and downstream de-brand script: `public/models/README.md`. Do not alter Switchyard while editing this repo.
+- GLBs are metre-scale, centre-ground, self-contained and texture-free. Load through `equipmentModels.ts` using BASE_URL. Provenance/rebuild commands: `public/models/README.md`. PCS v2 has an independent Blender generator; no private source is needed. Keep true guard apertures and full-depth cabinets, protected by real-GLB raycasts. Do not alter Switchyard while editing this repo.
 - Equipment shares `SCENE_3D.equipmentScale`, not independent per-unit shrinkage. BESS/pad stay fixed-size as aggregate capacity changes. Info cards describe representative units and approximate equivalence, never a single unit handling the station rating.
 - Never mutate cached GLB materials for hover, SoC or overload: use independent overlays. Never drive one material property both imperatively in useFrame and declaratively in JSX.
+- `sceneLighting.ts` owns display-only sky/fog and light curves. Dawn/dusk crossfade complete linear RGB radiances with the daylight sun pose held at the transition endpoint; 7–17h retains the daylight rig and the solar light is off at night. Reuse caller-owned targets and update dynamic light properties in the same frame. Test combined illumination and old boundaries, not only the night factor; model irradiance is not rasterized brightness or PV production.
 - Reuse Vector3/Color targets. Discretize dependencies when a visual only needs discrete SoC bars; raw high-frequency floats defeat memoization.
 - `energyFlowTelemetry.ts` defines seven display-only routes; `sceneFlowVisuals.ts` shares colors with the legend. Distinguish local load from export. Derive ports and paths from site configuration; check real GLB bounds, pads, framing and path clearance when moving equipment.
 - Solar supports are upright siblings of the tilted panel group, with derived ground-reaching height.
