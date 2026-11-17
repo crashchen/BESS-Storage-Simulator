@@ -1,6 +1,6 @@
 # Contributor and Agent Guidance
 
-Current architecture and invariants, not a changelog. Read [README](README.md) for operation and [audit index](docs/README.md) for dated review and release evidence.
+Current architecture and invariants, not a changelog. Read [README](README.md) for operation and [release history](docs/README.md) for releases and archived review records.
 
 ## Ownership and Workflow
 
@@ -9,7 +9,7 @@ Current architecture and invariants, not a changelog. Read [README](README.md) f
 - When a Codex commit is authorized, retain `Co-authored-by: Codex <noreply@openai.com>`.
 - Distinguish local checks, independent review, exact-head CI, merge, deployment and native-device acceptance.
 - No automatic memory writes. Update memory only when explicitly requested.
-- Repo README/CLAUDE are current snapshots. Put dated review evidence in `docs/audits/`; keep Vault release history in its `迭代记录`, open work in `路线图`. Do not repeat complete release reports in every document or erase historical counts/hashes.
+- Repo README/CLAUDE are current snapshots; `docs/README.md` is a one-row-per-release log. Audit records up to 2026-11-17 are archived at commit `66a8a74`, not on main. Put new review evidence in the PR description or a short dated note; avoid committing screenshot sets. Keep Vault release history in its `迭代记录`, open work in `路线图`. Do not repeat release reports across documents or rewrite historical counts/hashes.
 
 ## Commands and Release Gates
 
@@ -99,4 +99,4 @@ Retry 3D remounts Canvas without resetting simulation/history. Render/model erro
 
 Vitest uses jsdom and `makeGridState`. Pure engine/reducer/settlement tests cover math; hook tests cover RAF/history; UI tests cover commands, drafts, focus, drawers and recovery. Real Three-camera/raycaster and GLB-bound tests are still not rasterized layout or GPU tests.
 
-For runtime changes, also test the Pages-path production build. Dated browser scripts accept an external Playwright runtime; they are not currently CI gates or package dependencies. Record viewport, renderer, input method, synthetic fixtures and limitations. Preserve dated prior evidence; do not claim a headless screenshot as physical-phone or native-GPU acceptance.
+For runtime changes, also test the Pages-path production build. The archived browser scripts (at `66a8a74`) used an external Playwright runtime; they are not CI gates or package dependencies. Record viewport, renderer, input method, synthetic fixtures and limitations. Do not claim a headless screenshot as physical-phone or native-GPU acceptance.

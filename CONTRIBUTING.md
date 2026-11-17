@@ -34,7 +34,7 @@ npm run build
 
 For UI changes, also inspect the production build in a browser. jsdom does not
 verify WebGL or responsive geometry. Record the viewport, renderer, input method
-and limitations in a dated audit note; see [the evidence index](docs/README.md).
+and limitations in the PR description; see [release history](docs/README.md).
 Local verification does not authorize merging or deploying. Keep mathematical
 dispatch changes separate from presentation-only fixes when possible.
 

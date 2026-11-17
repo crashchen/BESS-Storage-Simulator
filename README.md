@@ -6,7 +6,7 @@
 
 A single-page, interactive solar PV + battery storage demonstration. Explore active-power dispatch, self-consumption, tariff windows and grid-connection limits through a 3D site and live controls. This is **not an engineering EMS, trading optimizer or financial forecast**.
 
-[Live demo](https://crashchen.github.io/BESS-Storage-Simulator/) · [Development guidance](CLAUDE.md) · [Verification and release history](docs/README.md)
+[Live demo](https://crashchen.github.io/BESS-Storage-Simulator/) · [Development guidance](CLAUDE.md) · [Release history](docs/README.md)
 
 ## Run Locally
 
@@ -97,10 +97,8 @@ npm audit
 npm audit --omit=dev
 ```
 
-CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from its own successful reusable CI run. Unit/jsdom green does not certify WebGL, responsive geometry or physical-phone behavior; dated browser evidence records those limits separately.
+CI runs lint/test/build for PRs and main pushes. Pages deploys the artifact from its own successful reusable CI run. Unit/jsdom green does not certify WebGL, responsive geometry or physical-phone behavior.
 
-**Published release:** PR #26 squash-merged as `0f22291` (PCS/MV v2, explicit PCF shadows, day/night lighting); main CI, Pages and the 14-file live check are in the [release record](docs/audits/2026-11-17/README.md). Earlier PR #25 evidence (`4ea9a58`, `c10efb0`, 302 tests) stays in the [2026-10-11 record](docs/audits/2026-10-11/README.md#2026-10-13-合并与发布).
-
-PCS/MV v2 geometry and self-shadow changes are documented in the [initial review](docs/audits/2026-10-23/README.md) and [CC follow-up](docs/audits/2026-10-24/README.md). The [lighting follow-up](docs/audits/2026-10-24-lighting/README.md) covers night fill and dawn/dusk transitions. These dated records distinguish reviewed changes, model/browser checks and release evidence. Static screenshots do not establish native-GPU motion or physical-phone acceptance.
+**Published release:** PR #26 squash-merged as `0f22291` (PCS/MV v2, explicit PCF shadows, day/night lighting; 340 tests). Earlier releases and archived review records are listed in [release history](docs/README.md). Native-GPU dawn, continuous camera rotation and physical-phone acceptance remain open.
 
 [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

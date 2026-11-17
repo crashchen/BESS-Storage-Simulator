@@ -1,69 +1,33 @@
-# Documentation and Evidence
+# Release History
 
-Use the [project README](../README.md) to run the demo and understand its limits,
-and [CLAUDE.md](../CLAUDE.md) for contributor invariants. Dated records below are
-historical evidence, not interchangeable claims about the current checkout.
+Use the [project README](../README.md) to run the demo and [CLAUDE.md](../CLAUDE.md)
+for contributor invariants. This page lists published releases only.
 
-## PCS/MV Review Records
+Dated audit records, screenshots and browser-check scripts up to 2026-11-17 were
+removed from `main` to keep the repository small. They remain readable in the
+[archived tree at `66a8a74`](https://github.com/crashchen/BESS-Storage-Simulator/tree/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits).
+Test totals below describe their own release commits only.
 
-[2026-10-23 PCS/MV rebuild](audits/2026-10-23/README.md): independent generic
-asset, open transformer guards, solid cabinets, shadow correction and scoped
-documentation housekeeping. [2026-10-24 CC follow-up](audits/2026-10-24/README.md)
-records the supplied review, strengthened geometry tests and rebuilt asset.
-Dated records distinguish reviewed code, subsequent fixes and deployment;
-this index does not duplicate transient workflow status.
+## Releases
 
-## Day/Night Lighting
+| Date | PR → merge | Change | Tests | Record |
+| --- | --- | --- | --- | --- |
+| 2026-11-17 | #26 → `0f22291` | PCS/MV v2 model, explicit PCF shadows, day/night lighting | 340 / 26 files | [Release](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-11-17/README.md) · [PCS/MV](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-10-23/README.md) · [lighting](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-10-24-lighting/README.md) |
+| 2026-10-13 | #25 → `4ea9a58` | Simulated-time chart axis, landscape HUD clearance, dependency patch | 302 / 25 | [Release](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-10-11/README.md) |
+| 2026-10-03 | #24 → `fa2d493` | Short-landscape card summary, Solar label hiding | 282 / 23 | [Record](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-10-03/compact-card-solar-label.md) |
+| 2026-09-25 | #21 → `0c03017` | Card docking, selectable PCS/BESS labels | 276 / 23 | [Record](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-25/pinned-card-pcs-label.md) |
+| 2026-09-25 | #18, #19 | NumericField Reset; short-landscape legend and Grid label | 273 / 23 | [#18](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-25/numericfield-reset.md) · [#19](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-25/scene-legend-grid-label.md) |
+| 2026-09-24 | #14, #16 | AUTO evening hold and its tariff threshold | 257 / 22, 260 / 22 | [Batch 9](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-23/batch-9.md) · [Batch 10](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-24/batch-10.md) |
+| 2026-09-23 | #12 → `20dadaf` | Three-part cumulative BESS value | 230 / 21 | [Batch 8](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-23/batch-8.md) |
+| 2026-09-22 | #7, #8, #10 | Equipment scale, camera on resize, labels/legend/loading | 221 / 21, 223 / 21 | [Batch 5](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-20/batch-5.md) · [6](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-22/batch-6.md) · [7](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-22/batch-7.md) |
+| 2026-09-19 – 09-20 | #4, #5, #6 | First hardening, telemetry wording, tick convergence, recovery and release gates | 146 / 15 → 197 / 18 | [Audit](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-08/README.md) · [Batch 2](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-19/batch-2.md) · [3](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-19/batch-3.md) · [4](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-09-19/batch-4.md) |
 
-[2026-10-24 lighting follow-up](audits/2026-10-24-lighting/README.md) records the
-explicit PCF shadow setting, night fill and continuous dawn/dusk lighting.
-It separates combined-light model checks, controlled browser fixtures, live
-simulation smoke checks and the remaining native-device visual acceptance.
-The [subsequent CC review and colour-constant cleanup](audits/2026-10-24-lighting/cc-followup/README.md)
-records the user-supplied approval, native-GPU coverage and the narrowly scoped
-local follow-up; the earlier evidence remains frozen at its original state.
-
-## Published Releases
-
-[2026-11-17 PR #26 release record](audits/2026-11-17/README.md) covers the PCS/MV
-v2 model, explicit PCF shadow selection, day/night lighting and Pages release
-from `0f22291`. The dated record lists the checks and open visual acceptance work.
-
-[2026-10-11 PR #25 review and release record](audits/2026-10-11/README.md) covers
-the simulated-time chart, dependency patch, responsive HUD clearance and
-documentation cleanup. The release history includes squash commit `4ea9a58`
-and documentation follow-up `c10efb0`.
-
-## Audit History
-
-| Work | Record |
-| --- | --- |
-| Original deep audit / first hardening batch | [2026-09-08](audits/2026-09-08/README.md) |
-| Value wording / sampled state | [Batch 2](audits/2026-09-19/batch-2.md) |
-| Tick events / convergence | [Batch 3](audits/2026-09-19/batch-3.md) |
-| Recovery / dependencies / release gates | [Batch 4](audits/2026-09-19/batch-4.md) |
-| Shared equipment scale / scene access | [Batch 5](audits/2026-09-20/batch-5.md) |
-| Preserve manual camera on resize | [Batch 6](audits/2026-09-22/batch-6.md) |
-| Readable labels / flow legend / loading | [Batch 7](audits/2026-09-22/batch-7.md) |
-| Three-part cumulative BESS value | [Batch 8](audits/2026-09-23/batch-8.md) |
-| Conditional evening energy hold | [Batch 9](audits/2026-09-23/batch-9.md) |
-| Tariff threshold explanation | [Batch 10](audits/2026-09-24/batch-10.md) |
-| Numeric input Reset regression | [PR #18](audits/2026-09-25/numericfield-reset.md) |
-| Short-landscape legend / Grid label | [PR #19](audits/2026-09-25/scene-legend-grid-label.md) |
-| Card docking / equipment label hit areas | [PR #21 and later GPU report](audits/2026-09-25/pinned-card-pcs-label.md) |
-| Compact summary / Solar label | [PR #24](audits/2026-10-03/compact-card-solar-label.md) |
-
-The long pre-cleanup README and agent release narratives remain accessible in
-[the immutable 891198b tree](https://github.com/crashchen/BESS-Storage-Simulator/tree/891198b30731637848148b9b26f279cfc37e34fc).
-No historical audit or screenshot has been removed. Old test totals, audit counts,
-device reports and CI run IDs describe their own dated commits only.
+Documentation-only follow-ups after a merge do not change the deployed app. The
+pre-cleanup long README remains in [tree `891198b`](https://github.com/crashchen/BESS-Storage-Simulator/tree/891198b30731637848148b9b26f279cfc37e34fc).
 
 ## Open Work
 
-- Physical iOS/Android touch, browser-chrome resizing and native-GPU recovery acceptance.
-- Promote selected browser smoke checks into a reproducible CI gate; current scripts use an external Playwright installation.
-- Profile first before lazy-loading more 3D code or replacing the state architecture; the existing Three chunk warning is not an FPS measurement.
-- Keep presets hidden until their individual narratives are revalidated. Sharing/screenshots, richer visuals and tutorials are optional product work, not release blockers.
-
-Detailed project chronology and the cross-project roadmap also live in the user's
-Obsidian housekeeping notes. Those are not bundled with the public application.
+- Native-GPU dawn capture (05:00–06:44), continuous camera-rotation flicker check and physical iOS/Android touch acceptance.
+- Promote key browser smoke checks into a reproducible CI gate; the archived scripts used an external Playwright install.
+- Profile before lazy-loading more 3D code; the Three chunk warning is not an FPS measurement.
+- Presets stay hidden until each narrative is revalidated.

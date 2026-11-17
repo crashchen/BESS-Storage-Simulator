@@ -59,7 +59,7 @@ draw submissions increase. The geometry tests bound size, triangles and meshes,
 and raycast through both guards to protect actual transformer visibility.
 Cabinet-side tests originate in the inter-cabinet gap, with a hollow-cabinet
 negative control; louvre slopes, separated cable runs and floor contact also
-have real-GLB regression coverage. See the [dated follow-up](../../docs/audits/2026-10-24/README.md)
+have real-GLB regression coverage. See the [archived follow-up](https://github.com/crashchen/BESS-Storage-Simulator/blob/66a8a740770d1a1a8d55ba84b42940f1cad9b544/docs/audits/2026-10-24/README.md)
 for hashes, rebuilding evidence and acceptance limits.
 
 Each model is a **representative single unit** standing in for station-scale

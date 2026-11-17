@@ -114,8 +114,8 @@ describe('SceneAssetInfoCard', () => {
         // Placement is CSS: a bottom sheet above the scene toolbar in portrait, and
         // top-right below the HUD and left of the Metrics handle in landscape.
         // index.css docks .scene-asset-card over the solar array in short
-        // landscape. jsdom has no layout engine; the real-browser check in
-        // docs/audits/2026-09-25/card-label-check.mjs measures the rectangles.
+        // landscape. jsdom has no layout engine; the archived real-browser check
+        // (docs/audits/2026-09-25/card-label-check.mjs at 66a8a74) measured the rectangles.
         render(<SceneAssetInfoCard assetId="bess" gridState={makeGridState()} pinned onClose={vi.fn()} />);
 
         const card = screen.getByTestId('scene-asset-info-card');
@@ -124,8 +124,9 @@ describe('SceneAssetInfoCard', () => {
     });
 
     it('hides the SOLAR ARRAY tag behind a shown card only in short landscape', () => {
-        // jsdom does not apply index.css; docs/audits/2026-10-03/compact-card-check.mjs
-        // measures the tag in Chromium. This pins the rule to the compact query.
+        // jsdom does not apply index.css; the archived Chromium check
+        // (docs/audits/2026-10-03/compact-card-check.mjs at 66a8a74) measured the tag.
+        // This pins the rule to the compact query.
         const rule = /\.scene-viewport:has\(\.scene-asset-card\) \.scene-label-solar\s*\{\s*visibility: hidden;\s*\}/;
         const queries = [...indexCss.matchAll(/@media ([^{]+)\{((?:[^{}]*\{[^{}]*\})*)\s*\}/g)]
             .filter(([, , body]) => rule.test(body))

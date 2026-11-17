@@ -5,7 +5,7 @@ import { TelemetryChart } from './TelemetryChart';
 import type { GridSnapshot } from '../types';
 
 // jsdom has no chart layout. Pin the numeric-axis contract here; real SVG
-// spacing and responsive layout are checked in the browser evidence script.
+// spacing and responsive layout were checked by an archived browser script.
 vi.mock('recharts', () => {
     const Container = ({ children }: { children: ReactNode }) => <div>{children}</div>;
     const Empty = () => null;
